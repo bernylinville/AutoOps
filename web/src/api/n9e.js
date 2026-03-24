@@ -83,5 +83,13 @@ export default {
             method: 'get',
             params: { limit }
         })
+    },
+
+    // 检测数据源连通性
+    checkDatasource(id) {
+        return request({
+            url: `n9e/datasources/${id}/check`,
+            method: 'post'
+        })
     }
 }

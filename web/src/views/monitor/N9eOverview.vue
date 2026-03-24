@@ -226,7 +226,7 @@ const loadRecentLogs = async () => {
         parsedResult: (() => {
           if (!log.result) return null
           try { return typeof log.result === 'string' ? JSON.parse(log.result) : log.result }
-          catch { return null }
+          catch(e) { return null }
         })()
       }))
     }

@@ -2,8 +2,10 @@ package controller
 
 import (
 	"context"
+	"net/http"
 	"strconv"
 	"strings"
+	"time"
 
 	"dodevops-api/api/n9e/dao"
 	"dodevops-api/api/n9e/model"
@@ -305,4 +307,61 @@ func (ctrl *N9EController) GetSyncLogs(c *gin.Context) {
 	}
 
 	result.Success(c, logs)
+}
+
+// CheckDatasource 检测数据源连通性
+// @Summary 检测数据源连通性
+// @Tags N9E
+// @Accept json
+// @Produce json
+// @Param id path int true "数据源ID"
+// @Success 200 {object} result.Result
+// @Router /api/v1/n9e/datasources/{id}/check [post]
+func (ctrl *N9EController) CheckDatasource(c *gin.Context) {
+	idStr := c.Param("id")
+	id, err := strconv.ParseUint(idStr, 10, 64)
+	if err != nil {
+		result.Failed(c, 400, "无效的数据源 ID")
+		return
+	}
+
+	ds, err := dao.GetN9EDataSourceByID(uint(id))
+	if err != nil {
+		result.Failed(c, 404, "数据源不存在")
+		return
+	}
+
+	if ds.URL == "" {
+		result.Failed(c, 400, "数据源未配置 URL")
+		return
+	}
+
+	// Ping 数据源
+	start := time.Now()
+	client := &http.Client{Timeout: 5 * time.Second}
+	resp, err := client.Get(strings.TrimRight(ds.URL, "/") + "/-/healthy")
+	latencyMs := time.Since(start).Milliseconds()
+
+	if err != nil {
+		// 尝试直接 GET /
+		start = time.Now()
+		resp, err = client.Get(strings.TrimRight(ds.URL, "/") + "/")
+		latencyMs = time.Since(start).Milliseconds()
+
+		if err != nil {
+			result.Success(c, gin.H{
+				"status":    "error",
+				"latencyMs": latencyMs,
+				"error":     err.Error(),
+			})
+			return
+		}
+	}
+	defer resp.Body.Close()
+
+	result.Success(c, gin.H{
+		"status":     "ok",
+		"latencyMs":  latencyMs,
+		"httpStatus": resp.StatusCode,
+	})
 }

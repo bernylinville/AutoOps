@@ -32,6 +32,7 @@ func RegisterN9ERoutes(r *gin.RouterGroup) {
 
 		// 数据源
 		n9eGroup.GET("/datasources", ctrl.GetDatasources)
+		n9eGroup.POST("/datasources/:id/check", ctrl.CheckDatasource)
 
 		// PromQL 查询
 		n9eGroup.GET("/query", ctrl.QueryPromQL)

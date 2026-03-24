@@ -154,7 +154,7 @@ const parseResult = (resultStr) => {
   if (!resultStr) return null
   try {
     return typeof resultStr === 'string' ? JSON.parse(resultStr) : resultStr
-  } catch {
+  } catch(e) {
     return null
   }
 }

@@ -36,6 +36,20 @@
                 </el-tag>
               </template>
             </el-table-column>
+            <el-table-column label="连通性" width="120" align="center">
+              <template #default="{ row }">
+                <el-tag v-if="row.checkResult === 'ok'" type="success" size="small">{{ row.checkLatency }}ms</el-tag>
+                <el-tag v-else-if="row.checkResult === 'error'" type="danger" size="small">不可达</el-tag>
+                <span v-else style="color: #909399; font-size: 12px;">未检测</span>
+              </template>
+            </el-table-column>
+            <el-table-column label="操作" width="100" align="center">
+              <template #default="{ row }">
+                <el-button size="small" type="primary" text :loading="row.checking" @click.stop="handleCheckDatasource(row)">
+                  {{ row.checking ? '检测中' : '测试' }}
+                </el-button>
+              </template>
+            </el-table-column>
           </el-table>
 
           <div v-if="datasources.length === 0 && !loading" class="empty-tip">
@@ -157,7 +171,12 @@ const loadDatasources = async () => {
   try {
     const res = await n9eApi.getDatasources()
     if (res.data?.code === 200) {
-      datasources.value = res.data.data || []
+      datasources.value = (res.data.data || []).map(d => ({
+        ...d,
+        checking: false,
+        checkResult: null,
+        checkLatency: null
+      }))
       if (datasources.value.length > 0 && !queryForm.datasourceId) {
         queryForm.datasourceId = datasources.value[0].id
       }
@@ -191,6 +210,30 @@ const handleSyncDatasources = async () => {
 const handleDatasourceSelect = (row) => {
   if (row) {
     queryForm.datasourceId = row.id
+  }
+}
+
+// 测试数据源连通性
+const handleCheckDatasource = async (row) => {
+  row.checking = true
+  row.checkResult = null
+  try {
+    const res = await n9eApi.checkDatasource(row.id)
+    if (res.data?.code === 200) {
+      const d = res.data.data
+      row.checkResult = d.status
+      row.checkLatency = d.latencyMs
+      if (d.status === 'ok') {
+        ElMessage.success(`${row.name} 连接正常 (${d.latencyMs}ms)`)
+      } else {
+        ElMessage.error(`${row.name} 连接失败: ${d.error || '未知错误'}`)
+      }
+    }
+  } catch (err) {
+    row.checkResult = 'error'
+    ElMessage.error('检测失败: ' + (err.message || '未知错误'))
+  } finally {
+    row.checking = false
   }
 }
 
