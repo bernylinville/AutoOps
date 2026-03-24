@@ -4,6 +4,7 @@ package system
 
 import (
 	"dodevops-api/api/system/controller"
+	"dodevops-api/middleware"
 	"github.com/gin-gonic/gin"
 )
 
@@ -27,29 +28,29 @@ func RegisterSystemRoutes(router *gin.RouterGroup) {
 	router.GET("/dept/vo/list", controller.QuerySysDeptVoList)  // 查询部门树形结构
 	router.GET("/dept/users", controller.GetDeptUsers)          // 查询部门下的用户
 	// 菜单
-	router.POST("/menu/add", controller.CreateSysMenu)
+	router.POST("/menu/add", middleware.RbacMiddleware("base:menu:add"), controller.CreateSysMenu)
 	router.GET("/menu/vo/list", controller.QuerySysMenuVoList)
 	router.GET("/menu/info", controller.GetSysMenu)
-	router.PUT("/menu/update", controller.UpdateSysMenu)
-	router.DELETE("/menu/delete", controller.DeleteSysMenu)
+	router.PUT("/menu/update", middleware.RbacMiddleware("base:menu:edit"), controller.UpdateSysMenu)
+	router.DELETE("/menu/delete", middleware.RbacMiddleware("base:menu:delete"), controller.DeleteSysMenu)
 	router.GET("/menu/list", controller.GetSysMenuList)
 	// 角色
-	router.POST("/role/add", controller.CreateSysRole)
+	router.POST("/role/add", middleware.RbacMiddleware("base:role:add"), controller.CreateSysRole)
 	router.GET("/role/info", controller.GetSysRoleById)
-	router.PUT("/role/update", controller.UpdateSysRole)
-	router.DELETE("/role/delete", controller.DeleteSysRoleById)
-	router.PUT("/role/updateStatus", controller.UpdateSysRoleStatus)
+	router.PUT("/role/update", middleware.RbacMiddleware("base:role:edit"), controller.UpdateSysRole)
+	router.DELETE("/role/delete", middleware.RbacMiddleware("base:role:delete"), controller.DeleteSysRoleById)
+	router.PUT("/role/updateStatus", middleware.RbacMiddleware("base:role:edit"), controller.UpdateSysRoleStatus)
 	router.GET("/role/list", controller.GetSysRoleList)
 	router.GET("/role/vo/list", controller.QuerySysRoleVoList)
 	router.GET("/role/vo/idList", controller.QueryRoleMenuIdList)
-	router.PUT("/role/assignPermissions", controller.AssignPermissions)
+	router.PUT("/role/assignPermissions", middleware.RbacMiddleware("base:role:assign"), controller.AssignPermissions)
 	// 用户
-	router.POST("/admin/add", controller.CreateSysAdmin)
+	router.POST("/admin/add", middleware.RbacMiddleware("base:admin:add"), controller.CreateSysAdmin)
 	router.GET("/admin/info", controller.GetSysAdminInfo)
-	router.PUT("/admin/update", controller.UpdateSysAdmin)
-	router.DELETE("/admin/delete", controller.DeleteSysAdminById)
-	router.PUT("/admin/updateStatus", controller.UpdateSysAdminStatus)
-	router.PUT("/admin/updatePassword", controller.ResetSysAdminPassword)
+	router.PUT("/admin/update", middleware.RbacMiddleware("base:admin:edit"), controller.UpdateSysAdmin)
+	router.DELETE("/admin/delete", middleware.RbacMiddleware("base:admin:delete"), controller.DeleteSysAdminById)
+	router.PUT("/admin/updateStatus", middleware.RbacMiddleware("base:admin:edit"), controller.UpdateSysAdminStatus)
+	router.PUT("/admin/updatePassword", middleware.RbacMiddleware("base:admin:reset"), controller.ResetSysAdminPassword)
 	router.GET("/admin/list", controller.GetSysAdminList)
 	router.POST("/upload", controller.Upload)
 	router.PUT("/admin/updatePersonal", controller.UpdatePersonal)

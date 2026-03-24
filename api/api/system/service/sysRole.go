@@ -7,6 +7,7 @@ import (
 	"dodevops-api/api/system/dao"
 	"dodevops-api/api/system/model"
 	"dodevops-api/common/result"
+	"dodevops-api/middleware"
 	"github.com/gin-gonic/gin"
 )
 
@@ -49,6 +50,7 @@ func (s SysRoleServiceImpl) UpdateSysRole(c *gin.Context, dto model.UpdateSysRol
 // 根据id删除角色
 func (s SysRoleServiceImpl) DeleteSysRoleById(c *gin.Context, dto model.SysRoleIdDto) {
 	dao.DeleteSysRoleById(dto)
+	middleware.InvalidateAllPermCache()
 	result.Success(c, true)
 }
 
@@ -96,6 +98,7 @@ func (s *SysRoleServiceImpl) AssignPermissions(c *gin.Context, menu model.RoleMe
 	// 异步处理权限分配
 	go func() {
 		dao.AssignPermissions(menu)
+		middleware.InvalidateAllPermCache()
 	}()
 }
 

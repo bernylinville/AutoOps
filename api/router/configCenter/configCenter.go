@@ -4,6 +4,7 @@ package configCenter
 
 import (
 	"dodevops-api/api/configcenter/controller"
+	"dodevops-api/middleware"
 
 	"github.com/gin-gonic/gin"
 )
@@ -19,16 +20,16 @@ func RegisterConfigCenterRoutes(router *gin.RouterGroup) {
 	router.GET("/config/ecsauthlist", ecsAuthCtrl.GetEcsAuthList)     // 获取所有凭据
 	router.GET("/config/ecsauthinfo", ecsAuthCtrl.GetEcsAuthByName)   // 根据名称查找凭据
 	router.GET("/config/ecsauthdetail", ecsAuthCtrl.GetEcsAuthById)   // 根据ID查找凭据详情
-	router.POST("/config/ecsauthadd", ecsAuthCtrl.CreateEcsAuth)      // 创建凭据
-	router.PUT("/config/ecsauthupdate", ecsAuthCtrl.UpdateEcsAuth)    // 更新凭据
-	router.DELETE("/config/ecsauthdelete", ecsAuthCtrl.DeleteEcsAuth) // 删除凭据
+	router.POST("/config/ecsauthadd", middleware.RbacMiddleware("config:ecsauth:add"), ecsAuthCtrl.CreateEcsAuth)      // 创建凭据
+	router.PUT("/config/ecsauthupdate", middleware.RbacMiddleware("config:ecsauth:edit"), ecsAuthCtrl.UpdateEcsAuth)    // 更新凭据
+	router.DELETE("/config/ecsauthdelete", middleware.RbacMiddleware("config:ecsauth:delete"), ecsAuthCtrl.DeleteEcsAuth) // 删除凭据
 	// 账号认证管理
 	router.POST("/config/accountauth", accountAuthCtrl.Create)   // 创建账号
 	router.PUT("/config/accountauth", accountAuthCtrl.Update)   // 更新账号
 	router.DELETE("/config/accountauth", accountAuthCtrl.Delete)  // 删除账号
 	router.GET("/config/accountauth", accountAuthCtrl.GetByID)    // 根据ID查询账号	
 	router.GET("/config/accountauth/list", accountAuthCtrl.List)  // 获取所有账号
-	router.POST("/config/accountauth/decrypt", accountAuthCtrl.DecryptPassword) // 解密密码
+	router.POST("/config/accountauth/decrypt", middleware.RbacMiddleware("config:account:decrypt"), accountAuthCtrl.DecryptPassword) // 解密密码
 	router.GET("/config/accountauth/type", accountAuthCtrl.GetByType)    // 根据类型查询账号
 	router.GET("/config/accountauth/alias", accountAuthCtrl.GetByAlias) // 根据别名查询账号
 

@@ -3,6 +3,7 @@ package cmdb
 import (
 	"dodevops-api/api/cmdb/controller"
 	"dodevops-api/api/cmdb/service"
+	"dodevops-api/middleware"
 
 	"github.com/gin-gonic/gin"
 )
@@ -33,17 +34,17 @@ func RegisterCmdbRoutes(router *gin.RouterGroup) {
 	router.POST("/cmdb/hostcloudcreatealiyun", controller.NewCmdbHostCloudController().CreateAliyunHost)                          // 创建阿里云主机
 	router.POST("/cmdb/hostcloudcreatetencent", controller.NewCmdbHostCloudController().CreateTencentHost)                        // 创建腾讯云主机
 	router.POST("/cmdb/hostcloudcreatebaidu", controller.NewCmdbHostCloudController().CreateBaiduHost)                            // 创建百度云主机
-	router.GET("/cmdb/hostssh/connect/:id", controller.NewCmdbHostSSHController(service.GetCmdbHostSSHService()).ConnectTerminal) // SSH终端连接
-	router.GET("/cmdb/hostssh/command/:id", controller.NewCmdbHostSSHController(service.GetCmdbHostSSHService()).ExecuteCommand)  // SSH执行命令
-	router.POST("/cmdb/hostssh/upload/:id", controller.NewCmdbHostSSHController(service.GetCmdbHostSSHService()).UploadFile)      // SSH文件上传
+	router.GET("/cmdb/hostssh/connect/:id", middleware.RbacMiddleware("cmdb:ecs:terminal"), controller.NewCmdbHostSSHController(service.GetCmdbHostSSHService()).ConnectTerminal) // SSH终端连接
+	router.GET("/cmdb/hostssh/command/:id", middleware.RbacMiddleware("cmdb:ecs:shell"), controller.NewCmdbHostSSHController(service.GetCmdbHostSSHService()).ExecuteCommand)     // SSH执行命令
+	router.POST("/cmdb/hostssh/upload/:id", middleware.RbacMiddleware("cmdb:ecs:upload"), controller.NewCmdbHostSSHController(service.GetCmdbHostSSHService()).UploadFile)         // SSH文件上传
 	// SQL执行 — H9: TODO: 这些路由需要 RBAC 权限控制，仅 DBA 角色可访问
 	// 当前所有登录用户都可以执行任意 SQL，是严重安全隐患
-	router.POST("/cmdb/sql/select", controller.GetCmdbSQLRecordController().ExecuteSelect)       // 执行查询语句(通过数据库ID/名称)
-	router.POST("/cmdb/sql", controller.GetCmdbSQLRecordController().ExecuteInsert)              // 执行插入语句(通过数据库ID/名称)
-	router.PUT("/cmdb/sql", controller.GetCmdbSQLRecordController().ExecuteUpdate)               // 执行更新语句(通过数据库ID/名称)
-	router.DELETE("/cmdb/sql", controller.GetCmdbSQLRecordController().ExecuteDelete)            // 执行删除语句(通过数据库ID/名称)
-	router.POST("/cmdb/sql/execute", controller.GetCmdbSQLRecordController().ExecuteSQL)         // 执行原生SQL语句(通过数据库ID/名称)
-	router.POST("/cmdb/sql/databaselist", controller.GetCmdbSQLRecordController().ListDatabases) // 获取数据库列表(通过数据库ID)
+	router.POST("/cmdb/sql/select", middleware.RbacMiddleware("cmdb:sql:select"), controller.GetCmdbSQLRecordController().ExecuteSelect)       // 执行查询语句
+	router.POST("/cmdb/sql", middleware.RbacMiddleware("cmdb:sql:execute"), controller.GetCmdbSQLRecordController().ExecuteInsert)              // 执行插入语句
+	router.PUT("/cmdb/sql", middleware.RbacMiddleware("cmdb:sql:execute"), controller.GetCmdbSQLRecordController().ExecuteUpdate)               // 执行更新语句
+	router.DELETE("/cmdb/sql", middleware.RbacMiddleware("cmdb:sql:execute"), controller.GetCmdbSQLRecordController().ExecuteDelete)            // 执行删除语句
+	router.POST("/cmdb/sql/execute", middleware.RbacMiddleware("cmdb:sql:execute"), controller.GetCmdbSQLRecordController().ExecuteSQL)         // 执行原生SQL
+	router.POST("/cmdb/sql/databaselist", controller.GetCmdbSQLRecordController().ListDatabases)                                               // 获取数据库列表
 	// SQL日志管理
 	router.GET("/cmdb/sqlLog/list", controller.GetCmdbSqlLogList)         // 分页获取SQL操作日志列表
 	router.DELETE("/cmdb/sqlLog/delete", controller.DeleteCmdbSqlLogById) // 根据id删除SQL操作日志
