@@ -44,6 +44,10 @@ var models = []interface{}{
 	&n9emodel.N9EBusiGroup{},
 	&n9emodel.N9EDataSource{},
 	&n9emodel.N9ESyncLog{},
+	// M8: 告警通知模型
+	&n9emodel.AlertRule{},
+	&n9emodel.AlertEvent{},
+	&n9emodel.NotifyChannel{},
 }
 
 // 自动迁移所有模型

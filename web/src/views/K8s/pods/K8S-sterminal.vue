@@ -100,6 +100,7 @@ let terminal = null
 let fitAddon = null
 let websocket = null
 let heartbeatInterval = null
+let resizeObs = null  // H2-P2-2: 保存引用用于卸载时清理
 
 // 初始化终端
 const initTerminal = () => {
@@ -145,7 +146,8 @@ const initTerminal = () => {
   }, 100)
   
   // 监听窗口大小变化 - 发送正确的JSON格式resize消息
-  const resizeObserver = new ResizeObserver(() => {
+  // H2-P2-2: 保存 ResizeObserver 引用，避免资源泄漏
+  resizeObs = new ResizeObserver(() => {
     if (fitAddon) {
       fitAddon.fit()
       if (websocket && websocket.readyState === WebSocket.OPEN) {
@@ -160,7 +162,7 @@ const initTerminal = () => {
       }
     }
   })
-  resizeObserver.observe(terminalElement.value)
+  resizeObs.observe(terminalElement.value)
   
   // 监听键盘输入 - 发送JSON格式的消息
   terminal.onData((data) => {
@@ -476,6 +478,10 @@ onMounted(() => {
 onUnmounted(() => {
   disconnect()
   stopHeartbeat()
+  if (resizeObs) {
+    resizeObs.disconnect()
+    resizeObs = null
+  }
   if (terminal) {
     terminal.dispose()
   }

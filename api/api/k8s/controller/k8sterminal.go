@@ -4,7 +4,9 @@ import (
 	"fmt"
 	"log"
 	"net/http"
+	"os"
 	"strconv"
+	"strings"
 
 	"dodevops-api/api/k8s/service"
 	"dodevops-api/common/result"
@@ -16,7 +18,20 @@ import (
 
 var upgrader = websocket.Upgrader{
 	CheckOrigin: func(r *http.Request) bool {
-		return true
+		origin := r.Header.Get("Origin")
+		if origin == "" {
+			return false
+		}
+		allowed := os.Getenv("ALLOWED_ORIGINS")
+		if allowed == "" {
+			allowed = "http://localhost:8080,http://localhost:3000"
+		}
+		for _, a := range strings.Split(allowed, ",") {
+			if strings.TrimSpace(a) == origin {
+				return true
+			}
+		}
+		return false
 	},
 }
 

@@ -20,34 +20,34 @@ func RegisterK8sRoutes(router *gin.RouterGroup) {
 	k8sStorageCtrl := controller.NewK8sStorageController(common.GetDB())
 	k8sConfigCtrl := controller.NewK8sConfigController(common.GetDB())
 	
-	// K8s集群管理路由
-	router.POST("/k8s/cluster", middleware.AuthMiddleware(), kubeClusterCtrl.CreateCluster)             // 创建集群
-	router.GET("/k8s/cluster/:id", middleware.AuthMiddleware(), kubeClusterCtrl.GetCluster)           // 获取集群详情
-	router.GET("/k8s/cluster", middleware.AuthMiddleware(), kubeClusterCtrl.GetClusterList)           // 获取集群列表
-	router.PUT("/k8s/cluster/:id", middleware.AuthMiddleware(), kubeClusterCtrl.UpdateCluster)        // 更新集群信息
-	router.DELETE("/k8s/cluster/:id", middleware.AuthMiddleware(), kubeClusterCtrl.DeleteCluster)     // 删除集群
-	router.GET("/k8s/cluster/:id/status", middleware.AuthMiddleware(), kubeClusterCtrl.GetClusterStatus) // 获取集群状态
-	router.GET("/k8s/cluster/:id/detail", middleware.AuthMiddleware(), kubeClusterCtrl.GetClusterDetail) // 获取集群详细信息
-	router.POST("/k8s/cluster/:id/sync", middleware.AuthMiddleware(), kubeClusterCtrl.SyncCluster)    // 同步集群信息
+	// K8s集群管理路由 — H2-P0-3: 补 RBAC
+	router.POST("/k8s/cluster", middleware.AuthMiddleware(), middleware.RbacMiddleware("k8s:cluster:add"), kubeClusterCtrl.CreateCluster)
+	router.GET("/k8s/cluster/:id", middleware.AuthMiddleware(), kubeClusterCtrl.GetCluster)
+	router.GET("/k8s/cluster", middleware.AuthMiddleware(), kubeClusterCtrl.GetClusterList)
+	router.PUT("/k8s/cluster/:id", middleware.AuthMiddleware(), middleware.RbacMiddleware("k8s:cluster:edit"), kubeClusterCtrl.UpdateCluster)
+	router.DELETE("/k8s/cluster/:id", middleware.AuthMiddleware(), middleware.RbacMiddleware("k8s:cluster:delete"), kubeClusterCtrl.DeleteCluster)
+	router.GET("/k8s/cluster/:id/status", middleware.AuthMiddleware(), kubeClusterCtrl.GetClusterStatus)
+	router.GET("/k8s/cluster/:id/detail", middleware.AuthMiddleware(), kubeClusterCtrl.GetClusterDetail)
+	router.POST("/k8s/cluster/:id/sync", middleware.AuthMiddleware(), middleware.RbacMiddleware("k8s:cluster:sync"), kubeClusterCtrl.SyncCluster)
 
 	// K8s节点管理路由
 	router.GET("/k8s/cluster/:id/nodes", middleware.AuthMiddleware(), k8sNodesCtrl.GetNodes)        // 获取集群节点列表
 	router.GET("/k8s/cluster/:id/nodes/:nodeName", middleware.AuthMiddleware(), k8sNodesCtrl.GetNodeDetail) // 获取节点详细信息
 	router.GET("/k8s/cluster/:id/nodes/:nodeName/enhanced", middleware.AuthMiddleware(), k8sNodesCtrl.GetNodeDetailEnhanced) // 获取增强的节点详细信息
-	router.POST("/k8s/cluster/:id/nodes/:nodeName/taints", middleware.AuthMiddleware(), k8sNodesCtrl.AddTaint)    // 添加节点污点
-	router.DELETE("/k8s/cluster/:id/nodes/:nodeName/taints", middleware.AuthMiddleware(), k8sNodesCtrl.RemoveTaint) // 移除节点污点
-	router.POST("/k8s/cluster/:id/nodes/:nodeName/labels", middleware.AuthMiddleware(), k8sNodesCtrl.AddLabel)    // 添加节点标签
-	router.DELETE("/k8s/cluster/:id/nodes/:nodeName/labels", middleware.AuthMiddleware(), k8sNodesCtrl.RemoveLabel) // 移除节点标签
-	router.POST("/k8s/cluster/:id/nodes/:nodeName/cordon", middleware.AuthMiddleware(), k8sNodesCtrl.CordonNode) // 封锁/解封节点
-	router.POST("/k8s/cluster/:id/nodes/:nodeName/drain", middleware.AuthMiddleware(), k8sNodesCtrl.DrainNode)   // 驱逐节点
-	router.GET("/k8s/cluster/:id/nodes/:nodeName/resources", middleware.AuthMiddleware(), k8sNodesCtrl.GetNodeResourceAllocation) // 获取节点资源分配详情
+	router.POST("/k8s/cluster/:id/nodes/:nodeName/taints", middleware.AuthMiddleware(), middleware.RbacMiddleware("k8s:node:edit"), k8sNodesCtrl.AddTaint)
+	router.DELETE("/k8s/cluster/:id/nodes/:nodeName/taints", middleware.AuthMiddleware(), middleware.RbacMiddleware("k8s:node:edit"), k8sNodesCtrl.RemoveTaint)
+	router.POST("/k8s/cluster/:id/nodes/:nodeName/labels", middleware.AuthMiddleware(), middleware.RbacMiddleware("k8s:node:edit"), k8sNodesCtrl.AddLabel)
+	router.DELETE("/k8s/cluster/:id/nodes/:nodeName/labels", middleware.AuthMiddleware(), middleware.RbacMiddleware("k8s:node:edit"), k8sNodesCtrl.RemoveLabel)
+	router.POST("/k8s/cluster/:id/nodes/:nodeName/cordon", middleware.AuthMiddleware(), middleware.RbacMiddleware("k8s:node:cordon"), k8sNodesCtrl.CordonNode)
+	router.POST("/k8s/cluster/:id/nodes/:nodeName/drain", middleware.AuthMiddleware(), middleware.RbacMiddleware("k8s:node:drain"), k8sNodesCtrl.DrainNode)
+	router.GET("/k8s/cluster/:id/nodes/:nodeName/resources", middleware.AuthMiddleware(), k8sNodesCtrl.GetNodeResourceAllocation)
 
 	// K8s命名空间管理路由
 	router.GET("/k8s/cluster/:id/namespaces", middleware.AuthMiddleware(), k8sNamespaceCtrl.GetNamespaces)              // 获取指定集群的命名空间列表
 	router.GET("/k8s/cluster/:id/namespaces/:namespaceName", middleware.AuthMiddleware(), k8sNamespaceCtrl.GetNamespace) // 获取命名空间详情
-	router.POST("/k8s/cluster/:id/namespaces", middleware.AuthMiddleware(), k8sNamespaceCtrl.CreateNamespace)            // 创建命名空间
-	router.PUT("/k8s/cluster/:id/namespaces/:namespaceName", middleware.AuthMiddleware(), k8sNamespaceCtrl.UpdateNamespace) // 更新命名空间
-	router.DELETE("/k8s/cluster/:id/namespaces/:namespaceName", middleware.AuthMiddleware(), k8sNamespaceCtrl.DeleteNamespace) // 删除命名空间
+	router.POST("/k8s/cluster/:id/namespaces", middleware.AuthMiddleware(), middleware.RbacMiddleware("k8s:namespace:add"), k8sNamespaceCtrl.CreateNamespace)
+	router.PUT("/k8s/cluster/:id/namespaces/:namespaceName", middleware.AuthMiddleware(), middleware.RbacMiddleware("k8s:namespace:edit"), k8sNamespaceCtrl.UpdateNamespace)
+	router.DELETE("/k8s/cluster/:id/namespaces/:namespaceName", middleware.AuthMiddleware(), middleware.RbacMiddleware("k8s:namespace:delete"), k8sNamespaceCtrl.DeleteNamespace)
 	
 	// ResourceQuota管理路由
 	router.GET("/k8s/cluster/:id/namespaces/:namespaceName/resourcequotas", middleware.AuthMiddleware(), k8sNamespaceCtrl.GetResourceQuotas)    // 获取ResourceQuota列表
@@ -68,18 +68,18 @@ func RegisterK8sRoutes(router *gin.RouterGroup) {
 	router.GET("/k8s/cluster/:id/namespaces/:namespaceName/workloads/:type/:workloadName", middleware.AuthMiddleware(), k8sWorkloadCtrl.GetWorkloadDetail) // 获取工作负载详情
 	
 	// Deployment管理路由
-	router.POST("/k8s/cluster/:id/namespaces/:namespaceName/deployments", middleware.AuthMiddleware(), k8sWorkloadCtrl.CreateDeployment) // 创建Deployment
-	router.PUT("/k8s/cluster/:id/namespaces/:namespaceName/deployments/:deploymentName", middleware.AuthMiddleware(), k8sWorkloadCtrl.UpdateDeployment) // 更新Deployment
-	router.DELETE("/k8s/cluster/:id/namespaces/:namespaceName/deployments/:deploymentName", middleware.AuthMiddleware(), k8sWorkloadCtrl.DeleteDeployment) // 删除Deployment
-	router.POST("/k8s/cluster/:id/namespaces/:namespaceName/deployments/:deploymentName/scale", middleware.AuthMiddleware(), k8sWorkloadCtrl.ScaleDeployment) // 伸缩Deployment
-	router.POST("/k8s/cluster/:id/namespaces/:namespaceName/deployments/:deploymentName/restart", middleware.AuthMiddleware(), k8sWorkloadCtrl.RestartDeployment) // 重启Deployment
+	router.POST("/k8s/cluster/:id/namespaces/:namespaceName/deployments", middleware.AuthMiddleware(), middleware.RbacMiddleware("k8s:deployment:add"), k8sWorkloadCtrl.CreateDeployment)
+	router.PUT("/k8s/cluster/:id/namespaces/:namespaceName/deployments/:deploymentName", middleware.AuthMiddleware(), middleware.RbacMiddleware("k8s:deployment:edit"), k8sWorkloadCtrl.UpdateDeployment)
+	router.DELETE("/k8s/cluster/:id/namespaces/:namespaceName/deployments/:deploymentName", middleware.AuthMiddleware(), middleware.RbacMiddleware("k8s:deployment:delete"), k8sWorkloadCtrl.DeleteDeployment)
+	router.POST("/k8s/cluster/:id/namespaces/:namespaceName/deployments/:deploymentName/scale", middleware.AuthMiddleware(), middleware.RbacMiddleware("k8s:deployment:scale"), k8sWorkloadCtrl.ScaleDeployment)
+	router.POST("/k8s/cluster/:id/namespaces/:namespaceName/deployments/:deploymentName/restart", middleware.AuthMiddleware(), middleware.RbacMiddleware("k8s:deployment:restart"), k8sWorkloadCtrl.RestartDeployment)
 
 	// Deployment版本回滚管理路由
-	router.GET("/k8s/cluster/:id/namespaces/:namespaceName/deployments/:deploymentName/history", middleware.AuthMiddleware(), k8sWorkloadCtrl.GetDeploymentHistory) // 获取Deployment版本历史
-	router.GET("/k8s/cluster/:id/namespaces/:namespaceName/deployments/:deploymentName/revisions/:revision", middleware.AuthMiddleware(), k8sWorkloadCtrl.GetDeploymentRevision) // 获取指定版本详情
-	router.POST("/k8s/cluster/:id/namespaces/:namespaceName/deployments/:deploymentName/rollback", middleware.AuthMiddleware(), k8sWorkloadCtrl.RollbackDeployment) // 回滚Deployment到指定版本
-	router.POST("/k8s/cluster/:id/namespaces/:namespaceName/deployments/:deploymentName/pause", middleware.AuthMiddleware(), k8sWorkloadCtrl.PauseDeployment) // 暂停Deployment滚动更新
-	router.POST("/k8s/cluster/:id/namespaces/:namespaceName/deployments/:deploymentName/resume", middleware.AuthMiddleware(), k8sWorkloadCtrl.ResumeDeployment) // 恢复Deployment滚动更新
+	router.GET("/k8s/cluster/:id/namespaces/:namespaceName/deployments/:deploymentName/history", middleware.AuthMiddleware(), k8sWorkloadCtrl.GetDeploymentHistory)
+	router.GET("/k8s/cluster/:id/namespaces/:namespaceName/deployments/:deploymentName/revisions/:revision", middleware.AuthMiddleware(), k8sWorkloadCtrl.GetDeploymentRevision)
+	router.POST("/k8s/cluster/:id/namespaces/:namespaceName/deployments/:deploymentName/rollback", middleware.AuthMiddleware(), middleware.RbacMiddleware("k8s:deployment:rollback"), k8sWorkloadCtrl.RollbackDeployment)
+	router.POST("/k8s/cluster/:id/namespaces/:namespaceName/deployments/:deploymentName/pause", middleware.AuthMiddleware(), middleware.RbacMiddleware("k8s:deployment:edit"), k8sWorkloadCtrl.PauseDeployment)
+	router.POST("/k8s/cluster/:id/namespaces/:namespaceName/deployments/:deploymentName/resume", middleware.AuthMiddleware(), middleware.RbacMiddleware("k8s:deployment:edit"), k8sWorkloadCtrl.ResumeDeployment)
 	router.GET("/k8s/cluster/:id/namespaces/:namespaceName/deployments/:deploymentName/rollout-status", middleware.AuthMiddleware(), k8sWorkloadCtrl.GetDeploymentRolloutStatus) // 获取Deployment滚动发布状态
 
 	// 工作负载Pod管理路由
@@ -88,20 +88,20 @@ func RegisterK8sRoutes(router *gin.RouterGroup) {
 	// Pod管理路由
 	router.GET("/k8s/cluster/:id/namespaces/:namespaceName/pods", middleware.AuthMiddleware(), k8sWorkloadCtrl.GetPods) // 获取Pod列表
 	router.GET("/k8s/cluster/:id/namespaces/:namespaceName/pods/:podName", middleware.AuthMiddleware(), k8sWorkloadCtrl.GetPodDetail) // 获取Pod详情
-	router.DELETE("/k8s/cluster/:id/namespaces/:namespaceName/pods/:podName", middleware.AuthMiddleware(), k8sWorkloadCtrl.DeletePod) // 删除Pod
-	router.GET("/k8s/cluster/:id/namespaces/:namespaceName/pods/:podName/logs", middleware.AuthMiddleware(), k8sWorkloadCtrl.GetPodLogs) // 获取Pod日志
-	router.GET("/k8s/cluster/:id/namespaces/:namespaceName/pods/:podName/events", middleware.AuthMiddleware(), k8sWorkloadCtrl.GetPodEvents) // 获取Pod事件
-	router.GET("/k8s/cluster/:id/namespaces/:namespaceName/pods/:podName/yaml", middleware.AuthMiddleware(), k8sWorkloadCtrl.GetPodYaml) // 获取Pod YAML
-	router.PUT("/k8s/cluster/:id/namespaces/:namespaceName/pods/:podName/yaml", middleware.AuthMiddleware(), k8sWorkloadCtrl.UpdatePodYaml) // 更新Pod YAML
-	router.POST("/k8s/cluster/:id/namespaces/:namespaceName/pods/yaml", middleware.AuthMiddleware(), k8sWorkloadCtrl.CreatePodFromYAML) // 通过YAML创建Pod
+	router.DELETE("/k8s/cluster/:id/namespaces/:namespaceName/pods/:podName", middleware.AuthMiddleware(), middleware.RbacMiddleware("k8s:pod:delete"), k8sWorkloadCtrl.DeletePod)
+	router.GET("/k8s/cluster/:id/namespaces/:namespaceName/pods/:podName/logs", middleware.AuthMiddleware(), k8sWorkloadCtrl.GetPodLogs)
+	router.GET("/k8s/cluster/:id/namespaces/:namespaceName/pods/:podName/events", middleware.AuthMiddleware(), k8sWorkloadCtrl.GetPodEvents)
+	router.GET("/k8s/cluster/:id/namespaces/:namespaceName/pods/:podName/yaml", middleware.AuthMiddleware(), k8sWorkloadCtrl.GetPodYaml)
+	router.PUT("/k8s/cluster/:id/namespaces/:namespaceName/pods/:podName/yaml", middleware.AuthMiddleware(), middleware.RbacMiddleware("k8s:pod:edit"), k8sWorkloadCtrl.UpdatePodYaml)
+	router.POST("/k8s/cluster/:id/namespaces/:namespaceName/pods/yaml", middleware.AuthMiddleware(), middleware.RbacMiddleware("k8s:pod:add"), k8sWorkloadCtrl.CreatePodFromYAML)
 	
 	// K8s事件管理路由
 	router.GET("/k8s/cluster/:id/events", middleware.AuthMiddleware(), k8sEventsCtrl.GetClusterEvents) // 获取集群事件列表
 	router.GET("/k8s/cluster/:id/namespaces/:namespaceName/events", middleware.AuthMiddleware(), k8sEventsCtrl.GetEvents) // 获取命名空间事件列表
 	
-	// K8s容器终端路由
-	router.GET("/k8s/cluster/:id/namespaces/:namespaceName/pods/:podName/terminal", middleware.AuthMiddleware(), k8sTerminalCtrl.ConnectPodTerminal) // 连接容器终端
-	router.GET("/k8s/cluster/:id/namespaces/:namespaceName/pods/:podName/containers", middleware.AuthMiddleware(), k8sTerminalCtrl.GetPodContainers) // 获取Pod容器列表
+	// K8s容器终端路由 — H2-P0-3: exec 必须加 RBAC
+	router.GET("/k8s/cluster/:id/namespaces/:namespaceName/pods/:podName/terminal", middleware.AuthMiddleware(), middleware.RbacMiddleware("k8s:pod:exec"), k8sTerminalCtrl.ConnectPodTerminal)
+	router.GET("/k8s/cluster/:id/namespaces/:namespaceName/pods/:podName/containers", middleware.AuthMiddleware(), k8sTerminalCtrl.GetPodContainers)
 	
 	// ===================== K8s监控API路由 =====================
 	
@@ -204,14 +204,14 @@ func RegisterK8sRoutes(router *gin.RouterGroup) {
 	router.GET("/k8s/cluster/:id/namespaces/:namespaceName/configmaps/:configMapName/yaml", middleware.AuthMiddleware(), k8sConfigCtrl.GetConfigMapYaml)    // 获取ConfigMap YAML
 	router.PUT("/k8s/cluster/:id/namespaces/:namespaceName/configmaps/:configMapName/yaml", middleware.AuthMiddleware(), k8sConfigCtrl.UpdateConfigMapYaml) // 更新ConfigMap YAML
 
-	// Secret基础CRUD路由
-	router.GET("/k8s/cluster/:id/namespaces/:namespaceName/secrets", middleware.AuthMiddleware(), k8sConfigCtrl.GetSecrets)                // 获取Secret列表
-	router.GET("/k8s/cluster/:id/namespaces/:namespaceName/secrets/:secretName", middleware.AuthMiddleware(), k8sConfigCtrl.GetSecretDetail) // 获取Secret详情
-	router.POST("/k8s/cluster/:id/namespaces/:namespaceName/secrets", middleware.AuthMiddleware(), k8sConfigCtrl.CreateSecret)             // 创建Secret
-	router.PUT("/k8s/cluster/:id/namespaces/:namespaceName/secrets/:secretName", middleware.AuthMiddleware(), k8sConfigCtrl.UpdateSecret)  // 更新Secret
-	router.DELETE("/k8s/cluster/:id/namespaces/:namespaceName/secrets/:secretName", middleware.AuthMiddleware(), k8sConfigCtrl.DeleteSecret) // 删除Secret
+	// Secret基础CRUD路由 — H2-P0-3: Secret 必须加 RBAC
+	router.GET("/k8s/cluster/:id/namespaces/:namespaceName/secrets", middleware.AuthMiddleware(), middleware.RbacMiddleware("k8s:secret:view"), k8sConfigCtrl.GetSecrets)
+	router.GET("/k8s/cluster/:id/namespaces/:namespaceName/secrets/:secretName", middleware.AuthMiddleware(), middleware.RbacMiddleware("k8s:secret:view"), k8sConfigCtrl.GetSecretDetail)
+	router.POST("/k8s/cluster/:id/namespaces/:namespaceName/secrets", middleware.AuthMiddleware(), middleware.RbacMiddleware("k8s:secret:add"), k8sConfigCtrl.CreateSecret)
+	router.PUT("/k8s/cluster/:id/namespaces/:namespaceName/secrets/:secretName", middleware.AuthMiddleware(), middleware.RbacMiddleware("k8s:secret:edit"), k8sConfigCtrl.UpdateSecret)
+	router.DELETE("/k8s/cluster/:id/namespaces/:namespaceName/secrets/:secretName", middleware.AuthMiddleware(), middleware.RbacMiddleware("k8s:secret:delete"), k8sConfigCtrl.DeleteSecret)
 
 	// Secret YAML管理路由
-	router.GET("/k8s/cluster/:id/namespaces/:namespaceName/secrets/:secretName/yaml", middleware.AuthMiddleware(), k8sConfigCtrl.GetSecretYaml)    // 获取Secret YAML
-	router.PUT("/k8s/cluster/:id/namespaces/:namespaceName/secrets/:secretName/yaml", middleware.AuthMiddleware(), k8sConfigCtrl.UpdateSecretYaml) // 更新Secret YAML
+	router.GET("/k8s/cluster/:id/namespaces/:namespaceName/secrets/:secretName/yaml", middleware.AuthMiddleware(), middleware.RbacMiddleware("k8s:secret:view"), k8sConfigCtrl.GetSecretYaml)
+	router.PUT("/k8s/cluster/:id/namespaces/:namespaceName/secrets/:secretName/yaml", middleware.AuthMiddleware(), middleware.RbacMiddleware("k8s:secret:edit"), k8sConfigCtrl.UpdateSecretYaml)
 }

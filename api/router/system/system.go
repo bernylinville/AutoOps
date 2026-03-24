@@ -55,13 +55,13 @@ func RegisterSystemRoutes(router *gin.RouterGroup) {
 	router.POST("/upload", controller.Upload)
 	router.PUT("/admin/updatePersonal", controller.UpdatePersonal)
 	router.PUT("/admin/updatePersonalPassword", controller.UpdatePersonalPassword)
-	// 日志
-	router.GET("/sysLoginInfo/list", controller.GetSysLoginInfoList)
-	router.DELETE("/sysLoginInfo/batch/delete", controller.BatchDeleteSysLoginInfo)
-	router.DELETE("/sysLoginInfo/delete", controller.DeleteSysLoginInfoById)
-	router.DELETE("/sysLoginInfo/clean", controller.CleanSysLoginInfo)
-	router.GET("/sysOperationLog/list", controller.GetSysOperationLogList)
-	router.DELETE("/sysOperationLog/delete", controller.DeleteSysOperationLogById)
-	router.DELETE("/sysOperationLog/batch/delete", controller.BatchDeleteSysOperationLog)
-	router.DELETE("/sysOperationLog/clean", controller.CleanSysOperationLog)
+	// 日志 — H2-P0-1: 审计日志必须加 RBAC，禁止普通用户清空
+	router.GET("/sysLoginInfo/list", middleware.RbacMiddleware("base:log:view"), controller.GetSysLoginInfoList)
+	router.DELETE("/sysLoginInfo/batch/delete", middleware.RbacMiddleware("base:log:delete"), controller.BatchDeleteSysLoginInfo)
+	router.DELETE("/sysLoginInfo/delete", middleware.RbacMiddleware("base:log:delete"), controller.DeleteSysLoginInfoById)
+	router.DELETE("/sysLoginInfo/clean", middleware.RbacMiddleware("base:log:clean"), controller.CleanSysLoginInfo)
+	router.GET("/sysOperationLog/list", middleware.RbacMiddleware("base:log:view"), controller.GetSysOperationLogList)
+	router.DELETE("/sysOperationLog/delete", middleware.RbacMiddleware("base:log:delete"), controller.DeleteSysOperationLogById)
+	router.DELETE("/sysOperationLog/batch/delete", middleware.RbacMiddleware("base:log:delete"), controller.BatchDeleteSysOperationLog)
+	router.DELETE("/sysOperationLog/clean", middleware.RbacMiddleware("base:log:clean"), controller.CleanSysOperationLog)
 }

@@ -20,11 +20,16 @@ type userStdClaims struct {
 // token过期时间
 const TokenExpireDuration = time.Hour * 24
 
-// token密钥 - 从环境变量读取，避免硬编码
+// token密钥 - 从环境变量读取，生产环境必须配置
 var Secret = func() []byte {
 	s := os.Getenv("JWT_SECRET")
 	if s == "" {
-		s = "dodevops-api" // 开发环境默认值
+		if os.Getenv("GIN_MODE") == "release" {
+			fmt.Fprintln(os.Stderr, "FATAL: JWT_SECRET environment variable is required in production (GIN_MODE=release)")
+			os.Exit(1)
+		}
+		s = "dodevops-api" // 仅开发环境默认值
+		fmt.Println("WARNING: using default JWT_SECRET, NOT safe for production")
 	}
 	return []byte(s)
 }()

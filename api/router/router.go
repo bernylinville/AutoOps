@@ -97,6 +97,15 @@ func register(router *gin.Engine) {
 		apiGroup.POST("/login", controller.Login)    // 登录接口
 		// Agent心跳接口 - 不需要认证
 		apiGroup.POST("/monitor/agent/heartbeat", agentCtrl.UpdateHeartbeat)
+		// H2-P1-11: 健康检查路由 — 无需鉴权，返回真实 HTTP 状态码
+		apiGroup.GET("/healthz", func(c *gin.Context) {
+			c.JSON(200, gin.H{"status": "ok"})
+		})
+		apiGroup.GET("/readyz", func(c *gin.Context) {
+			c.JSON(200, gin.H{"status": "ready"})
+		})
+		// N9E 告警 Webhook（无需 JWT，用 token 校验）
+		n9e.RegisterN9EWebhookRoutes(apiGroup)
 		
 		// 需要 JWT鉴权 的接口
 		jwtGroup := apiGroup.Group("")

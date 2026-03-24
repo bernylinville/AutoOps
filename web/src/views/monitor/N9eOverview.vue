@@ -2,8 +2,15 @@
   <div class="n9e-overview-container">
     <!-- 页面标题 -->
     <div class="page-header">
-      <h3>CMDB 总览</h3>
-      <p class="page-desc">资产统计与 N9E 同步状态概览</p>
+      <div class="page-header-left">
+        <h3>CMDB 总览</h3>
+        <p class="page-desc">资产统计与 N9E 同步状态概览</p>
+      </div>
+      <div class="page-header-right">
+        <el-switch v-model="autoRefresh" active-text="自动刷新" inactive-text="" @change="toggleAutoRefresh" />
+        <span v-if="autoRefresh" class="refresh-countdown">{{ countdown }}s 后刷新</span>
+        <el-button size="small" @click="manualRefresh"><el-icon><Refresh /></el-icon> 刷新</el-button>
+      </div>
     </div>
 
     <!-- 主机统计卡片 -->
@@ -134,9 +141,16 @@
 
 <script setup>
 import { ref, reactive, computed, onMounted, onBeforeUnmount, nextTick } from 'vue'
-import { Monitor, CircleCheckFilled, CircleCloseFilled, WarningFilled, FolderOpened, Connection } from '@element-plus/icons-vue'
+import { Monitor, CircleCheckFilled, CircleCloseFilled, WarningFilled, FolderOpened, Connection, Refresh } from '@element-plus/icons-vue'
 import n9eApi from '@/api/n9e'
 import * as echarts from 'echarts'
+
+// 自动刷新
+const autoRefresh = ref(false)
+const countdown = ref(30)
+let refreshTimer = null
+let countdownTimer = null
+const REFRESH_INTERVAL = 30
 
 const overview = reactive({
   hosts: { total: 0, n9e: 0, manual: 0, cloud: 0, online: 0, offline: 0, stale: 0 },
@@ -241,12 +255,39 @@ const formatLogTime = (timeStr) => {
   return isNaN(d.getTime()) ? timeStr : d.toLocaleString('zh-CN', { hour12: false })
 }
 
+const manualRefresh = () => {
+  loadOverview()
+  loadRecentLogs()
+  if (autoRefresh.value) {
+    countdown.value = REFRESH_INTERVAL
+  }
+}
+
+const toggleAutoRefresh = (val) => {
+  clearInterval(refreshTimer)
+  clearInterval(countdownTimer)
+  if (val) {
+    countdown.value = REFRESH_INTERVAL
+    countdownTimer = setInterval(() => {
+      countdown.value--
+      if (countdown.value <= 0) countdown.value = REFRESH_INTERVAL
+    }, 1000)
+    refreshTimer = setInterval(() => {
+      loadOverview()
+      loadRecentLogs()
+      countdown.value = REFRESH_INTERVAL
+    }, REFRESH_INTERVAL * 1000)
+  }
+}
+
 onMounted(() => {
   loadOverview()
   loadRecentLogs()
 })
 
 onBeforeUnmount(() => {
+  clearInterval(refreshTimer)
+  clearInterval(countdownTimer)
   if (chartInstance) {
     chartInstance.dispose()
     chartInstance = null
@@ -257,7 +298,10 @@ onBeforeUnmount(() => {
 <style scoped>
 .n9e-overview-container { padding: 20px; }
 
-.page-header { margin-bottom: 20px; }
+.page-header { margin-bottom: 20px; display: flex; justify-content: space-between; align-items: flex-start; }
+.page-header-left {}
+.page-header-right { display: flex; align-items: center; gap: 12px; }
+.refresh-countdown { color: #909399; font-size: 13px; }
 .page-header h3 { font-size: 18px; font-weight: 600; margin: 0 0 8px 0; color: #303133; }
 .page-desc { color: #909399; font-size: 13px; margin: 0; }
 

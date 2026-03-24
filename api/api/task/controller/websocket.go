@@ -19,6 +19,24 @@ import (
 	"github.com/gorilla/websocket"
 )
 
+// checkWSOrigin WebSocket Origin白名单校验
+func checkWSOrigin(r *http.Request) bool {
+	origin := r.Header.Get("Origin")
+	if origin == "" {
+		return false
+	}
+	allowed := os.Getenv("ALLOWED_ORIGINS")
+	if allowed == "" {
+		allowed = "http://localhost:8080,http://localhost:3000"
+	}
+	for _, a := range strings.Split(allowed, ",") {
+		if strings.TrimSpace(a) == origin {
+			return true
+		}
+	}
+	return false
+}
+
 // WebSocketController WebSocket控制器
 type WebSocketController struct {
 	service service.ITaskAnsibleService
@@ -32,10 +50,7 @@ func NewWebSocketController(service service.ITaskAnsibleService) *WebSocketContr
 var upgrader = websocket.Upgrader{
 	ReadBufferSize:  1024,
 	WriteBufferSize: 1024,
-	CheckOrigin: func(r *http.Request) bool {
-		// 允许所有来源（生产环境应该限制）
-		return true
-	},
+	CheckOrigin:     checkWSOrigin,
 }
 
 // LogMessage WebSocket日志消息结构

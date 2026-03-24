@@ -514,33 +514,22 @@ func (s *TaskWorkServiceImpl) executeSSHTask(job *model.TaskWork, template *mode
 	// 4. 构造PID文件路径
 	pidFile := fmt.Sprintf("/tmp/task_%d_%d.pid", job.TaskID, job.TemplateID)
 
-	// 5. 创建临时脚本文件并执行
+	// 5. 通过SCP安全写入脚本文件（避免shell注入）
 	scriptFile := fmt.Sprintf("/tmp/task_%d_%d.sh", job.TaskID, job.TemplateID)
-	cmd := fmt.Sprintf(`
-		# 创建脚本文件
-		cat > %s << 'EOF'
-#!/bin/bash
-echo "[$(date '+%%F-%%H:%%M:%%S')] 任务开始"
-%s
-echo "[$(date '+%%F-%%H:%%M:%%S')] 任务完成"
-EOF
-		# 设置执行权限
-		chmod +x %s
-		# 验证脚本文件内容
-		if ! grep -q "#!/bin/bash" %s; then
-			echo "脚本文件内容验证失败"
-			exit 1
-		fi
-		# 执行并记录PID
-		nohup %s > /tmp/task_%d_%d.log 2>&1 & echo $! > %s
-		# 验证PID文件
-		sleep 0.5
-		if [ ! -f %s ]; then
-			echo "PID文件创建失败"
-			exit 1
-		fi
-	`, scriptFile, template.Content, scriptFile, scriptFile,
-		scriptFile, job.TaskID, job.TemplateID, pidFile, pidFile)
+	logFile := fmt.Sprintf("/tmp/task_%d_%d.log", job.TaskID, job.TemplateID)
+
+	// 构造脚本内容（不经过shell解析）
+	scriptContent := fmt.Sprintf("#!/bin/bash\necho \"[$(date '+%%F-%%H:%%M:%%S')] 任务开始\"\n%s\necho \"[$(date '+%%F-%%H:%%M:%%S')] 任务完成\"\n", template.Content)
+
+	// 通过SCP协议将脚本写入远程文件，内容不进入shell命令行
+	if err := sshUtil.WriteRemoteFile(sshConfig, scriptFile, scriptContent); err != nil {
+		return "", fmt.Errorf("写入远程脚本文件失败: %v", err)
+	}
+
+	// 使用固定argv执行脚本，所有动态参数均为纯数字ID，无注入风险
+	cmd := fmt.Sprintf(
+		"chmod +x %s && nohup %s > %s 2>&1 & echo $! > %s && sleep 0.5 && test -f %s",
+		scriptFile, scriptFile, logFile, pidFile, pidFile)
 
 	// 6. 执行远程命令
 	_, err := sshUtil.ExecuteRemoteCommand(sshConfig, cmd)

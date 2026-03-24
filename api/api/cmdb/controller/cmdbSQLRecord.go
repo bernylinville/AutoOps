@@ -5,6 +5,7 @@ import (
 	"database/sql"
 	"fmt"
 	"net"
+	"net/http"
 	"reflect"
 	"strings"
 	"time"
@@ -343,57 +344,8 @@ func (c *CmdbSQLRecordController) ExecuteSelect(ctx *gin.Context) {
 // @router /api/v1/cmdb/sql [post]
 // @Security ApiKeyAuth
 func (c *CmdbSQLRecordController) ExecuteInsert(ctx *gin.Context) {
-	var req SQLRequest
-	if cached, ok := ctx.Get("__sqlRequest"); ok {
-		req = cached.(SQLRequest)
-	} else if err := ctx.ShouldBindJSON(&req); err != nil {
-		result.FailedWithCode(ctx, ParamError, "参数错误: "+err.Error())
-		return
-	}
-
-	dbInfo, account, decrypted, err := c.getDBConnectionInfo(req)
-	if err != nil {
-		result.FailedWithCode(ctx, DatabaseError, err.Error())
-		return
-	}
-
-	// 使用解密后的密码建立连接
-	connStr := fmt.Sprintf("%s:%s@tcp(%s:%d)/%s", account.Name, decrypted, account.Host, account.Port, dbInfo.Name)
-	_ = connStr // 显式使用变量
-	// TODO: 实际执行插入并获取结果
-	affectedRows := int64(1) // 示例值
-	executionTime := int64(80) // 示例值(毫秒)
-
-	// 获取当前用户名和IP
-	username, err := getCurrentUsername(ctx)
-	if err != nil {
-		result.FailedWithCode(ctx, ParamError, err.Error())
-		return
-	}
-	clientIP := util.GetClientIP(ctx.Request)
-
-	err = c.recordService.RecordSQLExecution(
-		account.Host,
-		dbInfo.Name,
-		"INSERT",
-		req.SQL,
-		username,
-		clientIP,
-		0, // scannedRows
-		affectedRows,
-		executionTime,
-		0, // returnedRows
-		"SUCCESS",
-	)
-	if err != nil {
-		result.FailedWithCode(ctx, DatabaseError, "数据库错误: "+err.Error())
-		return
-	}
-
-	result.Success(ctx, gin.H{
-		"affectedRows": affectedRows,
-		"executionTime": executionTime,
-	})
+	// 未实现：直接返回 501，避免伪造成功审计日志
+	result.FailedWithCode(ctx, http.StatusNotImplemented, "INSERT 执行功能尚未实现，请勿依赖此接口")
 }
 
 // @Summary 执行更新语句
@@ -410,6 +362,13 @@ func (c *CmdbSQLRecordController) ExecuteUpdate(ctx *gin.Context) {
 		req = cached.(SQLRequest)
 	} else if err := ctx.ShouldBindJSON(&req); err != nil {
 		result.FailedWithCode(ctx, ParamError, "参数错误: "+err.Error())
+		return
+	}
+
+	// H2-P1-3: SQL 类型白名单校验 — 仅允许 UPDATE 语句
+	trimmedSQL := strings.TrimSpace(strings.ToUpper(req.SQL))
+	if !strings.HasPrefix(trimmedSQL, "UPDATE ") {
+		result.FailedWithCode(ctx, ParamError, "此接口仅支持 UPDATE 语句，禁止执行其他类型 SQL")
 		return
 	}
 
@@ -637,61 +596,6 @@ func (c *CmdbSQLRecordController) ListDatabases(ctx *gin.Context) {
 }
 
 func (c *CmdbSQLRecordController) ExecuteDelete(ctx *gin.Context) {
-	var req SQLRequest
-	if cached, ok := ctx.Get("__sqlRequest"); ok {
-		req = cached.(SQLRequest)
-	} else if err := ctx.ShouldBindJSON(&req); err != nil {
-		result.FailedWithCode(ctx, ParamError, "参数错误: "+err.Error())
-		return
-	}
-
-	// 只允许DELETE语句
-	if !validateSQLType(req.SQL, []string{"DELETE"}) {
-		result.FailedWithCode(ctx, ParamError, "只允许执行DELETE语句")
-		return
-	}
-
-	dbInfo, account, decrypted, err := c.getDBConnectionInfo(req)
-	if err != nil {
-		result.FailedWithCode(ctx, DatabaseError, err.Error())
-		return
-	}
-
-	// 使用解密后的密码建立连接
-	connStr := fmt.Sprintf("%s:%s@tcp(%s:%d)/%s", account.Name, decrypted, account.Host, account.Port, dbInfo.Name)
-	_ = connStr // 显式使用变量
-	// TODO: 实际执行删除并获取结果
-	affectedRows := int64(3) // 示例值
-	executionTime := int64(90) // 示例值(毫秒)
-
-	// 获取当前用户名和IP
-	username, err := getCurrentUsername(ctx)
-	if err != nil {
-		result.FailedWithCode(ctx, ParamError, err.Error())
-		return
-	}
-	clientIP := util.GetClientIP(ctx.Request)
-
-	err = c.recordService.RecordSQLExecution(
-		account.Host,
-		dbInfo.Name,
-		"DELETE",
-		req.SQL,
-		username,
-		clientIP,
-		0, // scannedRows
-		affectedRows,
-		executionTime,
-		0, // returnedRows
-		"SUCCESS",
-	)
-	if err != nil {
-		result.FailedWithCode(ctx, DatabaseError, "数据库错误: "+err.Error())
-		return
-	}
-
-	result.Success(ctx, gin.H{
-		"affectedRows": affectedRows,
-		"executionTime": executionTime,
-	})
+	// 未实现：直接返回 501，避免伪造成功审计日志
+	result.FailedWithCode(ctx, http.StatusNotImplemented, "DELETE 执行功能尚未实现，请勿依赖此接口")
 }

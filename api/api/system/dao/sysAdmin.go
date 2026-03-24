@@ -10,12 +10,11 @@ import (
 	"gorm.io/gorm"
 )
 
-// hashPasswordOrPanic 使用 bcrypt 哈希密码，失败则 log 并回退到 MD5
+// hashPasswordOrPanic 使用 bcrypt 哈希密码，失败则 fatal（不再回退到 MD5）
 func hashPasswordOrPanic(password string) string {
 	hash, err := util.HashPassword(password)
 	if err != nil {
-		log.Printf("bcrypt hash failed, falling back to MD5: %v", err)
-		return util.EncryptionMd5(password)
+		log.Fatalf("bcrypt hash failed: %v", err)
 	}
 	return hash
 }
@@ -191,7 +190,7 @@ func UpdatePersonal(dto model.UpdatePersonalDto) (sysAdmin model.SysAdmin) {
 // 修改个人密码
 func UpdatePersonalPassword(dto model.UpdatePersonalPasswordDto) (sysAdmin model.SysAdmin) {
 	Db.First(&sysAdmin, dto.Id)
-	sysAdmin.Password = dto.NewPassword
+	sysAdmin.Password = hashPasswordOrPanic(dto.NewPassword)
 	Db.Save(&sysAdmin)
 	return sysAdmin
 }

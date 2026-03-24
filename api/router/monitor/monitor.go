@@ -22,12 +22,12 @@ func InitMonitorRouter(r *gin.RouterGroup) {
 	monitorGroup.GET("/hosts/:id/top-processes", monitorController.GetTopProcesses)        // 获取主机TOP进程使用率
 	monitorGroup.GET("/hosts/:id/ports", monitorController.GetHostPorts)                   // 获取主机端口信息
 
-	// Agent管理
-	monitorGroup.POST("/agent/deploy", agentController.DeployAgent)         // 部署agent到指定主机(支持单个或多个)
-	monitorGroup.DELETE("/agent/uninstall", agentController.UninstallAgent) // 卸载指定主机的agent(支持单个或多个)
-	monitorGroup.GET("/agent/status/:id", agentController.GetAgentStatus)   // 根据主机id获取agent状态
-	monitorGroup.POST("/agent/restart/:id", agentController.RestartAgent)   // 重启agent
-	monitorGroup.GET("/agent/list", agentController.GetAgentList)           // 获取agent列表
-	monitorGroup.GET("/agent/statistics", agentController.GetAgentStatistics) // 获取统计信息
-	monitorGroup.DELETE("/agent/delete/:id", agentController.DeleteAgent)    // 删除agent数据(用于离线服务器)
+	// Agent管理 — H2-P1-1: 补 RBAC
+	monitorGroup.POST("/agent/deploy", middleware.RbacMiddleware("monitor:agent:deploy"), agentController.DeployAgent)
+	monitorGroup.DELETE("/agent/uninstall", middleware.RbacMiddleware("monitor:agent:uninstall"), agentController.UninstallAgent)
+	monitorGroup.GET("/agent/status/:id", agentController.GetAgentStatus)
+	monitorGroup.POST("/agent/restart/:id", middleware.RbacMiddleware("monitor:agent:restart"), agentController.RestartAgent)
+	monitorGroup.GET("/agent/list", agentController.GetAgentList)
+	monitorGroup.GET("/agent/statistics", agentController.GetAgentStatistics)
+	monitorGroup.DELETE("/agent/delete/:id", middleware.RbacMiddleware("monitor:agent:delete"), agentController.DeleteAgent)
 }

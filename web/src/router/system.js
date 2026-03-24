@@ -12,6 +12,8 @@ import N9eMonitor from '@/views/monitor/N9eMonitor.vue'
 import N9eDatasource from '@/views/monitor/N9eDatasource.vue'
 import N9eOverview from '@/views/monitor/N9eOverview.vue'
 import N9eSyncLog from '@/views/monitor/N9eSyncLog.vue'
+import AlertRules from '@/views/monitor/AlertRules.vue'
+import AlertEvents from '@/views/monitor/AlertEvents.vue'
 const routes = [
     {
         path: '/system/personal',
@@ -82,6 +84,16 @@ const routes = [
         path: '/monitor/sync-logs',
         component: N9eSyncLog,
         meta: {sTitle: '监控中心', tTitle: '同步日志'}
+    },
+    {
+        path: '/monitor/alert-rules',
+        component: AlertRules,
+        meta: {sTitle: '监控中心', tTitle: '告警规则'}
+    },
+    {
+        path: '/monitor/alert-events',
+        component: AlertEvents,
+        meta: {sTitle: '监控中心', tTitle: '告警事件'}
     }
 ]
 

@@ -3,6 +3,7 @@ import Group from '@/views/cmdb/cmdbGroup.vue'
 import Db from '@/views/cmdb/cmdbDB.vue'
 import SSH from '@/views/cmdb/Host/SSH.vue'
 import DBdetails from '@/views/cmdb/DBdetails.vue'
+import Switch from '@/views/cmdb/cmdbSwitch.vue'
 
 
 const routes = [
@@ -30,6 +31,11 @@ const routes = [
         path: '/cmdb/dbdetails',
         component: DBdetails,
         meta: {sTitle: '数据管理', tTitle: '数据库操作'}
+    },
+    {
+        path: '/cmdb/switch',
+        component: Switch,
+        meta: {sTitle: '资产管理', tTitle: '网络设备'}
     }
 
 ]

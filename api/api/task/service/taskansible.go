@@ -659,24 +659,22 @@ func (s *TaskAnsibleServiceImpl) StartJob(c *gin.Context, taskID uint) {
 			}
 		}()
 
-		// 构建任务目录路径：task/{taskID}/{taskName}
-		taskDir := fmt.Sprintf("task/%d/%s", taskID, task.Name)
+		// 构建任务目录路径（绝对路径，避免 os.Chdir 竞态）
+		cwd, _ := os.Getwd()
+		absTaskDir := filepath.Join(cwd, fmt.Sprintf("task/%d/%s", taskID, task.Name))
 
 		// 检查任务目录是否存在
-		if _, err := os.Stat(taskDir); os.IsNotExist(err) {
-			s.updateTaskErrorStatus(taskID, fmt.Errorf("任务目录不存在: %s", taskDir))
+		if _, err := os.Stat(absTaskDir); os.IsNotExist(err) {
+			s.updateTaskErrorStatus(taskID, fmt.Errorf("任务目录不存在: %s", absTaskDir))
 			return
 		}
-
-		// 获取当前工作目录
-		originalDir, _ := os.Getwd()
 
 		// 执行每个子任务
 		allSuccess := true
 		for _, work := range task.Works {
 
 			// 创建日志目录（使用绝对路径）
-			absLogDir := filepath.Join(originalDir, fmt.Sprintf("logs/ansible/%d/%d", taskID, work.ID))
+			absLogDir := filepath.Join(cwd, fmt.Sprintf("logs/ansible/%d/%d", taskID, work.ID))
 			if err := os.MkdirAll(absLogDir, 0755); err != nil {
 				s.updateTaskErrorStatus(taskID, fmt.Errorf("创建日志目录失败: %v", err))
 				return
@@ -704,19 +702,12 @@ func (s *TaskAnsibleServiceImpl) StartJob(c *gin.Context, taskID uint) {
 					"log_path":   relativeLogPath, // 使用相对路径存储到数据库
 				})
 
-			// 切换到任务目录
-			if err := os.Chdir(taskDir); err != nil {
-				s.updateWorkErrorStatus(work.ID, fmt.Errorf("切换到任务目录失败: %v", err))
-				allSuccess = false
-				continue
-			}
-
-			// 检查playbook文件是否存在（K8s任务跳过此检查）
+			// 检查playbook文件是否存在（使用绝对路径，不用 os.Chdir）
 			var playbookPath string
 			if task.Type != 3 {
 				playbookPath = work.EntryFileName
-				if _, err := os.Stat(playbookPath); os.IsNotExist(err) {
-					os.Chdir(originalDir)
+				absPlaybookPath := filepath.Join(absTaskDir, playbookPath)
+				if _, err := os.Stat(absPlaybookPath); os.IsNotExist(err) {
 					s.updateWorkErrorStatus(work.ID, fmt.Errorf("Playbook文件不存在: %s", playbookPath))
 					allSuccess = false
 					continue
@@ -728,18 +719,16 @@ func (s *TaskAnsibleServiceImpl) StartJob(c *gin.Context, taskID uint) {
 			// 根据任务类型构建不同的执行命令
 			var cmdArgs []string
 			if task.Type == 3 { // K8s任务
-				// 检查config.json文件是否存在
-				if _, err := os.Stat("config.json"); os.IsNotExist(err) {
-					os.Chdir(originalDir)
+				// 检查config.json文件是否存在（使用绝对路径）
+				if _, err := os.Stat(filepath.Join(absTaskDir, "config.json")); os.IsNotExist(err) {
 					s.updateWorkErrorStatus(work.ID, fmt.Errorf("config.json文件不存在，任务创建可能有问题"))
 					allSuccess = false
 					continue
 				}
 
-				// 检查部署脚本是否存在
+				// 检查部署脚本是否存在（使用绝对路径）
 				scriptPath := filepath.Join("scripts", "deploy-simple.sh")
-				if _, err := os.Stat(scriptPath); os.IsNotExist(err) {
-					os.Chdir(originalDir)
+				if _, err := os.Stat(filepath.Join(absTaskDir, scriptPath)); os.IsNotExist(err) {
 					s.updateWorkErrorStatus(work.ID, fmt.Errorf("K8s部署脚本不存在: %s", scriptPath))
 					allSuccess = false
 					continue
@@ -749,9 +738,8 @@ func (s *TaskAnsibleServiceImpl) StartJob(c *gin.Context, taskID uint) {
 				cmdArgs = []string{"bash", scriptPath}
 			} else {
 				// Ansible任务
-				// 检查hosts文件是否存在（创建任务时已生成）
-				if _, err := os.Stat("hosts"); os.IsNotExist(err) {
-					os.Chdir(originalDir)
+				// 检查hosts文件是否存在（使用绝对路径）
+				if _, err := os.Stat(filepath.Join(absTaskDir, "hosts")); os.IsNotExist(err) {
 					s.updateWorkErrorStatus(work.ID, fmt.Errorf("hosts文件不存在，任务创建可能有问题"))
 					allSuccess = false
 					continue
@@ -761,13 +749,13 @@ func (s *TaskAnsibleServiceImpl) StartJob(c *gin.Context, taskID uint) {
 				cmdArgs = []string{"ansible-playbook", "-i", "hosts", playbookPath, "-v"}
 			}
 
-			// 执行命令
+			// 执行命令（使用 cmd.Dir 替代 os.Chdir，避免进程级竞态）
 			cmd := exec.Command(cmdArgs[0], cmdArgs[1:]...)
+			cmd.Dir = absTaskDir
 
 			// 创建日志文件用于实时写入（使用绝对路径）
 			logFile, err := os.OpenFile(absLogPath, os.O_CREATE|os.O_WRONLY|os.O_TRUNC, 0644)
 			if err != nil {
-				os.Chdir(originalDir)
 				s.updateWorkErrorStatus(work.ID, fmt.Errorf("创建日志文件失败: %v", err))
 				allSuccess = false
 				continue
@@ -776,7 +764,7 @@ func (s *TaskAnsibleServiceImpl) StartJob(c *gin.Context, taskID uint) {
 			// 写入命令信息到日志文件
 			logFile.WriteString(fmt.Sprintf("[%s] 开始执行任务\n", time.Now().Format("2006-01-02 15:04:05")))
 			logFile.WriteString(fmt.Sprintf("命令: %s\n", strings.Join(cmdArgs, " ")))
-			logFile.WriteString(fmt.Sprintf("工作目录: %s\n", taskDir))
+			logFile.WriteString(fmt.Sprintf("工作目录: %s\n", absTaskDir))
 			logFile.WriteString("==========================================\n")
 			logFile.Sync() // 立即刷新到磁盘
 
@@ -801,8 +789,6 @@ func (s *TaskAnsibleServiceImpl) StartJob(c *gin.Context, taskID uint) {
 			}
 			logFile.Close()
 
-			// 切换回原目录
-			os.Chdir(originalDir)
 
 			// 计算执行耗时
 			workEndTime := time.Now()

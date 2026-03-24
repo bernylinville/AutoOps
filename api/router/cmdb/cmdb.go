@@ -44,11 +44,11 @@ func RegisterCmdbRoutes(router *gin.RouterGroup) {
 	router.PUT("/cmdb/sql", middleware.RbacMiddleware("cmdb:sql:execute"), controller.GetCmdbSQLRecordController().ExecuteUpdate)               // 执行更新语句
 	router.DELETE("/cmdb/sql", middleware.RbacMiddleware("cmdb:sql:execute"), controller.GetCmdbSQLRecordController().ExecuteDelete)            // 执行删除语句
 	router.POST("/cmdb/sql/execute", middleware.RbacMiddleware("cmdb:sql:execute"), controller.GetCmdbSQLRecordController().ExecuteSQL)         // 执行原生SQL
-	router.POST("/cmdb/sql/databaselist", controller.GetCmdbSQLRecordController().ListDatabases)                                               // 获取数据库列表
-	// SQL日志管理
-	router.GET("/cmdb/sqlLog/list", controller.GetCmdbSqlLogList)         // 分页获取SQL操作日志列表
-	router.DELETE("/cmdb/sqlLog/delete", controller.DeleteCmdbSqlLogById) // 根据id删除SQL操作日志
-	router.DELETE("/cmdb/sqlLog/clean", controller.CleanCmdbSqlLog)       // 清空SQL操作日志
+	router.POST("/cmdb/sql/databaselist", middleware.RbacMiddleware("cmdb:sql:list"), controller.GetCmdbSQLRecordController().ListDatabases)                   // 获取数据库列表
+	// SQL日志管理 — 需要 DBA 权限
+	router.GET("/cmdb/sqlLog/list", middleware.RbacMiddleware("cmdb:sqllog:manage"), controller.GetCmdbSqlLogList)         // 分页获取SQL操作日志列表
+	router.DELETE("/cmdb/sqlLog/delete", middleware.RbacMiddleware("cmdb:sqllog:manage"), controller.DeleteCmdbSqlLogById) // 根据id删除SQL操作日志
+	router.DELETE("/cmdb/sqlLog/clean", middleware.RbacMiddleware("cmdb:sqllog:manage"), controller.CleanCmdbSqlLog)       // 清空SQL操作日志
 	// 数据库管理
 	router.POST("/cmdb/database", controller.NewCmdbSQLController().CreateDatabase)           // 创建数据库
 	router.PUT("/cmdb/database", controller.NewCmdbSQLController().UpdateDatabase)            // 更新数据库

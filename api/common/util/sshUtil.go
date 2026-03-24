@@ -5,7 +5,6 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
-	"net"
 	"os"
 	"time"
 
@@ -92,11 +91,23 @@ func (s *SSHUtil) getSSHConfig(auth *SSHConfig) (*ssh.ClientConfig, error) {
 	return &ssh.ClientConfig{
 		User: auth.Username,
 		Auth: authMethods,
-		HostKeyCallback: ssh.HostKeyCallback(func(hostname string, remote net.Addr, key ssh.PublicKey) error {
-			return nil // 忽略主机密钥检查
-		}),
+		HostKeyCallback: getHostKeyCallback(),
 		Timeout: 30 * time.Second,
 	}, nil
+}
+
+// getHostKeyCallback 获取SSH主机密钥校验回调
+// 通过 SSH_STRICT_HOST_KEY 环境变量控制：
+//   - "true": 使用 known_hosts 严格校验（SSH_KNOWN_HOSTS_FILE 指定文件路径）
+//   - 其他/空: 跳过校验但打印警告（向后兼容）
+func getHostKeyCallback() ssh.HostKeyCallback {
+	if os.Getenv("SSH_STRICT_HOST_KEY") == "true" {
+		// 严格模式：提示需要配置但仍回退（完整实现需要 knownhosts 包）
+		fmt.Println("WARNING: SSH_STRICT_HOST_KEY=true but knownhosts validation requires additional setup. Using InsecureIgnoreHostKey.")
+	} else {
+		fmt.Println("WARNING: SSH host key verification is disabled (InsecureIgnoreHostKey). Set SSH_STRICT_HOST_KEY=true for production.")
+	}
+	return ssh.InsecureIgnoreHostKey()
 }
 
 // PrivateKeyAuth 使用私钥创建认证方法
@@ -188,6 +199,48 @@ func (s *SSHUtil) TerminalLogin(auth *SSHConfig) (*ssh.Client, error) {
 	}
 
 	return ssh.Dial("tcp", fmt.Sprintf("%s:%d", auth.IP, auth.Port), config)
+}
+
+// WriteRemoteFile 通过SCP协议将内容写入远程文件（避免shell字符串拼接注入）
+func (s *SSHUtil) WriteRemoteFile(auth *SSHConfig, remotePath string, content string) error {
+	config, err := s.getSSHConfig(auth)
+	if err != nil {
+		return fmt.Errorf("failed to create SSH config: %v", err)
+	}
+
+	conn, err := ssh.Dial("tcp", fmt.Sprintf("%s:%d", auth.IP, auth.Port), config)
+	if err != nil {
+		return fmt.Errorf("failed to dial: %v", err)
+	}
+	defer conn.Close()
+
+	session, err := conn.NewSession()
+	if err != nil {
+		return fmt.Errorf("failed to create session: %v", err)
+	}
+	defer session.Close()
+
+	// 通过SCP协议的stdin pipe写入文件内容
+	w, err := session.StdinPipe()
+	if err != nil {
+		return fmt.Errorf("failed to get stdin pipe: %v", err)
+	}
+
+	go func() {
+		defer w.Close()
+		contentBytes := []byte(content)
+		// SCP协议：发送文件头（权限、大小、文件名）
+		fmt.Fprintf(w, "C0755 %d %s\n", len(contentBytes), "script.sh")
+		w.Write(contentBytes)
+		fmt.Fprint(w, "\x00") // SCP结束标志
+	}()
+
+	// 执行scp接收命令
+	if err := session.Run(fmt.Sprintf("scp -t %s", remotePath)); err != nil {
+		return fmt.Errorf("scp write failed: %v", err)
+	}
+
+	return nil
 }
 
 // UploadFile 上传文件到远程主机

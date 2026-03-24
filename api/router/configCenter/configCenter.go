@@ -23,35 +23,35 @@ func RegisterConfigCenterRoutes(router *gin.RouterGroup) {
 	router.POST("/config/ecsauthadd", middleware.RbacMiddleware("config:ecsauth:add"), ecsAuthCtrl.CreateEcsAuth)      // 创建凭据
 	router.PUT("/config/ecsauthupdate", middleware.RbacMiddleware("config:ecsauth:edit"), ecsAuthCtrl.UpdateEcsAuth)    // 更新凭据
 	router.DELETE("/config/ecsauthdelete", middleware.RbacMiddleware("config:ecsauth:delete"), ecsAuthCtrl.DeleteEcsAuth) // 删除凭据
-	// 账号认证管理
-	router.POST("/config/accountauth", accountAuthCtrl.Create)   // 创建账号
-	router.PUT("/config/accountauth", accountAuthCtrl.Update)   // 更新账号
-	router.DELETE("/config/accountauth", accountAuthCtrl.Delete)  // 删除账号
-	router.GET("/config/accountauth", accountAuthCtrl.GetByID)    // 根据ID查询账号	
-	router.GET("/config/accountauth/list", accountAuthCtrl.List)  // 获取所有账号
+	// 账号认证管理 — H2-P0-2: 补 RBAC
+	router.POST("/config/accountauth", middleware.RbacMiddleware("config:account:add"), accountAuthCtrl.Create)
+	router.PUT("/config/accountauth", middleware.RbacMiddleware("config:account:edit"), accountAuthCtrl.Update)
+	router.DELETE("/config/accountauth", middleware.RbacMiddleware("config:account:delete"), accountAuthCtrl.Delete)
+	router.GET("/config/accountauth", middleware.RbacMiddleware("config:account:view"), accountAuthCtrl.GetByID)
+	router.GET("/config/accountauth/list", middleware.RbacMiddleware("config:account:view"), accountAuthCtrl.List)
 	router.POST("/config/accountauth/decrypt", middleware.RbacMiddleware("config:account:decrypt"), accountAuthCtrl.DecryptPassword) // 解密密码
-	router.GET("/config/accountauth/type", accountAuthCtrl.GetByType)    // 根据类型查询账号
-	router.GET("/config/accountauth/alias", accountAuthCtrl.GetByAlias) // 根据别名查询账号
+	router.GET("/config/accountauth/type", middleware.RbacMiddleware("config:account:view"), accountAuthCtrl.GetByType)
+	router.GET("/config/accountauth/alias", middleware.RbacMiddleware("config:account:view"), accountAuthCtrl.GetByAlias)
 
-	// 密钥管理
-	router.POST("/config/keymanage", keyManageCtrl.Create)              // 创建密钥
-	router.PUT("/config/keymanage", keyManageCtrl.Update)               // 更新密钥
-	router.DELETE("/config/keymanage", keyManageCtrl.Delete)            // 删除密钥
-	router.GET("/config/keymanage", keyManageCtrl.GetByID)              // 根据ID查询密钥
-	router.GET("/config/keymanage/list", keyManageCtrl.List)            // 获取密钥列表
-	router.POST("/config/keymanage/decrypt", keyManageCtrl.DecryptKeys) // 解密密钥信息
-	router.GET("/config/keymanage/type", keyManageCtrl.GetByType)       // 根据云厂商类型查询密钥
-	router.POST("/config/keymanage/sync", keyManageCtrl.SyncCloudHosts) // 同步云主机（统一接口）
+	// 密钥管理 — H2-P0-2: 补 RBAC
+	router.POST("/config/keymanage", middleware.RbacMiddleware("config:key:add"), keyManageCtrl.Create)
+	router.PUT("/config/keymanage", middleware.RbacMiddleware("config:key:edit"), keyManageCtrl.Update)
+	router.DELETE("/config/keymanage", middleware.RbacMiddleware("config:key:delete"), keyManageCtrl.Delete)
+	router.GET("/config/keymanage", middleware.RbacMiddleware("config:key:view"), keyManageCtrl.GetByID)
+	router.GET("/config/keymanage/list", middleware.RbacMiddleware("config:key:view"), keyManageCtrl.List)
+	router.POST("/config/keymanage/decrypt", middleware.RbacMiddleware("config:key:decrypt"), keyManageCtrl.DecryptKeys) // 解密密钥
+	router.GET("/config/keymanage/type", middleware.RbacMiddleware("config:key:view"), keyManageCtrl.GetByType)
+	router.POST("/config/keymanage/sync", middleware.RbacMiddleware("config:key:sync"), keyManageCtrl.SyncCloudHosts)   // 同步云主机
 
-	// 定时同步配置管理
-	router.POST("/config/sync-schedule", syncScheduleCtrl.Create)                      // 创建定时同步配置
-	router.PUT("/config/sync-schedule", syncScheduleCtrl.Update)                       // 更新定时同步配置
-	router.DELETE("/config/sync-schedule", syncScheduleCtrl.Delete)                    // 删除定时同步配置
-	router.GET("/config/sync-schedule", syncScheduleCtrl.GetByID)                      // 根据ID查询定时同步配置
-	router.GET("/config/sync-schedule/list", syncScheduleCtrl.List)                    // 获取定时同步配置列表
-	router.POST("/config/sync-schedule/toggle-status", syncScheduleCtrl.ToggleStatus)  // 切换配置状态
-	router.GET("/config/sync-schedule/active", syncScheduleCtrl.GetActiveSchedules)    // 获取启用的配置
-	router.POST("/config/sync-schedule/trigger", syncScheduleCtrl.TriggerManualSync)   // 手动触发同步（测试用）
-	router.GET("/config/sync-schedule/scheduler-stats", syncScheduleCtrl.GetSchedulerStats) // 获取调度器状态
-	router.GET("/config/sync-schedule/log", syncScheduleCtrl.GetSyncLog)              // 获取同步日志
+	// 定时同步配置管理 — H2-P0-2: 补 RBAC
+	router.POST("/config/sync-schedule", middleware.RbacMiddleware("config:sync:add"), syncScheduleCtrl.Create)
+	router.PUT("/config/sync-schedule", middleware.RbacMiddleware("config:sync:edit"), syncScheduleCtrl.Update)
+	router.DELETE("/config/sync-schedule", middleware.RbacMiddleware("config:sync:delete"), syncScheduleCtrl.Delete)
+	router.GET("/config/sync-schedule", middleware.RbacMiddleware("config:sync:view"), syncScheduleCtrl.GetByID)
+	router.GET("/config/sync-schedule/list", middleware.RbacMiddleware("config:sync:view"), syncScheduleCtrl.List)
+	router.POST("/config/sync-schedule/toggle-status", middleware.RbacMiddleware("config:sync:edit"), syncScheduleCtrl.ToggleStatus)
+	router.GET("/config/sync-schedule/active", middleware.RbacMiddleware("config:sync:view"), syncScheduleCtrl.GetActiveSchedules)
+	router.POST("/config/sync-schedule/trigger", middleware.RbacMiddleware("config:sync:trigger"), syncScheduleCtrl.TriggerManualSync)
+	router.GET("/config/sync-schedule/scheduler-stats", middleware.RbacMiddleware("config:sync:view"), syncScheduleCtrl.GetSchedulerStats)
+	router.GET("/config/sync-schedule/log", middleware.RbacMiddleware("config:sync:view"), syncScheduleCtrl.GetSyncLog)
 }

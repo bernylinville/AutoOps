@@ -77,7 +77,7 @@ type N9ESyncLog struct {
 	ErrorMsg   string `gorm:"column:error_msg;type:text" json:"errorMsg"`
 	DurationMs int    `gorm:"column:duration_ms" json:"durationMs"`
 	TriggerBy  string `gorm:"column:trigger_by;type:varchar(20);default:'manual'" json:"triggerBy"`
-	CreatedAt  string `gorm:"column:created_at" json:"createdAt"`
+	CreatedAt  util.HTime `gorm:"column:created_at" json:"createdAt"`
 }
 
 func (N9ESyncLog) TableName() string {

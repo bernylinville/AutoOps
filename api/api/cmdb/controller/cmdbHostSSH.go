@@ -11,10 +11,29 @@ import (
 	"os"
 	"path/filepath"
 	"strconv"
+	"strings"
 
 	"github.com/gin-gonic/gin"
 	"github.com/gorilla/websocket"
 )
+
+// checkOriginAllowlist WebSocket Origin白名单校验
+func checkOriginAllowlist(r *http.Request) bool {
+	origin := r.Header.Get("Origin")
+	if origin == "" {
+		return false
+	}
+	allowed := os.Getenv("ALLOWED_ORIGINS")
+	if allowed == "" {
+		allowed = "http://localhost:8080,http://localhost:3000"
+	}
+	for _, a := range strings.Split(allowed, ",") {
+		if strings.TrimSpace(a) == origin {
+			return true
+		}
+	}
+	return false
+}
 
 type noEarlyResponseWriter struct {
 	gin.ResponseWriter
@@ -76,13 +95,11 @@ func (c *CmdbHostSSHController) ConnectTerminal(ctx *gin.Context) {
 		return
 	}
 
-	// 使用标准WebSocket升级
+	// 使用标准WebSocket升级（严格Origin校验）
 	upgrader := websocket.Upgrader{
 		ReadBufferSize:  1024,
 		WriteBufferSize: 1024,
-		CheckOrigin: func(r *http.Request) bool {
-			return true
-		},
+		CheckOrigin: checkOriginAllowlist,
 	}
 
 	// 优先从URL参数获取token
@@ -146,10 +163,11 @@ func (c *CmdbHostSSHController) ConnectTerminal(ctx *gin.Context) {
 	defer func() {
 		webSSH.Close()
 		wsConn.Close()
+		log.Printf("WebSocket连接已关闭, hostID: %d", id)
 	}()
 
-	// 保持连接
-	select {}
+	// 等待客户端断开连接（替代 select{} 避免goroutine泄露）
+	<-ctx.Request.Context().Done()
 }
 
 // ExecuteCommand 执行命令
@@ -212,38 +230,23 @@ func (c *CmdbHostSSHController) UploadFile(ctx *gin.Context) {
 		return
 	}
 
-	// 保存临时文件（使用绝对路径并处理中文文件名）
-	tempDir := "/tmp/ssh_uploads"
-	log.Printf("创建临时目录: %s", tempDir)
-	
-	// 确保目录存在且有正确权限
-	if err := os.MkdirAll(tempDir, 0755); err != nil {
+	// 创建独立临时目录防止路径穿越和并发冲突
+	tempDir, err := os.MkdirTemp("", "ssh_upload_*")
+	if err != nil {
 		log.Printf("创建临时目录失败: %v", err)
 		result.Failed(ctx, http.StatusInternalServerError, "创建临时目录失败: "+err.Error())
 		return
 	}
+	defer os.RemoveAll(tempDir) // 请求结束时清理整个临时目录
+	log.Printf("创建临时目录: %s", tempDir)
 
-	// 检查目录权限
-	if fi, err := os.Stat(tempDir); err == nil {
-		log.Printf("临时目录权限: %v", fi.Mode())
-	} else {
-		log.Printf("无法获取临时目录状态: %v", err)
-		result.Failed(ctx, http.StatusInternalServerError, "无法访问临时目录: "+err.Error())
-		return
+	// 安全处理文件名：只取基础文件名，防止路径穿越
+	safeFilename := filepath.Base(file.Filename)
+	if safeFilename == "." || safeFilename == "/" || safeFilename == "" {
+		safeFilename = "upload"
 	}
-
-	tempFilePath := filepath.Join(tempDir, file.Filename)
-	log.Printf("尝试保存文件到: %s", tempFilePath)
-	
-	// 检查文件是否已存在
-	if _, err := os.Stat(tempFilePath); err == nil {
-		log.Printf("文件已存在，将被覆盖: %s", tempFilePath)
-		if err := os.Remove(tempFilePath); err != nil {
-			log.Printf("删除已存在文件失败: %v", err)
-			result.Failed(ctx, http.StatusInternalServerError, "删除已存在文件失败: "+err.Error())
-			return
-		}
-	}
+	tempFilePath := filepath.Join(tempDir, safeFilename)
+	log.Printf("尝试保存文件到: %s (原始文件名: %s)", tempFilePath, file.Filename)
 
 	// 保存文件并设置权限
 	log.Printf("保存文件: %s (大小: %d bytes)", file.Filename, file.Size)
@@ -315,12 +318,7 @@ func (c *CmdbHostSSHController) UploadFile(ctx *gin.Context) {
 		log.Printf("文件上传成功: %s -> %s", tempFilePath, destPath)
 	}
 
-	// 确保文件上传完成后再删除临时文件
-	if err := os.Remove(tempFilePath); err != nil {
-		log.Printf("删除临时文件失败: %v (文件可能已被其他进程删除)", err)
-	} else {
-		log.Printf("临时文件已删除: %s", tempFilePath)
-	}
+	// 临时文件由 defer os.RemoveAll(tempDir) 自动清理
 
 	result.Success(ctx, gin.H{
 		"hostId":    hostID,

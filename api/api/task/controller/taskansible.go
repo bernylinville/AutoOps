@@ -2,10 +2,13 @@ package controller
 
 import (
 	"encoding/json"
+	"fmt"
 	"io"
 	"mime/multipart"
 	"net/http"
+	"regexp"
 	"strconv"
+	"strings"
 
 	"dodevops-api/api/task/model"
 	"dodevops-api/api/task/service"
@@ -13,6 +16,25 @@ import (
 
 	"github.com/gin-gonic/gin"
 )
+
+// validateTaskName 校验任务名称，防止路径穿越
+func validateTaskName(name string) error {
+	if name == "" {
+		return fmt.Errorf("任务名称不能为空")
+	}
+	if len(name) > 128 {
+		return fmt.Errorf("任务名称长度不能超过128个字符")
+	}
+	// 只允许字母、数字、中文、下划线、连字符、点
+	matched, _ := regexp.MatchString(`^[\p{L}\p{N}_.\-]+$`, name)
+	if !matched {
+		return fmt.Errorf("任务名称包含非法字符，只允许字母、数字、中文、下划线、连字符和点")
+	}
+	if strings.Contains(name, "..") {
+		return fmt.Errorf("任务名称不能包含 '..'")
+	}
+	return nil
+}
 
 // ListResponse 任务列表响应
 type ListResponse struct {
@@ -109,9 +131,9 @@ func (c *TaskAnsibleController) CreateTask(ctx *gin.Context) {
 	gitRepo := ctx.PostForm("gitRepo")
 	variablesJSON := ctx.PostForm("variables")
 
-	// 验证参数
-	if name == "" {
-		result.Failed(ctx, http.StatusBadRequest, "任务名称不能为空")
+	// 验证参数（包含路径穿越防护）
+	if err := validateTaskName(name); err != nil {
+		result.Failed(ctx, http.StatusBadRequest, err.Error())
 		return
 	}
 
@@ -363,8 +385,8 @@ func (c *TaskAnsibleController) CreateK8sTask(ctx *gin.Context) {
 	registryPassword := ctx.PostForm("registry_password")
 
 	// 验证K8s必填参数
-	if name == "" {
-		result.Failed(ctx, http.StatusBadRequest, "任务名称不能为空")
+	if err := validateTaskName(name); err != nil {
+		result.Failed(ctx, http.StatusBadRequest, err.Error())
 		return
 	}
 	if clusterName == "" {

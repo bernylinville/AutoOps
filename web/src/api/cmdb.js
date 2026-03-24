@@ -46,14 +46,8 @@ export default {
             url: `monitor/hosts/${hostId}/ports`,
             method: 'get'
         })
-    },    // 获取主机列表
-    getHostList(params) {
-        return request({
-            url: 'cmdb/host/list',
-            method: 'get',
-            params
-        })
     },
+    // H2-P2-1: getHostList 已删除（指向不存在的 cmdb/host/list，正确 API 是 cmdb/hostlist → getCmdbHostList）
     getAllCmdbGroups() {
         return request({
             url: 'cmdb/grouplist',
@@ -143,13 +137,7 @@ export default {
             params: { id }
         })
     },
-    getCmdbHostsByGroupId(groupId) {
-        return request({
-            url: 'cmdb/hostgroup',
-            method: 'get',
-            params: { groupId }
-        })
-    },
+    // H2-P2-1: 第一个 getCmdbHostsByGroupId 已删除（被 L183 同名方法覆盖）
     GetCmdbHostsByHostNameLike(hostName, params) {
         return request({
             url: '/cmdb/hostbyname',

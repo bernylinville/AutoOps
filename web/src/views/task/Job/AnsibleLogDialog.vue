@@ -185,10 +185,17 @@ const connectWebSocket = () => {
   if (!logInfo.value) return
   
   const { taskId, workId } = logInfo.value
-  const wsUrl = `ws://localhost:8080/api/v1/ws/task/ansible/${taskId}/log/${workId}`
+  // 动态构建 WebSocket URL（支持 Docker/反向代理部署）
+  const wsProtocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:'
+  const wsHost = window.location.host
+  // H2-P1-9: token 存储在命名空间对象里，不能直接 localStorage.getItem('token')
+  const storageKey = process.env.VUE_APP_NAME_SPACE || 'devops'
+  const storageObj = JSON.parse(window.localStorage.getItem(storageKey) || '{}')
+  const token = storageObj.token || ''
+  const wsUrl = `${wsProtocol}//${wsHost}/api/v1/ws/task/ansible/${taskId}/log/${workId}?token=${encodeURIComponent(token)}`
   
   console.log('🔌 连接WebSocket:', wsUrl)
-  console.log('📊 WebSocket连接参数:', { taskId, workId, wsUrl })
+  console.log('📊 WebSocket连接参数:', { taskId, workId, wsHost })
   
   try {
     websocket = new WebSocket(wsUrl)

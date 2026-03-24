@@ -16,11 +16,16 @@ import (
 	"golang.org/x/crypto/bcrypt"
 )
 
-// getAESKey 从环境变量获取 AES 密钥，避免硬编码
+// getAESKey 从环境变量获取 AES 密钥，生产环境必须配置
 func getAESKey() string {
 	key := os.Getenv("AES_KEY")
 	if key == "" {
-		key = "this-is-32-byte-key-for-aes-256!" // 开发环境默认值
+		if os.Getenv("GIN_MODE") == "release" {
+			fmt.Fprintln(os.Stderr, "FATAL: AES_KEY environment variable is required in production (GIN_MODE=release)")
+			os.Exit(1)
+		}
+		key = "this-is-32-byte-key-for-aes-256!" // 仅开发环境默认值
+		fmt.Println("WARNING: using default AES_KEY, NOT safe for production")
 	}
 	return key
 }
