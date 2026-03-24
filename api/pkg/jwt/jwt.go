@@ -4,6 +4,7 @@ package jwt
 import (
 	"errors"
 	"fmt"
+	"os"
 	"dodevops-api/api/system/model"
 	"dodevops-api/common/constant"
 	"github.com/dgrijalva/jwt-go"
@@ -19,8 +20,14 @@ type userStdClaims struct {
 // token过期时间
 const TokenExpireDuration = time.Hour * 24
 
-// token密钥
-var Secret = []byte("dodevops-api")
+// token密钥 - 从环境变量读取，避免硬编码
+var Secret = func() []byte {
+	s := os.Getenv("JWT_SECRET")
+	if s == "" {
+		s = "dodevops-api" // 开发环境默认值
+	}
+	return []byte(s)
+}()
 var (
 	ErrAbsent  = "token absent"  // 令牌不存在
 	ErrInvalid = "token invalid" //令牌无效
@@ -89,13 +96,13 @@ func GetAdminId(c *gin.Context) (uint, error) {
 func GetAdminName(c *gin.Context) (string, error) {
 	u, exist := c.Get(constant.ContextKeyUserObj)
 	if !exist {
-		return string(string(0)), errors.New("无法获取用户名")
+		return "", errors.New("无法获取用户名")
 	}
 	admin, ok := u.(*model.JwtAdmin)
 	if ok {
 		return admin.Username, nil
 	}
-	return string(string(0)), errors.New("无法转换为api名称")
+	return "", errors.New("无法转换为api名称")
 }
 
 // 返回admin信息

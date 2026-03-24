@@ -30,6 +30,9 @@ type CmdbHost struct {
 	CreateTime  util.HTime `gorm:"column:create_time;comment:'创建时间';NOT NULL" json:"createTime"`
 	ExpireTime  util.HTime `gorm:"column:expire_time;comment:'到期时间'" json:"expireTime"`
 	UpdateTime  util.HTime `gorm:"column:update_time;comment:'更新时间'" json:"updateTime"`
+	SourceType  string     `gorm:"column:source_type;type:varchar(20);default:'manual';comment:'数据来源'" json:"sourceType"`
+	N9EID       int64      `gorm:"column:n9e_id;comment:'N9E Target ID'" json:"n9eId"`
+	N9EIdent    string     `gorm:"column:n9e_ident;type:varchar(128);comment:'N9E Target 标识'" json:"n9eIdent"`
 }
 
 func (CmdbHost) TableName() string {
@@ -132,4 +135,7 @@ type CmdbHostVo struct {
 	CreateTime  util.HTime `json:"createTime"`
 	ExpireTime  util.HTime `json:"expireTime"`
 	UpdateTime  util.HTime `json:"updateTime"`
+	SourceType  string     `json:"sourceType"`
+	N9EID       int64      `json:"n9eId"`
+	N9EIdent    string     `json:"n9eIdent"`
 }

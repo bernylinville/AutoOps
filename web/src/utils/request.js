@@ -4,7 +4,7 @@
  * @author xiaoRui
  *
  */
-import { Message } from 'element-plus'
+import { ElMessage as Message } from 'element-plus'
 import axios from 'axios'
 import router from "@/router/router"
 import storage from "./storage"

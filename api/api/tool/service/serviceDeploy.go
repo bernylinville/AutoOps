@@ -97,6 +97,17 @@ func (s ServiceDeployServiceImpl) CreateDeploy(c *gin.Context, dto toolModel.Cre
 		return
 	}
 
+	// H8: 防止命令注入 — 验证 InstallDir 不含 shell 元字符
+	if strings.ContainsAny(dto.InstallDir, ";|&$`\"'\\(){}!<>?*~#") || strings.Contains(dto.InstallDir, "..") {
+		result.Failed(c, int(result.ApiCode.ValidationParameterError), "安装目录包含非法字符")
+		return
+	}
+	// 确保是绝对路径
+	if !strings.HasPrefix(dto.InstallDir, "/") {
+		result.Failed(c, int(result.ApiCode.ValidationParameterError), "安装目录必须是绝对路径")
+		return
+	}
+
 	// 获取主机信息
 	cmdbHostDao := cmdbDao.NewCmdbHostDao()
 	host, err := cmdbHostDao.GetCmdbHostById(dto.HostID)

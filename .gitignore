@@ -1,1 +1,6 @@
 api/devops
+
+# Docker runtime data
+docker/mysql/data/
+docker/redis/data/
+docker/prometheus/data/

@@ -24,6 +24,14 @@ type EcsAuthServiceInterface interface {
 type EcsAuthServiceImpl struct {
 	dao dao.EcsAuthDao
 }
+
+// maskCredential H4: 凭据脱敏 — 非空值替换为 "***"
+func maskCredential(val string) string {
+	if val == "" {
+		return ""
+	}
+	return "***"
+}
 // 获取所有认证信息
 func (s *EcsAuthServiceImpl) GetEcsAuthList(c *gin.Context) {
 	list := s.dao.GetEcsAuthList()
@@ -34,8 +42,8 @@ func (s *EcsAuthServiceImpl) GetEcsAuthList(c *gin.Context) {
 			Name:       auth.Name,
 			Type:       auth.Type,
 			Username:   auth.Username,
-			Password:   auth.Password,
-			PublicKey:  auth.PublicKey,
+			Password:   maskCredential(auth.Password),
+			PublicKey:  maskCredential(auth.PublicKey),
 			Port:       auth.Port,
 			CreateTime: auth.CreateTime,
 			Remark:     auth.Remark,
@@ -54,8 +62,8 @@ func (s *EcsAuthServiceImpl) GetEcsAuthListWithPage(c *gin.Context, page, pageSi
 			Name:       auth.Name,
 			Type:       auth.Type,
 			Username:   auth.Username,
-			Password:   auth.Password,
-			PublicKey:  auth.PublicKey,
+			Password:   maskCredential(auth.Password),
+			PublicKey:  maskCredential(auth.PublicKey),
 			Port:       auth.Port,
 			CreateTime: auth.CreateTime,
 			Remark:     auth.Remark,
@@ -140,8 +148,8 @@ func (s *EcsAuthServiceImpl) GetEcsAuthByName(c *gin.Context, name string) {
 		Name:       auth.Name,
 		Type:       auth.Type,
 		Username:   auth.Username,
-		Password:   auth.Password,
-		PublicKey:  auth.PublicKey,
+		Password:   maskCredential(auth.Password),
+		PublicKey:  maskCredential(auth.PublicKey),
 		Port:       auth.Port,
 		CreateTime: auth.CreateTime,
 		Remark:     auth.Remark,
@@ -162,8 +170,8 @@ func (s *EcsAuthServiceImpl) GetEcsAuthById(c *gin.Context, id uint) {
 		Name:       auth.Name,
 		Type:       auth.Type,
 		Username:   auth.Username,
-		Password:   auth.Password,
-		PublicKey:  auth.PublicKey,
+		Password:   maskCredential(auth.Password),
+		PublicKey:  maskCredential(auth.PublicKey),
 		Port:       auth.Port,
 		CreateTime: auth.CreateTime,
 		Remark:     auth.Remark,

@@ -5,7 +5,6 @@ package middleware
 
 import (
 	"encoding/json"
-	"fmt"
 	"dodevops-api/common/constant"
 	"dodevops-api/common/result"
 	"dodevops-api/pkg/jwt"
@@ -89,8 +88,7 @@ func AuthMiddleware() func(c *gin.Context) {
 					c.Next()
 					return
 				} else {
-					// 添加调试信息
-					fmt.Printf("[DEBUG] Token验证失败: %v, token长度: %d, Secret: %s\n", err, len(token), string(jwt.Secret))
+					// Token验证失败，不记录敏感信息
 				}
 			}
 			

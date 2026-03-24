@@ -4,8 +4,21 @@ import (
 	"dodevops-api/api/system/model"
 	"dodevops-api/common/util"
 	. "dodevops-api/pkg/db"
+	"log"
 	"time"
+
+	"gorm.io/gorm"
 )
+
+// hashPasswordOrPanic 使用 bcrypt 哈希密码，失败则 log 并回退到 MD5
+func hashPasswordOrPanic(password string) string {
+	hash, err := util.HashPassword(password)
+	if err != nil {
+		log.Printf("bcrypt hash failed, falling back to MD5: %v", err)
+		return util.EncryptionMd5(password)
+	}
+	return hash
+}
 
 // 用户详情
 func SysAdminDetail(dto model.LoginDto) (sysAdmin model.SysAdmin) {
@@ -34,7 +47,7 @@ type AddSysAdminDto struct {
 	Status   int    `validate:"required"` // 状态：1->启用,2->禁用
 }
 
-// 新增用户
+// 新增用户 — L2: 使用事务保证原子性
 func CreateSysAdmin(dto model.AddSysAdminDto) bool {
 	sysAdminByUsername := GetSysAdminByUsername(dto.Username)
 	if sysAdminByUsername.ID > 0 {
@@ -45,23 +58,26 @@ func CreateSysAdmin(dto model.AddSysAdminDto) bool {
 		DeptId:     dto.DeptId,
 		Username:   dto.Username,
 		Nickname:   dto.Nickname,
-		Password:   util.EncryptionMd5(dto.Password),
+		Password:   hashPasswordOrPanic(dto.Password),
 		Phone:      dto.Phone,
 		Email:      dto.Email,
 		Note:       dto.Note,
 		Status:     dto.Status,
 		CreateTime: util.HTime{Time: time.Now()},
 	}
-	tx := Db.Create(&sysAdmin)
-	sysAdminExist := GetSysAdminByUsername(dto.Username)
-	var model model.SysAdminRole
-	model.AdminId = sysAdminExist.ID
-	model.RoleId = dto.RoleId
-	Db.Create(&model)
-	if tx.RowsAffected > 0 {
-		return true
-	}
-	return false
+
+	err := Db.Transaction(func(tx *gorm.DB) error {
+		if err := tx.Create(&sysAdmin).Error; err != nil {
+			return err
+		}
+		// sysAdmin.ID 已被 GORM 自动填充，无需再次查询
+		role := model.SysAdminRole{
+			AdminId: sysAdmin.ID,
+			RoleId:  dto.RoleId,
+		}
+		return tx.Create(&role).Error
+	})
+	return err == nil
 }
 
 // 根据id查询用户详情
@@ -124,7 +140,7 @@ func UpdateSysAdminStatus(dto model.UpdateSysAdminStatusDto) {
 func ResetSysAdminPassword(dto model.ResetSysAdminPasswordDto) {
 	var sysAdmin model.SysAdmin
 	Db.First(&sysAdmin, dto.Id)
-	sysAdmin.Password = util.EncryptionMd5(dto.Password) // 密码加密
+	sysAdmin.Password = hashPasswordOrPanic(dto.Password) // H3: bcrypt
 	Db.Save(&sysAdmin)
 }
 

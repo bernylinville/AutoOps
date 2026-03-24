@@ -8,7 +8,7 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-var sysDept model.SysDept
+
 
 // @Tags System系统管理
 // 查询部门列表
@@ -36,6 +36,7 @@ func GetSysDeptList(c *gin.Context) {
 // @router /api/v1/dept/add [post]
 // @Security ApiKeyAuth
 func CreateSysDept(c *gin.Context) {
+	var sysDept model.SysDept
 	_ = c.BindJSON(&sysDept)
 	service.SysDeptService().CreateSysDept(c, sysDept)
 }
@@ -64,6 +65,7 @@ func GetSysDeptById(c *gin.Context) {
 // @router /api/v1/dept/update [put]
 // @Security ApiKeyAuth
 func UpdateSysDept(c *gin.Context) {
+	var sysDept model.SysDept
 	_ = c.BindJSON(&sysDept)
 	service.SysDeptService().UpdateSysDept(c, sysDept)
 }

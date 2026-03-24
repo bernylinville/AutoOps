@@ -21,6 +21,7 @@ import (
 	taskmodel "dodevops-api/api/task/model"
 	"dodevops-api/common"
 	"dodevops-api/common/result"
+	"dodevops-api/pkg/jwt"
 
 	"github.com/gin-gonic/gin"
 
@@ -341,12 +342,15 @@ func (s *TaskAnsibleServiceImpl) GetJobLog(c *gin.Context, taskID, workID uint) 
 	c.Header("Connection", "keep-alive")
 	c.Header("Access-Control-Allow-Origin", "*")
 	
-	// 检查认证状态（调试信息）
+	// H5: SSE认证检查 — 必须提供有效token
 	token := c.Query("token")
 	if token == "" || token == "null" {
-		// 对于已完成的任务，即使token为空也允许读取日志
-		// sendSSEError(c, "认证失败：token为空")
-		// return
+		sendSSEError(c, "认证失败：未提供token")
+		return
+	}
+	if _, err := jwt.ValidateToken(token); err != nil {
+		sendSSEError(c, "认证失败：token无效")
+		return
 	}
 
 	// 获取任务记录（仅查询一次）

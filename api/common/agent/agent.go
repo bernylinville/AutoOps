@@ -546,7 +546,7 @@ func monitorTCPPorts() {
 	cmd := exec.Command("netstat", "-ntlp")
 	output, err := cmd.Output()
 	if err != nil {
-		log.Printf("Failed to execute netstat: %%v", err)
+		log.Printf("Failed to execute netstat: %v", err)
 		return
 	}
 

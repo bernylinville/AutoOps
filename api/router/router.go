@@ -26,6 +26,7 @@ import (
 	"dodevops-api/router/system"       // 系统模块路由
 	"dodevops-api/router/task"         // 任务中心路由
 	"dodevops-api/router/tool"         // 导航工具路由
+	"dodevops-api/router/n9e"          // N9E监控路由
 
 	agentController "dodevops-api/api/monitor/controller" // Agent控制器
 )
@@ -112,6 +113,7 @@ func register(router *gin.Engine) {
 			monitor.InitMonitorRouter(jwtGroup) // 新增监控路由
 			task.RegisterTaskRoutes(jwtGroup)   // 任务中心路由
 			tool.RegisterToolRoutes(jwtGroup)   // 导航工具路由
+			n9e.RegisterN9ERoutes(jwtGroup)     // N9E监控路由
 		}
 	}
 }

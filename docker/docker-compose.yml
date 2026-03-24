@@ -1,7 +1,7 @@
 services:
   # MySQL database service
   mysql:
-    image: crpi-aj3vgoxp9kzh2jx4.cn-hangzhou.personal.cr.aliyuncs.com/zhangfan_k8s/mysql:8.0.33
+    image: mysql:8.0.45
     container_name: devops-mysql
     restart: always
     ports:
@@ -25,14 +25,14 @@ services:
     networks:
       - devops-network
     healthcheck:
-      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-uroot", "-pdevops@2025"]
+      test: [ "CMD-SHELL", "mysqladmin ping -h localhost -uroot -p$${MYSQL_ROOT_PASSWORD:-devops@2025}" ]
       interval: 10s
       timeout: 5s
       retries: 5
 
   # Redis cache service
   redis:
-    image: crpi-aj3vgoxp9kzh2jx4.cn-hangzhou.personal.cr.aliyuncs.com/zhangfan_k8s/redis:7.0-alpine
+    image: redis:7.2.13-alpine
     container_name: devops-redis
     restart: always
     ports:
@@ -48,14 +48,14 @@ services:
     networks:
       - devops-network
     healthcheck:
-      test: ["CMD", "redis-cli", "-a", "zhangfan@123", "ping"]
+      test: [ "CMD-SHELL", "redis-cli -a $${REDIS_PASSWORD:-zhangfan@123} ping" ]
       interval: 10s
       timeout: 3s
       retries: 5
 
   # Pushgateway metrics push service
   pushgateway:
-    image: crpi-aj3vgoxp9kzh2jx4.cn-hangzhou.personal.cr.aliyuncs.com/zhangfan_k8s/pushgateway:v1.9.0
+    image: prom/pushgateway:v1.11.2
     container_name: devops-pushgateway
     restart: always
     user: root
@@ -69,14 +69,14 @@ services:
     networks:
       - devops-network
     healthcheck:
-      test: ["CMD", "wget", "--quiet", "--tries=1", "--spider", "http://localhost:9091/-/healthy"]
+      test: [ "CMD", "wget", "--quiet", "--tries=1", "--spider", "http://localhost:9091/-/healthy" ]
       interval: 10s
       timeout: 3s
       retries: 5
 
   # Prometheus monitoring service
   prometheus:
-    image: crpi-aj3vgoxp9kzh2jx4.cn-hangzhou.personal.cr.aliyuncs.com/zhangfan_k8s/prometheus:v2.47.0
+    image: prom/prometheus:v2.53.5
     container_name: devops-prometheus
     restart: always
     user: root
@@ -102,14 +102,17 @@ services:
       pushgateway:
         condition: service_healthy
     healthcheck:
-      test: ["CMD", "wget", "--quiet", "--tries=1", "--spider", "http://localhost:9090/-/healthy"]
+      test: [ "CMD", "wget", "--quiet", "--tries=1", "--spider", "http://localhost:9090/-/healthy" ]
       interval: 10s
       timeout: 3s
       retries: 5
 
   # DevOps API backend service
   devops-api:
-    image: crpi-aj3vgoxp9kzh2jx4.cn-hangzhou.personal.cr.aliyuncs.com/zhangfan_k8s/deviops-api:v1.0
+    build:
+      context: ../api
+      dockerfile: ../docker/api/Dockerfile
+    image: devops-api:local
     container_name: devops-api
     restart: always
     ports:
@@ -155,7 +158,10 @@ services:
 
   # DevOps Web frontend service
   devops-web:
-    image: crpi-aj3vgoxp9kzh2jx4.cn-hangzhou.personal.cr.aliyuncs.com/zhangfan_k8s/deviops-web:v1.0
+    build:
+      context: ../
+      dockerfile: docker/web/Dockerfile
+    image: devops-web:local
     container_name: devops-web
     restart: always
     ports:
@@ -172,7 +178,7 @@ services:
     depends_on:
       - devops-api
     healthcheck:
-      test: ["CMD", "wget", "--quiet", "--tries=1", "--spider", "http://localhost:80"]
+      test: [ "CMD", "wget", "--quiet", "--tries=1", "--spider", "http://localhost:80" ]
       interval: 10s
       timeout: 3s
       retries: 5

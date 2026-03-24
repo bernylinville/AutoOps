@@ -77,7 +77,7 @@
               :class="getLogLineClass(log)"
             >
               <span class="line-number">{{ log.line_num || index + 1 }}</span>
-              <span class="line-content" v-html="formatLogContent(log.content)"></span>
+              <span class="line-content">{{ log.content }}</span>
             </div>
           </div>
         </div>

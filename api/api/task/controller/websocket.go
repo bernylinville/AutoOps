@@ -68,13 +68,14 @@ func (c *WebSocketController) GetJobLogWS(ctx *gin.Context) {
 		}
 	}
 
-	// 验证token
-	if token != "" {
-		_, err := jwt.ValidateToken(token)
-		if err != nil {
-			result.Failed(ctx, http.StatusUnauthorized, "认证失败")
-			return
-		}
+	// 验证token（必须提供有效token）
+	if token == "" {
+		result.Failed(ctx, http.StatusUnauthorized, "认证失败：未提供token")
+		return
+	}
+	if _, err := jwt.ValidateToken(token); err != nil {
+		result.Failed(ctx, http.StatusUnauthorized, "认证失败：token无效")
+		return
 	}
 
 	taskID, err := strconv.ParseUint(ctx.Param("id"), 10, 64)

@@ -11,7 +11,7 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-var sysMenu model.SysMenu
+
 
 // @Tags System系统管理
 // 新增菜单
@@ -23,6 +23,7 @@ var sysMenu model.SysMenu
 // @router /api/v1/menu/add [post]
 // @Security ApiKeyAuth
 func CreateSysMenu(c *gin.Context) {
+	var sysMenu model.SysMenu
 	_ = c.BindJSON(&sysMenu)
 	service.SysMenuService().CreateSysMenu(c, sysMenu)
 }
@@ -63,6 +64,7 @@ func GetSysMenu(c *gin.Context) {
 // @router /api/v1/menu/update [put]
 // @Security ApiKeyAuth
 func UpdateSysMenu(c *gin.Context) {
+	var sysMenu model.SysMenu
 	_ = c.BindJSON(&sysMenu)
 	service.SysMenuService().UpdateSysMenu(c, sysMenu)
 }

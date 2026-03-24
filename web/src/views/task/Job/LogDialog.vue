@@ -6,7 +6,7 @@
         <h3 style="display: block;">{{ title }}</h3>
         <button @click="handleClose">×</button>
       </div>
-      <div class="dialog-body" v-html="content"></div>
+      <div class="dialog-body"><pre class="log-pre" style="white-space: pre-wrap; background: #000; color: #fff; padding: 16px; border-radius: 6px; font-family: 'Courier New', monospace;">{{ rawContent }}</pre></div>
       <div class="dialog-footer">
         <button @click="handleClose">关闭</button>
       </div>
@@ -28,7 +28,7 @@ export default {
   data() {
     return {
       visible: false,
-      content: ''
+      rawContent: ''
     }
   },
   methods: {
@@ -38,14 +38,7 @@ export default {
         processedContent = processedContent.logs || JSON.stringify(processedContent, null, 2)
       }
       processedContent = processedContent.replace(/\\n/g, '\n').replace(/\\r/g, '\r')
-      const highlightedContent = highlight(processedContent, 'bash')
-      this.content = `
-        <div class="highlight-container">
-          <pre style="white-space: pre-wrap; background: #000; color: #fff; padding: 16px; border-radius: 6px; font-family: 'Courier New', monospace;">
-            ${highlightedContent}
-          </pre>
-        </div>
-      `
+      this.rawContent = processedContent
       this.visible = true
     },
     handleClose() {

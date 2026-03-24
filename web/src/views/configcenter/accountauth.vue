@@ -347,15 +347,9 @@ export default {
           params: { id: row.id }
         })
         if (res.data.code === 200) {
-          this.$alert(`
-            <div>
-              <p>账号: ${row.alias}</p>
-              <p>密码: <span style="color: #1890ff; font-weight: bold; font-size: 18px;">${res.data.data.password}</span></p>
-            </div>
-          `, '解密结果', {
+          this.$alert(`账号: ${row.alias}\n密码: ${res.data.data.password}`, '解密结果', {
             confirmButtonText: '确定',
-            customClass: 'decrypt-result-alert',
-            dangerouslyUseHTMLString: true
+            customClass: 'decrypt-result-alert'
           })
         } else {
           this.$message.error(res.data.message || '解密失败')

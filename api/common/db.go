@@ -1,8 +1,8 @@
 package common
 
 import (
-	"fmt"
 	"dodevops-api/pkg/db"
+	"log"
 
 	"gorm.io/gorm"
 )
@@ -15,12 +15,14 @@ func GetDB() *gorm.DB {
 
 	sqlDB, err := db.Db.DB()
 	if err != nil {
-		panic(fmt.Sprintf("Failed to get database instance: %v", err))
+		log.Printf("[WARN] Failed to get underlying sql.DB: %v", err)
+		return db.Db
 	}
 
 	if err := sqlDB.Ping(); err != nil {
-		panic(fmt.Sprintf("Database connection lost: %v", err))
+		log.Printf("[WARN] Database ping failed (GORM will auto-reconnect): %v", err)
 	}
 
 	return db.Db
 }
+

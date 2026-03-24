@@ -12,7 +12,7 @@ type SysAdmin struct {
 	PostId     int        `gorm:"column:post_id;comment:'岗位id'" json:"postId"`                                 // 岗位id
 	DeptId     int        `gorm:"column:dept_id;comment:'部门id'" json:"deptId"`                                 // 部门id
 	Username   string     `gorm:"column:username;varchar(64);comment:'用户账号';NOT NULL" json:"username"`         // 用户账号
-	Password   string     `gorm:"column:password;varchar(64);comment:'密码';NOT NULL" json:"password"`           // 密码
+	Password   string     `gorm:"column:password;varchar(64);comment:'密码';NOT NULL" json:"-"`              // 密码 (H3: json:"-" 防止密码哈希泄露到前端)
 	Nickname   string     `gorm:"column:nickname;varchar(64);comment:'昵称'" json:"nickname"`                    // 昵称
 	Status     int        `gorm:"column:status;default:1;comment:'帐号启用状态:1->启用,2->禁用';NOT NULL" json:"status"` // 帐号启用状态：1->启用,2->禁用
 	Icon       string     `gorm:"column:icon;varchar(500);comment:'头像'" json:"icon"`                           //  头像

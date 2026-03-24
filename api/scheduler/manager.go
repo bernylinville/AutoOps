@@ -9,9 +9,10 @@ import (
 
 // Manager 调度器管理器
 type Manager struct {
-	syncScheduler *SyncScheduler
-	mutex         sync.RWMutex
-	running       bool
+	syncScheduler    *SyncScheduler
+	n9eSyncScheduler *N9ESyncScheduler
+	mutex            sync.RWMutex
+	running          bool
 }
 
 var (
@@ -23,8 +24,9 @@ var (
 func GetManager() *Manager {
 	once.Do(func() {
 		instance = &Manager{
-			syncScheduler: NewSyncScheduler(),
-			running:       false,
+			syncScheduler:    NewSyncScheduler(),
+			n9eSyncScheduler: NewN9ESyncScheduler(),
+			running:          false,
 		}
 	})
 	return instance
@@ -42,9 +44,14 @@ func (m *Manager) Start() error {
 
 	log.Println("启动调度器管理器...")
 
-	// 启动定时同步调度器
+	// 启动云厂商定时同步调度器
 	if err := m.syncScheduler.Start(); err != nil {
 		return err
+	}
+
+	// 启动 N9E 定时同步调度器
+	if err := m.n9eSyncScheduler.Start(); err != nil {
+		log.Printf("N9E 同步调度器启动警告: %v", err)
 	}
 
 	m.running = true
@@ -66,6 +73,9 @@ func (m *Manager) Stop() {
 
 	// 停止定时同步调度器
 	m.syncScheduler.Stop()
+
+	// 停止 N9E 同步调度器
+	m.n9eSyncScheduler.Stop()
 
 	m.running = false
 	log.Println("调度器管理器已停止")
@@ -128,5 +138,16 @@ func (m *Manager) GetSyncSchedulerStats() map[string]interface{} {
 
 	stats := m.syncScheduler.GetJobStats()
 	stats["status"] = "running"
+	stats["n9e"] = m.n9eSyncScheduler.GetStats()
 	return stats
+}
+
+// ReloadN9ECron 重新加载 N9E 同步 Cron 配置
+func (m *Manager) ReloadN9ECron() error {
+	if !m.running {
+		log.Println("调度器管理器未运行，无法重新加载 N9E Cron")
+		return nil
+	}
+
+	return m.n9eSyncScheduler.ReloadCron()
 }

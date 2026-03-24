@@ -383,22 +383,32 @@ func (s *CmdbHostSSHServiceImpl) UploadFile(c *gin.Context, hostID uint, filePat
 	}
 	defer scpSession.Close()
 
-	// 准备SCP命令
+	// 准备SCP命令 — M5: 使用 errChan 捕获 goroutine 错误
+	scpErrChan := make(chan error, 1)
 	go func() {
 		w, _ := scpSession.StdinPipe()
 		defer w.Close()
 
 		file, err := os.Open(absFilePath)
 		if err != nil {
-			log.Printf("打开本地文件失败: %v", err)
+			log.Printf("SCP goroutine: 打开本地文件失败: %v", err)
+			scpErrChan <- fmt.Errorf("打开本地文件失败: %v", err)
 			return
 		}
 		defer file.Close()
 
-		fileInfo, _ := file.Stat()
+		fileInfo, err := file.Stat()
+		if err != nil {
+			scpErrChan <- fmt.Errorf("获取文件信息失败: %v", err)
+			return
+		}
 		fmt.Fprintf(w, "C%04o %d %s\n", fileInfo.Mode().Perm(), fileInfo.Size(), filepath.Base(destPath))
-		io.Copy(w, file)
+		if _, err := io.Copy(w, file); err != nil {
+			scpErrChan <- fmt.Errorf("写入文件数据失败: %v", err)
+			return
+		}
 		fmt.Fprint(w, "\x00")
+		scpErrChan <- nil
 	}()
 
 	// 确保目标路径包含文件名

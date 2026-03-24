@@ -8,7 +8,7 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-var sysPost model.SysPost
+
 
 // @Tags System系统管理
 // @Summary 新增岗位接口
@@ -19,6 +19,7 @@ var sysPost model.SysPost
 // @router /api/v1/post/add [post]
 // @Security ApiKeyAuth
 func CreateSysPost(c *gin.Context) {
+	var sysPost model.SysPost
 	_ = c.BindJSON(&sysPost)
 	service.SysPostService().CreateSysPost(c, sysPost)
 }
@@ -71,6 +72,7 @@ func GetSysPostById(c *gin.Context) {
 // @router /api/v1/post/update [put]
 // @Security ApiKeyAuth
 func UpdateSysPost(c *gin.Context) {
+	var sysPost model.SysPost
 	_ = c.BindJSON(&sysPost)
 	service.SysPostService().UpdateSysPost(c, sysPost)
 }

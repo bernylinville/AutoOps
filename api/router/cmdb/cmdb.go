@@ -36,7 +36,8 @@ func RegisterCmdbRoutes(router *gin.RouterGroup) {
 	router.GET("/cmdb/hostssh/connect/:id", controller.NewCmdbHostSSHController(service.GetCmdbHostSSHService()).ConnectTerminal) // SSH终端连接
 	router.GET("/cmdb/hostssh/command/:id", controller.NewCmdbHostSSHController(service.GetCmdbHostSSHService()).ExecuteCommand)  // SSH执行命令
 	router.POST("/cmdb/hostssh/upload/:id", controller.NewCmdbHostSSHController(service.GetCmdbHostSSHService()).UploadFile)      // SSH文件上传
-	// SQL执行
+	// SQL执行 — H9: TODO: 这些路由需要 RBAC 权限控制，仅 DBA 角色可访问
+	// 当前所有登录用户都可以执行任意 SQL，是严重安全隐患
 	router.POST("/cmdb/sql/select", controller.GetCmdbSQLRecordController().ExecuteSelect)       // 执行查询语句(通过数据库ID/名称)
 	router.POST("/cmdb/sql", controller.GetCmdbSQLRecordController().ExecuteInsert)              // 执行插入语句(通过数据库ID/名称)
 	router.PUT("/cmdb/sql", controller.GetCmdbSQLRecordController().ExecuteUpdate)               // 执行更新语句(通过数据库ID/名称)

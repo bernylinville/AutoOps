@@ -7,6 +7,10 @@ import Menu from '@/views/system/Menu.vue'
 import LoginLog from '@/views/monitor/LoginLog.vue'
 import Operator from '@/views/monitor/Operator.vue'
 import DBLog from '@/views/monitor/DBLog.vue'
+import N9eConfig from '@/views/system/N9eConfig.vue'
+import N9eMonitor from '@/views/monitor/N9eMonitor.vue'
+import N9eDatasource from '@/views/monitor/N9eDatasource.vue'
+import N9eOverview from '@/views/monitor/N9eOverview.vue'
 const routes = [
     {
         path: '/system/personal',
@@ -52,7 +56,28 @@ const routes = [
         path: '/monitor/dblog',
         component: DBLog,
         meta: {sTitle: '日志管理', tTitle: '数据日志'}
+    },
+    {
+        path: '/system/n9e',
+        component: N9eConfig,
+        meta: {sTitle: '系统管理', tTitle: 'N9E 配置'}
+    },
+    {
+        path: '/monitor/n9e',
+        component: N9eMonitor,
+        meta: {sTitle: '监控中心', tTitle: 'N9E 监控'}
+    },
+    {
+        path: '/monitor/datasource',
+        component: N9eDatasource,
+        meta: {sTitle: '监控中心', tTitle: '数据源管理'}
+    },
+    {
+        path: '/monitor/n9e-overview',
+        component: N9eOverview,
+        meta: {sTitle: '监控中心', tTitle: 'CMDB 总览'}
     }
 ]
 
 export default routes
+

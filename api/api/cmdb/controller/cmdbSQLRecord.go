@@ -159,7 +159,10 @@ func getCurrentUsername(ctx *gin.Context) (string, error) {
 // @Security ApiKeyAuth
 func (c *CmdbSQLRecordController) ExecuteSelect(ctx *gin.Context) {
 	var req SQLRequest
-	if err := ctx.ShouldBindJSON(&req); err != nil {
+	// M2: 优先从 context 获取已解析的请求（ExecuteSQL 入口）
+	if cached, ok := ctx.Get("__sqlRequest"); ok {
+		req = cached.(SQLRequest)
+	} else if err := ctx.ShouldBindJSON(&req); err != nil {
 		result.FailedWithCode(ctx, ParamError, "参数错误: "+err.Error())
 		return
 	}
@@ -341,7 +344,9 @@ func (c *CmdbSQLRecordController) ExecuteSelect(ctx *gin.Context) {
 // @Security ApiKeyAuth
 func (c *CmdbSQLRecordController) ExecuteInsert(ctx *gin.Context) {
 	var req SQLRequest
-	if err := ctx.ShouldBindJSON(&req); err != nil {
+	if cached, ok := ctx.Get("__sqlRequest"); ok {
+		req = cached.(SQLRequest)
+	} else if err := ctx.ShouldBindJSON(&req); err != nil {
 		result.FailedWithCode(ctx, ParamError, "参数错误: "+err.Error())
 		return
 	}
@@ -401,7 +406,9 @@ func (c *CmdbSQLRecordController) ExecuteInsert(ctx *gin.Context) {
 // @Security ApiKeyAuth
 func (c *CmdbSQLRecordController) ExecuteUpdate(ctx *gin.Context) {
 	var req SQLRequest
-	if err := ctx.ShouldBindJSON(&req); err != nil {
+	if cached, ok := ctx.Get("__sqlRequest"); ok {
+		req = cached.(SQLRequest)
+	} else if err := ctx.ShouldBindJSON(&req); err != nil {
 		result.FailedWithCode(ctx, ParamError, "参数错误: "+err.Error())
 		return
 	}
@@ -521,6 +528,9 @@ func (c *CmdbSQLRecordController) ExecuteSQL(ctx *gin.Context) {
 		return
 	}
 
+	// M2: 将已解析的 req 存入 context，避免子方法重复 ShouldBindJSON（Body 已消费）
+	ctx.Set("__sqlRequest", req)
+
 	// 根据SQL类型调用相应的方法
 	switch {
 	case strings.HasPrefix(strings.ToUpper(req.SQL), "SELECT"):
@@ -628,7 +638,9 @@ func (c *CmdbSQLRecordController) ListDatabases(ctx *gin.Context) {
 
 func (c *CmdbSQLRecordController) ExecuteDelete(ctx *gin.Context) {
 	var req SQLRequest
-	if err := ctx.ShouldBindJSON(&req); err != nil {
+	if cached, ok := ctx.Get("__sqlRequest"); ok {
+		req = cached.(SQLRequest)
+	} else if err := ctx.ShouldBindJSON(&req); err != nil {
 		result.FailedWithCode(ctx, ParamError, "参数错误: "+err.Error())
 		return
 	}

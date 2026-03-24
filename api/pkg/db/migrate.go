@@ -10,6 +10,7 @@ import (
 	appmodel "dodevops-api/api/app/model"
 	systemmodel "dodevops-api/api/system/model"
 	toolmodel "dodevops-api/api/tool/model"
+	n9emodel "dodevops-api/api/n9e/model"
 
 	"gorm.io/gorm"
 )
@@ -38,7 +39,11 @@ var models = []interface{}{
 	&systemmodel.SysOperationLog{},
 	&toolmodel.Tool{},
 	&toolmodel.ServiceDeploy{},
-	// 可以继续添加其他模型...
+	// M7: N9E 模型
+	&n9emodel.N9EConfig{},
+	&n9emodel.N9EBusiGroup{},
+	&n9emodel.N9EDataSource{},
+	&n9emodel.N9ESyncLog{},
 }
 
 // 自动迁移所有模型

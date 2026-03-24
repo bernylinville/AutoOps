@@ -145,6 +145,43 @@ func QueryMenuVoList(AdminId, MenuId uint) (menuSvo []model.MenuSvo) {
 	return menuSvo
 }
 
+// L3: 批量查询所有子菜单（解决 N+1 问题）
+// 单次查询获取当前用户所有 type=2 的子菜单，按 parent_id 分组返回
+func QueryAllChildMenus(AdminId uint) map[uint][]model.MenuSvo {
+	const status, menuStatus, menuType = 1, 2, 2
+
+	type childMenuRow struct {
+		ParentId uint   `gorm:"column:parent_id"`
+		MenuName string `gorm:"column:menu_name"`
+		Icon     string `gorm:"column:icon"`
+		Url      string `gorm:"column:url"`
+	}
+
+	var rows []childMenuRow
+	Db.Table("sys_menu sm").
+		Select("sm.parent_id, sm.menu_name, sm.icon, sm.url").
+		Joins("LEFT JOIN sys_role_menu srm ON sm.id = srm.menu_id").
+		Joins("LEFT JOIN sys_role sr ON sr.id = srm.role_id").
+		Joins("LEFT JOIN sys_admin_role sar ON sar.role_id = sr.id").
+		Joins("LEFT JOIN sys_admin sa ON sa.id = sar.admin_id").
+		Where("sr.status = ?", status).
+		Where("sm.menu_status = ?", menuStatus).
+		Where("sm.menu_type = ?", menuType).
+		Where("sa.id = ?", AdminId).
+		Order("sm.sort").
+		Scan(&rows)
+
+	result := make(map[uint][]model.MenuSvo)
+	for _, r := range rows {
+		result[r.ParentId] = append(result[r.ParentId], model.MenuSvo{
+			MenuName: r.MenuName,
+			Icon:     r.Icon,
+			Url:      r.Url,
+		})
+	}
+	return result
+}
+
 // 当前登录用户左侧菜单列表
 func QueryLeftMenuList(Id uint) (leftMenuVo []model.LeftMenuVo) {
 	const status, menuStatus, menuType uint = 1, 2, 1

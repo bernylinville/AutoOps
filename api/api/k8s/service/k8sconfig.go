@@ -493,7 +493,7 @@ func (s *K8sConfigService) convertToConfigMapModel(cm *corev1.ConfigMap) model.K
 
 // convertToSecretModel 转换Secret为模型
 func (s *K8sConfigService) convertToSecretModel(secret *corev1.Secret) model.K8sSecret {
-	// 隐藏敏感数据，只显示键名
+	// 只显示键名，不返回敏感数据
 	stringData := make(map[string]string)
 	for key := range secret.Data {
 		stringData[key] = "***"
@@ -504,7 +504,7 @@ func (s *K8sConfigService) convertToSecretModel(secret *corev1.Secret) model.K8s
 		Namespace:   secret.Namespace,
 		Labels:      secret.Labels,
 		Type:        string(secret.Type),
-		Data:        secret.Data,
+		Data:        nil, // H7: 不返回原始Secret数据，防止凭据泄露
 		StringData:  stringData,
 		Immutable:   secret.Immutable != nil && *secret.Immutable,
 		CreatedTime: secret.CreationTimestamp.Format(time.RFC3339),

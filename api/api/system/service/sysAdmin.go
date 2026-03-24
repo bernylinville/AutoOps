@@ -51,7 +51,7 @@ func (s SysAdminServiceImpl) Login(c *gin.Context, dto model.LoginDto) {
 	}
 	// 校验
 	sysAdmin := dao.SysAdminDetail(dto)
-	if sysAdmin.Password != util.EncryptionMd5(dto.Password) {
+	if !util.CheckPasswordCompat(dto.Password, sysAdmin.Password) {
 		dao.CreateSysLoginInfo(dto.Username, ip, util.GetRealAddressByIP(ip), util.GetBrowser(c), util.GetOs(c), "密码不正确", 2)
 		result.Failed(c, int(result.ApiCode.PASSWORDNOTTRUE), result.ApiCode.GetMessage(result.ApiCode.PASSWORDNOTTRUE))
 		return
@@ -65,13 +65,13 @@ func (s SysAdminServiceImpl) Login(c *gin.Context, dto model.LoginDto) {
 	// 生成token
 	tokenString, _ := jwt.GenerateTokenByAdmin(sysAdmin)
 	dao.CreateSysLoginInfo(dto.Username, ip, util.GetRealAddressByIP(ip), util.GetBrowser(c), util.GetOs(c), "登录成功", 1)
-	// 左侧菜单列表
+	// 左侧菜单列表 — L3: 批量查询替代 N+1
 	var leftMenuVo []model.LeftMenuVo
 	leftMenuList := dao.QueryLeftMenuList(sysAdmin.ID)
+	childMenuMap := dao.QueryAllChildMenus(sysAdmin.ID) // 单次查询所有子菜单
 	for _, value := range leftMenuList {
-		menuSvoList := dao.QueryMenuVoList(sysAdmin.ID, value.Id)
 		item := model.LeftMenuVo{}
-		item.MenuSvoList = menuSvoList
+		item.MenuSvoList = childMenuMap[value.Id] // 从 map 中取子菜单
 		item.Id = value.Id
 		item.MenuName = value.MenuName
 		item.Icon = value.Icon
@@ -169,7 +169,7 @@ func (s SysAdminServiceImpl) UpdatePersonalPassword(c *gin.Context, dto model.Up
 	sysAdmin, _ := jwt.GetAdmin(c)
 	dto.Id = sysAdmin.ID
 	sysAdminExist := dao.GetSysAdminByUsername(sysAdmin.Username)
-	if sysAdminExist.Password != util.EncryptionMd5(dto.Password) {
+	if !util.CheckPasswordCompat(dto.Password, sysAdminExist.Password) {
 		result.Failed(c, int(result.ApiCode.PASSWORDNOTTRUE), result.ApiCode.GetMessage(result.ApiCode.PASSWORDNOTTRUE))
 		return
 	}
@@ -177,7 +177,12 @@ func (s SysAdminServiceImpl) UpdatePersonalPassword(c *gin.Context, dto model.Up
 		result.Failed(c, int(result.ApiCode.RESETPASSWORD), result.ApiCode.GetMessage(result.ApiCode.RESETPASSWORD))
 		return
 	}
-	dto.NewPassword = util.EncryptionMd5(dto.NewPassword)
+	hashedPwd, err := util.HashPassword(dto.NewPassword)
+	if err != nil {
+		result.Failed(c, int(result.ApiCode.FAILED), "密码加密失败")
+		return
+	}
+	dto.NewPassword = hashedPwd
 	sysAdminUpdatePwd := dao.UpdatePersonalPassword(dto)
 	tokenString, _ := jwt.GenerateTokenByAdmin(sysAdminUpdatePwd)
 	result.Success(c, map[string]interface{}{"token": tokenString, "sysAdmin": sysAdminUpdatePwd})

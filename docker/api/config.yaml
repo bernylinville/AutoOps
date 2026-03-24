@@ -42,17 +42,17 @@ log:
 # 监控配置
 monitor:
   prometheus:
-    url: "http://prometheus:9090"
+    url: "http://10.0.7.225:19090"
   pushgateway:
-    url: "http://pushgateway:9091"
+    url: "http://10.0.7.225:19091"
   agent:
-    heartbeat_server_url: "http://devops-api:8000/api/v1/monitor/agent/heartbeat"
+    heartbeat_server_url: "http://10.0.7.225:18000/api/v1/monitor/agent/heartbeat"
     heartbeat_token: "agent-heartbeat-token-2024"
 
 # Windows Exporter配置
 windows_exporter:
   # MSI安装包本地URL（从API服务器下载）
-  installer_base_url: "http://devops-api:8000/api/v1/upload/"
+  installer_base_url: "http://10.0.7.225:18000/api/v1/upload/"
   # 默认版本
   default_version: "0.31.3"
   # 默认端口
@@ -63,4 +63,4 @@ windows_exporter:
   push_mode:
     enabled: true  # 启用主动推送模式
     interval: 60   # 推送间隔（秒）
-    pushgateway_url: "http://pushgateway:9091"
+    pushgateway_url: "http://10.0.7.225:19091"

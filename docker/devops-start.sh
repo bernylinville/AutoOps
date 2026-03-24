@@ -1,8 +1,8 @@
 #!/bin/bash
 
-# DevOps 服务启动脚本 v3.0
-# 用法: ./devops-start.sh <version> <ip> <web_port> [api_port] [mysql_port] [redis_port]
-# 示例: ./devops-start.sh v1.0 192.168.1.100 8080
+# DevOps 服务启动脚本 v4.0 (本地构建版)
+# 用法: ./devops-start.sh <ip> <web_port> [api_port] [mysql_port] [redis_port]
+# 示例: ./devops-start.sh 10.0.7.225 18088
 
 set -e
 
@@ -13,34 +13,32 @@ YELLOW='\033[1;33m'
 NC='\033[0m' # No Color
 
 # 默认值
-API_PORT=${4:-8000}
-MYSQL_PORT=${5:-3307}
-REDIS_PORT=${6:-6379}
-PROMETHEUS_PORT=9090
-PUSHGATEWAY_PORT=9091
+API_PORT=${3:-18000}
+MYSQL_PORT=${4:-13306}
+REDIS_PORT=${5:-16379}
+PROMETHEUS_PORT=19090
+PUSHGATEWAY_PORT=19091
 
 # 参数验证
-if [ $# -lt 3 ]; then
+if [ $# -lt 2 ]; then
     echo -e "${RED}错误: 参数不足${NC}"
-    echo "用法: $0 <version> <ip> <web_port> [api_port] [mysql_port] [redis_port]"
+    echo "用法: $0 <ip> <web_port> [api_port] [mysql_port] [redis_port]"
     echo ""
     echo "参数说明:"
-    echo "  version      - 镜像版本 (例如: v1.0, v2.0)"
-    echo "  ip           - 服务器IP地址或域名 (例如: 192.168.1.100, devops.example.com)"
-    echo "  web_port     - 前端访问端口 (例如: 8080, 8088)"
-    echo "  api_port     - API后端端口 (可选, 默认: 8000)"
-    echo "  mysql_port   - MySQL端口 (可选, 默认: 3307)"
-    echo "  redis_port   - Redis端口 (可选, 默认: 6379)"
+    echo "  ip           - 服务器IP地址或域名 (例如: 10.0.7.225, localhost)"
+    echo "  web_port     - 前端访问端口 (例如: 18088)"
+    echo "  api_port     - API后端端口 (可选, 默认: 18000)"
+    echo "  mysql_port   - MySQL端口 (可选, 默认: 13306)"
+    echo "  redis_port   - Redis端口 (可选, 默认: 16379)"
     echo ""
     echo "示例:"
-    echo "  $0 v1.0 192.168.1.100 8080"
-    echo "  $0 v1.0 192.168.1.100 8080 8000 3307 6379"
+    echo "  $0 10.0.7.225 18088"
+    echo "  $0 10.0.7.225 18088 18000 13306 16379"
     exit 1
 fi
 
-VERSION=$1
-SERVER_IP=$2
-WEB_PORT=$3
+SERVER_IP=$1
+WEB_PORT=$2
 
 # 验证IP地址格式
 if ! [[ "$SERVER_IP" =~ ^[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}$ ]] && ! [[ "$SERVER_IP" =~ ^[a-zA-Z0-9]([a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?(\.[a-zA-Z0-9]([a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?)*$ ]]; then
@@ -59,28 +57,29 @@ for port in $WEB_PORT $API_PORT $MYSQL_PORT $REDIS_PORT; do
 done
 
 echo -e "${GREEN}========================================${NC}"
-echo -e "${GREEN}DevOps 服务启动脚本 v3.0${NC}"
+echo -e "${GREEN}DevOps 服务启动脚本 v4.0 (本地构建版)${NC}"
 echo -e "${GREEN}========================================${NC}"
 echo ""
 echo "配置信息:"
-echo "  镜像版本:     $VERSION"
 echo "  服务器IP:     $SERVER_IP"
 echo "  前端端口:     $WEB_PORT"
 echo "  API端口:      $API_PORT"
 echo "  MySQL端口:    $MYSQL_PORT"
 echo "  Redis端口:    $REDIS_PORT"
+echo "  Prometheus:   $PROMETHEUS_PORT"
+echo "  Pushgateway:  $PUSHGATEWAY_PORT"
 echo ""
 
 # 获取脚本所在目录
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 cd "$SCRIPT_DIR"
 
-# 检测 docker-compose 命令
+# 检测 docker compose 命令
 detect_docker_compose() {
-    if command -v docker-compose &> /dev/null; then
-        echo "docker-compose"
-    elif docker compose version &> /dev/null 2>&1; then
+    if docker compose version &> /dev/null 2>&1; then
         echo "docker compose"
+    elif command -v docker-compose &> /dev/null; then
+        echo "docker-compose"
     else
         echo ""
     fi
@@ -88,7 +87,7 @@ detect_docker_compose() {
 
 DOCKER_COMPOSE_CMD=$(detect_docker_compose)
 if [ -z "$DOCKER_COMPOSE_CMD" ]; then
-    echo -e "${RED}错误: 找不到 docker-compose 或 docker compose 命令${NC}"
+    echo -e "${RED}错误: 找不到 docker compose 或 docker-compose 命令${NC}"
     exit 1
 fi
 
@@ -109,50 +108,41 @@ if [ ! -f "api/config.yaml" ]; then
 fi
 
 echo -e "${YELLOW}步骤 1: 更新 .env 文件...${NC}"
-# 更新 .env 文件中的端口和IP配置
 sed -i.bak "s|^WEB_PORT=.*|WEB_PORT=$WEB_PORT|" .env
 sed -i.bak "s|^API_PORT=.*|API_PORT=$API_PORT|" .env
 sed -i.bak "s|^MYSQL_PORT=.*|MYSQL_PORT=$MYSQL_PORT|" .env
 sed -i.bak "s|^REDIS_PORT=.*|REDIS_PORT=$REDIS_PORT|" .env
+sed -i.bak "s|^PROMETHEUS_PORT=.*|PROMETHEUS_PORT=$PROMETHEUS_PORT|" .env
+sed -i.bak "s|^PUSHGATEWAY_PORT=.*|PUSHGATEWAY_PORT=$PUSHGATEWAY_PORT|" .env
 sed -i.bak "s|^IMAGE_HOST=.*|IMAGE_HOST=http://$SERVER_IP:$WEB_PORT|" .env
-
+rm -f .env.bak
 echo -e "${GREEN}✓ .env 文件已更新${NC}"
 
 echo -e "${YELLOW}步骤 2: 更新 api/config.yaml 文件...${NC}"
-# 更新 config.yaml 中的IP地址配置
-# 更新 prometheus URL
-sed -i.bak "s|url: \"http://prometheus:9090\"|url: \"http://$SERVER_IP:$PROMETHEUS_PORT\"|" api/config.yaml
-# 更新 pushgateway URL
-sed -i.bak "s|url: \"http://pushgateway:9091\"|url: \"http://$SERVER_IP:$PUSHGATEWAY_PORT\"|" api/config.yaml
-# 更新 heartbeat_server_url
-sed -i.bak "s|heartbeat_server_url: \"http://devops-api:8000|heartbeat_server_url: \"http://$SERVER_IP:$API_PORT|" api/config.yaml
-# 更新 installer_base_url
-sed -i.bak "s|installer_base_url: \"http://devops-api:8000|installer_base_url: \"http://$SERVER_IP:$API_PORT|" api/config.yaml
-# 更新 pushgateway_url
-sed -i.bak "s|pushgateway_url: \"http://pushgateway:9091\"|pushgateway_url: \"http://$SERVER_IP:$PUSHGATEWAY_PORT\"|" api/config.yaml
-
+# 使用通用正则替换，支持重复运行（幂等）
+sed -i.bak "s|url: \"http://[^\"]*:9090\"|url: \"http://$SERVER_IP:$PROMETHEUS_PORT\"|" api/config.yaml
+sed -i.bak "s|url: \"http://[^\"]*:9091\"|url: \"http://$SERVER_IP:$PUSHGATEWAY_PORT\"|" api/config.yaml
+sed -i.bak "s|heartbeat_server_url: \"http://[^\"]*:8000|heartbeat_server_url: \"http://$SERVER_IP:$API_PORT|" api/config.yaml
+sed -i.bak "s|heartbeat_server_url: \"http://[^\"]*:18000|heartbeat_server_url: \"http://$SERVER_IP:$API_PORT|" api/config.yaml
+sed -i.bak "s|installer_base_url: \"http://[^\"]*:8000|installer_base_url: \"http://$SERVER_IP:$API_PORT|" api/config.yaml
+sed -i.bak "s|installer_base_url: \"http://[^\"]*:18000|installer_base_url: \"http://$SERVER_IP:$API_PORT|" api/config.yaml
+sed -i.bak "s|pushgateway_url: \"http://[^\"]*:9091\"|pushgateway_url: \"http://$SERVER_IP:$PUSHGATEWAY_PORT\"|" api/config.yaml
+rm -f api/config.yaml.bak
 echo -e "${GREEN}✓ api/config.yaml 文件已更新${NC}"
 
-echo -e "${YELLOW}步骤 3: 更新 docker-compose.yml 中的镜像版本...${NC}"
-# 更新镜像版本
-sed -i.bak "s|deviops-api:v[0-9.]*|deviops-api:$VERSION|g" docker-compose.yml
-sed -i.bak "s|deviops-web:v[0-9.]*|deviops-web:$VERSION|g" docker-compose.yml
-
-echo -e "${GREEN}✓ docker-compose.yml 镜像版本已更新${NC}"
-
-echo -e "${YELLOW}步骤 4: 停止现有服务...${NC}"
+echo -e "${YELLOW}步骤 3: 停止现有服务...${NC}"
 $DOCKER_COMPOSE_CMD down 2>/dev/null || true
 echo -e "${GREEN}✓ 现有服务已停止${NC}"
 
-echo -e "${YELLOW}步骤 5: 启动新服务...${NC}"
-$DOCKER_COMPOSE_CMD up -d
+echo -e "${YELLOW}步骤 4: 构建镜像并启动服务...${NC}"
+$DOCKER_COMPOSE_CMD up -d --build
 
 # 等待服务启动
 echo -e "${YELLOW}等待服务启动...${NC}"
-sleep 10
+sleep 15
 
 # 检查服务状态
-echo -e "${YELLOW}步骤 6: 检查服务状态...${NC}"
+echo -e "${YELLOW}步骤 5: 检查服务状态...${NC}"
 SERVICES=("devops-mysql" "devops-redis" "devops-pushgateway" "devops-prometheus" "devops-api" "devops-web")
 ALL_HEALTHY=true
 
@@ -172,7 +162,7 @@ if [ "$ALL_HEALTHY" = true ]; then
     echo -e "${GREEN}========================================${NC}"
     echo ""
     echo "访问地址:"
-    echo -e "  前端:       ${GREEN}http://$SERVER_IP:$WEB_PORT${NC}"
+    echo -e "  前端:       ${GREEN}http://$SERVER_IP:$WEB_PORT${NC}  (admin/123456)"
     echo -e "  API:        ${GREEN}http://$SERVER_IP:$API_PORT${NC}"
     echo -e "  Prometheus: ${GREEN}http://$SERVER_IP:$PROMETHEUS_PORT${NC}"
     echo -e "  Pushgateway:${GREEN}http://$SERVER_IP:$PUSHGATEWAY_PORT${NC}"

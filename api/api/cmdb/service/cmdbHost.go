@@ -191,6 +191,9 @@ func (s *CmdbHostServiceImpl) GetCmdbHostListWithPage(c *gin.Context, page, page
 			CreateTime:  host.CreateTime,
 			ExpireTime:  host.ExpireTime,
 			UpdateTime:  host.UpdateTime,
+			SourceType:  host.SourceType,
+			N9EID:       host.N9EID,
+			N9EIdent:    host.N9EIdent,
 		})
 	}
 	result.SuccessWithPage(c, vos, total, page, pageSize)
@@ -227,6 +230,9 @@ func (s *CmdbHostServiceImpl) GetCmdbHostList(c *gin.Context) {
 			CreateTime:  host.CreateTime,
 			ExpireTime:  host.ExpireTime,
 			UpdateTime:  host.UpdateTime,
+			SourceType:  host.SourceType,
+			N9EID:       host.N9EID,
+			N9EIdent:    host.N9EIdent,
 		})
 	}
 	result.Success(c, vos)
@@ -375,6 +381,9 @@ func (s *CmdbHostServiceImpl) GetCmdbHostById(c *gin.Context, id uint) {
 		CreateTime:  host.CreateTime,
 		ExpireTime:  host.ExpireTime,
 		UpdateTime:  host.UpdateTime,
+		SourceType:  host.SourceType,
+		N9EID:       host.N9EID,
+		N9EIdent:    host.N9EIdent,
 	}
 	result.Success(c, vo)
 }
@@ -413,6 +422,9 @@ func (s *CmdbHostServiceImpl) GetCmdbHostByName(c *gin.Context, name string) {
 		CreateTime:  host.CreateTime,
 		ExpireTime:  host.ExpireTime,
 		UpdateTime:  host.UpdateTime,
+		SourceType:  host.SourceType,
+		N9EID:       host.N9EID,
+		N9EIdent:    host.N9EIdent,
 	}
 	result.Success(c, vo)
 }
@@ -458,6 +470,9 @@ func (s *CmdbHostServiceImpl) GetCmdbHostsByGroupId(c *gin.Context, groupId uint
 			CreateTime:  host.CreateTime,
 			ExpireTime:  host.ExpireTime,
 			UpdateTime:  host.UpdateTime,
+			SourceType:  host.SourceType,
+			N9EID:       host.N9EID,
+			N9EIdent:    host.N9EIdent,
 		})
 	}
 	result.Success(c, vos)
@@ -494,6 +509,9 @@ func (s *CmdbHostServiceImpl) GetCmdbHostsByHostNameLike(c *gin.Context, name st
 			CreateTime:  host.CreateTime,
 			ExpireTime:  host.ExpireTime,
 			UpdateTime:  host.UpdateTime,
+			SourceType:  host.SourceType,
+			N9EID:       host.N9EID,
+			N9EIdent:    host.N9EIdent,
 		})
 	}
 	result.Success(c, vos)
@@ -530,6 +548,9 @@ func (s *CmdbHostServiceImpl) GetCmdbHostsByIP(c *gin.Context, ip string) {
 			CreateTime:  host.CreateTime,
 			ExpireTime:  host.ExpireTime,
 			UpdateTime:  host.UpdateTime,
+			SourceType:  host.SourceType,
+			N9EID:       host.N9EID,
+			N9EIdent:    host.N9EIdent,
 		})
 	}
 	result.Success(c, vos)
@@ -566,6 +587,9 @@ func (s *CmdbHostServiceImpl) GetCmdbHostsByStatus(c *gin.Context, status int) {
 			CreateTime:  host.CreateTime,
 			ExpireTime:  host.ExpireTime,
 			UpdateTime:  host.UpdateTime,
+			SourceType:  host.SourceType,
+			N9EID:       host.N9EID,
+			N9EIdent:    host.N9EIdent,
 		})
 	}
 	result.Success(c, vos)
