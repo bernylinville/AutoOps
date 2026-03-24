@@ -13,9 +13,14 @@
           <template #header>
             <div class="card-header">
               <span><el-icon><Coin /></el-icon> 数据源列表</span>
-              <el-button type="primary" size="small" @click="handleSyncDatasources" :loading="syncing" :icon="Refresh">
-                同步数据源
-              </el-button>
+              <div>
+                <el-button size="small" @click="handleCheckAll" :loading="checkingAll" :icon="Connection">
+                  全量检测
+                </el-button>
+                <el-button type="primary" size="small" @click="handleSyncDatasources" :loading="syncing" :icon="Refresh">
+                  同步数据源
+                </el-button>
+              </div>
             </div>
           </template>
 
@@ -143,13 +148,14 @@
 <script setup>
 import { ref, reactive, onMounted, onBeforeUnmount, nextTick } from 'vue'
 import { ElMessage } from 'element-plus'
-import { Coin, Refresh, DataAnalysis, Search } from '@element-plus/icons-vue'
+import { Coin, Refresh, DataAnalysis, Search, Connection } from '@element-plus/icons-vue'
 import n9eApi from '@/api/n9e'
 import * as echarts from 'echarts'
 
 const loading = ref(false)
 const syncing = ref(false)
 const querying = ref(false)
+const checkingAll = ref(false)
 const datasources = ref([])
 const queryResult = ref(null)
 const chartRef = ref(null)
@@ -235,6 +241,24 @@ const handleCheckDatasource = async (row) => {
   } finally {
     row.checking = false
   }
+}
+
+// 批量检测所有数据源
+const handleCheckAll = async () => {
+  if (datasources.value.length === 0) {
+    ElMessage.warning('暂无数据源可检测')
+    return
+  }
+  checkingAll.value = true
+  let okCount = 0
+  let errCount = 0
+  for (const ds of datasources.value) {
+    await handleCheckDatasource(ds)
+    if (ds.checkResult === 'ok') okCount++
+    else errCount++
+  }
+  checkingAll.value = false
+  ElMessage.info(`全量检测完成: ${okCount} 正常, ${errCount} 异常`)
 }
 
 // 时间范围变更

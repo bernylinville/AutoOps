@@ -131,7 +131,9 @@ import { ElMessage } from 'element-plus'
 import { Search, Refresh, Download, Monitor, CircleCheckFilled, CircleCloseFilled, WarningFilled, FolderOpened } from '@element-plus/icons-vue'
 import n9eApi from '@/api/n9e'
 import cmdbApi from '@/api/cmdb'
+import { useRouter } from 'vue-router'
 
+const router = useRouter()
 const loading = ref(false)
 const syncing = ref(false)
 const busiGroups = ref([])
@@ -151,34 +153,31 @@ const pagination = reactive({
 
 const stats = reactive({ online: 0, offline: 0, stale: 0 })
 
-// 加载统计（从 overview API）
+// 加载统计 + 业务组（从 overview API 一次性获取）
 const loadStats = async () => {
   try {
     const res = await n9eApi.getOverview()
-    if (res.data?.code === 200 && res.data.data?.hosts) {
-      const h = res.data.data.hosts
-      stats.online = h.online || 0
-      stats.offline = (h.total || 0) - (h.online || 0) - (h.stale || 0)
-      stats.stale = h.stale || 0
+    if (res.data?.code === 200 && res.data.data) {
+      const d = res.data.data
+      // 主机统计
+      if (d.hosts) {
+        stats.online = d.hosts.online || 0
+        stats.offline = (d.hosts.total || 0) - (d.hosts.online || 0) - (d.hosts.stale || 0)
+        stats.stale = d.hosts.stale || 0
+      }
+      // 业务组含主机计数
+      if (d.busiGroupStats) {
+        busiGroups.value = d.busiGroupStats
+      }
     }
   } catch (err) {
     console.error('Failed to load stats:', err)
   }
 }
 
-// 加载业务组（含主机计数）
-const loadBusiGroups = async () => {
-  try {
-    const res = await n9eApi.getBusiGroups()
-    if (res.data?.code === 200) {
-      busiGroups.value = (res.data.data || []).map(g => ({
-        ...g,
-        hostCount: g.hostCount || 0
-      }))
-    }
-  } catch (err) {
-    console.error('Failed to load busi groups:', err)
-  }
+// 跳转到主机列表（按业务组筛选）
+const handleGroupNavigate = (groupId, groupName) => {
+  router.push({ path: '/cmdb/host', query: { sourceType: 'n9e', groupName: groupName } })
 }
 
 // 加载主机列表（后端分页 + sourceType=n9e 过滤）
@@ -213,7 +212,6 @@ const handleFilterChange = () => {
 }
 
 const handleRefresh = () => {
-  loadBusiGroups()
   loadStats()
   loadTargets()
 }
@@ -237,7 +235,6 @@ const handleSync = async () => {
 }
 
 onMounted(() => {
-  loadBusiGroups()
   loadStats()
   loadTargets()
 })

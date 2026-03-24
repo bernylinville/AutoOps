@@ -5,6 +5,7 @@ import (
 	"dodevops-api/common/result"
 
 	"github.com/gin-gonic/gin"
+	"gorm.io/gorm"
 )
 
 // GetOverview 获取 N9E / CMDB 总览统计
@@ -70,5 +71,37 @@ func (ctrl *N9EController) GetOverview(c *gin.Context) {
 		"lastSyncTime":   syncInfo.LastSyncTime,
 		"lastSyncResult": syncInfo.LastSyncResult,
 		"n9eEnabled":     syncInfo.Enabled,
+		"busiGroupStats": getBusiGroupHostCounts(db),
+		"healthScore":    calcHealthScore(hostStats.Total, hostStats.Online),
 	})
+}
+
+// getBusiGroupHostCounts 获取每个业务组关联的主机数
+func getBusiGroupHostCounts(db *gorm.DB) []gin.H {
+	type groupStat struct {
+		ID        uint   `gorm:"column:id"`
+		Name      string `gorm:"column:name"`
+		HostCount int64  `gorm:"column:host_count"`
+	}
+	var stats []groupStat
+	db.Table("n9e_busi_group AS g").
+		Select("g.id, g.name, COUNT(h.id) AS host_count").
+		Joins("LEFT JOIN cmdb_host h ON h.group_name = g.name AND h.source_type = 'n9e'").
+		Group("g.id, g.name").
+		Order("host_count DESC, g.name ASC").
+		Find(&stats)
+
+	result := make([]gin.H, len(stats))
+	for i, s := range stats {
+		result[i] = gin.H{"id": s.ID, "name": s.Name, "hostCount": s.HostCount}
+	}
+	return result
+}
+
+// calcHealthScore 计算健康分数（在线率 0-100）
+func calcHealthScore(total, online int64) int {
+	if total == 0 {
+		return 100
+	}
+	return int(float64(online) / float64(total) * 100)
 }

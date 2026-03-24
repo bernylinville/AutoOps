@@ -4,6 +4,7 @@ import { useRouter } from 'vue-router'
 import * as echarts from 'echarts'
 import { getDashboardStats, getBusinessDistribution } from '@/api/dashboard'
 import { GetAllTools, CreateTool, UpdateTool, DeleteTool as DeleteToolAPI, UploadIcon } from '@/api/tool'
+import n9eApi from '@/api/n9e'
 import { ElMessage, ElMessageBox } from 'element-plus'
 
 const router = useRouter()
@@ -42,9 +43,9 @@ const stats = reactive({
   monitor: {
     title: '监控告警',
     items: [
-      { label: '活跃告警', value: 0 },
-      { label: '历史告警', value: 0 },
-      { label: '告警同比', value: 0, unit: '%' }
+      { label: '在线主机', value: 0 },
+      { label: '离线主机', value: 0 },
+      { label: '健康度', value: 0, unit: '%' }
     ]
   }
 })
@@ -600,11 +601,25 @@ const loadData = async () => {
       stats.deployment.items[0].value = data.deploymentStats?.total || 0
       stats.deployment.items[1].value = data.taskStats?.total || 0
       stats.deployment.items[2].value = data.deploymentStats?.successRate || 0
+    }
 
-      // 更新监控告警(模拟数据，需要根据实际API调整)
-      stats.monitor.items[0].value = 0
-      stats.monitor.items[1].value = 0
-      stats.monitor.items[2].value = 0
+    // 加载 CMDB/N9E 概览数据更新监控卡片
+    try {
+      const overviewRes = await n9eApi.getOverview()
+      if (overviewRes.data?.code === 200 && overviewRes.data.data) {
+        const ov = overviewRes.data.data
+        const hosts = ov.hosts || {}
+        // 用 CMDB 真实主机数覆盖资产卡
+        if (hosts.total > 0) {
+          stats.assets.items[0].value = hosts.total
+        }
+        // 更新监控告警卡为 CMDB 健康度
+        stats.monitor.items[0].value = hosts.online || 0
+        stats.monitor.items[1].value = hosts.offline || 0
+        stats.monitor.items[2].value = ov.healthScore || 0
+      }
+    } catch (e) {
+      console.warn('N9E overview not available:', e)
     }
   } catch (error) {
     console.error('加载数据失败:', error)
