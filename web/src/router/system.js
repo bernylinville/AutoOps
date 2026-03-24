@@ -11,6 +11,7 @@ import N9eConfig from '@/views/system/N9eConfig.vue'
 import N9eMonitor from '@/views/monitor/N9eMonitor.vue'
 import N9eDatasource from '@/views/monitor/N9eDatasource.vue'
 import N9eOverview from '@/views/monitor/N9eOverview.vue'
+import N9eSyncLog from '@/views/monitor/N9eSyncLog.vue'
 const routes = [
     {
         path: '/system/personal',
@@ -76,6 +77,11 @@ const routes = [
         path: '/monitor/n9e-overview',
         component: N9eOverview,
         meta: {sTitle: '监控中心', tTitle: 'CMDB 总览'}
+    },
+    {
+        path: '/monitor/sync-logs',
+        component: N9eSyncLog,
+        meta: {sTitle: '监控中心', tTitle: '同步日志'}
     }
 ]
 

@@ -86,6 +86,49 @@
         </el-card>
       </el-col>
     </el-row>
+
+    <!-- 最近同步记录 -->
+    <el-card shadow="hover" class="log-card" style="margin-top: 20px;">
+      <template #header>
+        <div class="card-header">
+          <span class="card-title">最近同步记录</span>
+          <el-button text type="primary" size="small" @click="$router.push('/monitor/sync-logs')">查看全部</el-button>
+        </div>
+      </template>
+      <el-table :data="recentLogs" stripe size="small" v-if="recentLogs.length > 0">
+        <el-table-column label="时间" width="170">
+          <template #default="{ row }">{{ formatLogTime(row.createdAt) }}</template>
+        </el-table-column>
+        <el-table-column label="状态" width="80" align="center">
+          <template #default="{ row }">
+            <el-tag :type="row.status === 'success' ? 'success' : 'danger'" size="small">
+              {{ row.status === 'success' ? '成功' : '失败' }}
+            </el-tag>
+          </template>
+        </el-table-column>
+        <el-table-column label="触发" width="80" align="center">
+          <template #default="{ row }">
+            <el-tag :type="row.triggerBy === 'cron' ? 'warning' : 'primary'" size="small" effect="plain">
+              {{ row.triggerBy === 'cron' ? '定时' : '手动' }}
+            </el-tag>
+          </template>
+        </el-table-column>
+        <el-table-column label="耗时" width="80" align="center">
+          <template #default="{ row }">
+            {{ row.durationMs ? (row.durationMs / 1000).toFixed(1) + 's' : '-' }}
+          </template>
+        </el-table-column>
+        <el-table-column label="结果" min-width="200">
+          <template #default="{ row }">
+            <span v-if="row.parsedResult">
+              主机 +{{ row.parsedResult.hosts?.created || 0 }}/↑{{ row.parsedResult.hosts?.updated || 0 }}
+            </span>
+            <span v-else-if="row.errorMsg" style="color: #f56c6c;">{{ row.errorMsg }}</span>
+          </template>
+        </el-table-column>
+      </el-table>
+      <el-empty v-else description="暂无同步记录" :image-size="40" />
+    </el-card>
   </div>
 </template>
 
@@ -172,8 +215,35 @@ const renderSourceChart = () => {
   chartInstance.setOption(option)
 }
 
+const recentLogs = ref([])
+
+const loadRecentLogs = async () => {
+  try {
+    const res = await n9eApi.getSyncLogs(5)
+    if (res.data?.code === 200) {
+      recentLogs.value = (res.data.data || []).map(log => ({
+        ...log,
+        parsedResult: (() => {
+          if (!log.result) return null
+          try { return typeof log.result === 'string' ? JSON.parse(log.result) : log.result }
+          catch { return null }
+        })()
+      }))
+    }
+  } catch (err) {
+    console.error('Failed to load recent logs:', err)
+  }
+}
+
+const formatLogTime = (timeStr) => {
+  if (!timeStr) return '-'
+  const d = new Date(timeStr)
+  return isNaN(d.getTime()) ? timeStr : d.toLocaleString('zh-CN', { hour12: false })
+}
+
 onMounted(() => {
   loadOverview()
+  loadRecentLogs()
 })
 
 onBeforeUnmount(() => {

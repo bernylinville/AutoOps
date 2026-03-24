@@ -4,17 +4,17 @@
     <div class="filter-bar">
       <el-row :gutter="16" align="middle">
         <el-col :span="6">
-          <el-select v-model="filters.busiGroupId" placeholder="选择业务组" clearable @change="loadTargets" style="width: 100%">
-            <el-option v-for="group in busiGroups" :key="group.id" :label="group.name" :value="group.name" />
+          <el-select v-model="filters.groupId" placeholder="选择业务组" clearable @change="handleFilterChange" style="width: 100%">
+            <el-option v-for="group in busiGroups" :key="group.id" :label="`${group.name} (${group.hostCount || 0})`" :value="group.id" />
           </el-select>
         </el-col>
         <el-col :span="5">
-          <el-input v-model="filters.keyword" placeholder="搜索主机名/IP" clearable @clear="loadTargets" @keyup.enter="loadTargets">
+          <el-input v-model="filters.keyword" placeholder="搜索主机名/IP" clearable @clear="handleFilterChange" @keyup.enter="handleFilterChange">
             <template #prefix><el-icon><Search /></el-icon></template>
           </el-input>
         </el-col>
         <el-col :span="4">
-          <el-select v-model="filters.status" placeholder="在线状态" clearable @change="loadTargets" style="width: 100%">
+          <el-select v-model="filters.status" placeholder="在线状态" clearable @change="handleFilterChange" style="width: 100%">
             <el-option label="在线" :value="1" />
             <el-option label="离线" :value="3" />
             <el-option label="失联" :value="4" />
@@ -34,8 +34,8 @@
           <div class="stat-content">
             <div class="stat-icon total"><el-icon :size="28"><Monitor /></el-icon></div>
             <div class="stat-info">
-              <div class="stat-number">{{ stats.total }}</div>
-              <div class="stat-label">主机总数</div>
+              <div class="stat-number">{{ pagination.total }}</div>
+              <div class="stat-label">N9E 主机</div>
             </div>
           </div>
         </el-card>
@@ -88,7 +88,7 @@
 
     <!-- 主机列表表格 -->
     <el-card shadow="hover" class="table-card">
-      <el-table :data="filteredTargets" stripe v-loading="loading" border style="width: 100%" max-height="600">
+      <el-table :data="targets" stripe v-loading="loading" border style="width: 100%">
         <el-table-column prop="n9eIdent" label="标识 (Ident)" min-width="150" show-overflow-tooltip />
         <el-table-column prop="hostName" label="主机名" min-width="140" show-overflow-tooltip />
         <el-table-column label="IP 地址" min-width="130">
@@ -99,14 +99,6 @@
         <el-table-column prop="os" label="操作系统" min-width="120" show-overflow-tooltip />
         <el-table-column prop="cpu" label="CPU" min-width="100" show-overflow-tooltip />
         <el-table-column prop="memory" label="内存" min-width="80" />
-        <el-table-column label="数据来源" width="100" align="center">
-          <template #default="{ row }">
-            <el-tag v-if="row.sourceType === 'n9e'" type="primary" size="small">N9E</el-tag>
-            <el-tag v-else-if="row.sourceType === 'aliyun'" type="warning" size="small">阿里云</el-tag>
-            <el-tag v-else-if="row.sourceType === 'tencent'" type="success" size="small">腾讯云</el-tag>
-            <el-tag v-else type="info" size="small">手动</el-tag>
-          </template>
-        </el-table-column>
         <el-table-column label="状态" width="80" align="center">
           <template #default="{ row }">
             <el-tag v-if="row.status === 4" type="info" size="small" effect="plain">失联</el-tag>
@@ -118,15 +110,23 @@
       </el-table>
 
       <!-- 分页 -->
-      <div class="pagination-wrapper" v-if="filteredTargets.length > 0">
-        <span class="total-text">共 {{ filteredTargets.length }} 条</span>
+      <div class="pagination-wrapper">
+        <el-pagination
+          v-model:current-page="pagination.page"
+          v-model:page-size="pagination.pageSize"
+          :page-sizes="[20, 50, 100, 200]"
+          :total="pagination.total"
+          layout="total, sizes, prev, pager, next, jumper"
+          @size-change="loadTargets"
+          @current-change="loadTargets"
+        />
       </div>
     </el-card>
   </div>
 </template>
 
 <script setup>
-import { ref, reactive, computed, onMounted } from 'vue'
+import { ref, reactive, onMounted } from 'vue'
 import { ElMessage } from 'element-plus'
 import { Search, Refresh, Download, Monitor, CircleCheckFilled, CircleCloseFilled, WarningFilled, FolderOpened } from '@element-plus/icons-vue'
 import n9eApi from '@/api/n9e'
@@ -138,77 +138,68 @@ const busiGroups = ref([])
 const targets = ref([])
 
 const filters = reactive({
-  busiGroupId: null,
+  groupId: null,
   keyword: '',
   status: null
 })
 
-const stats = computed(() => {
-  const total = targets.value.length
-  const online = targets.value.filter(t => t.status === 1).length
-  const stale = targets.value.filter(t => t.status === 4).length
-  return { total, online, offline: total - online - stale, stale }
+const pagination = reactive({
+  page: 1,
+  pageSize: 50,
+  total: 0
 })
 
-const filteredTargets = computed(() => {
-  let list = targets.value
-  if (filters.keyword) {
-    const kw = filters.keyword.toLowerCase()
-    list = list.filter(t =>
-      (t.hostName && t.hostName.toLowerCase().includes(kw)) ||
-      (t.n9eIdent && t.n9eIdent.toLowerCase().includes(kw)) ||
-      (t.publicIp && t.publicIp.includes(kw)) ||
-      (t.privateIp && t.privateIp.includes(kw)) ||
-      (t.sshIp && t.sshIp.includes(kw))
-    )
-  }
-  if (filters.busiGroupId) {
-    list = list.filter(t => t.groupName === filters.busiGroupId)
-  }
-  if (filters.status !== null && filters.status !== '') {
-    list = list.filter(t => t.status === filters.status)
-  }
-  return list
-})
+const stats = reactive({ online: 0, offline: 0, stale: 0 })
 
-// 加载业务组
+// 加载统计（从 overview API）
+const loadStats = async () => {
+  try {
+    const res = await n9eApi.getOverview()
+    if (res.data?.code === 200 && res.data.data?.hosts) {
+      const h = res.data.data.hosts
+      stats.online = h.online || 0
+      stats.offline = (h.total || 0) - (h.online || 0) - (h.stale || 0)
+      stats.stale = h.stale || 0
+    }
+  } catch (err) {
+    console.error('Failed to load stats:', err)
+  }
+}
+
+// 加载业务组（含主机计数）
 const loadBusiGroups = async () => {
   try {
     const res = await n9eApi.getBusiGroups()
     if (res.data?.code === 200) {
-      busiGroups.value = res.data.data || []
+      busiGroups.value = (res.data.data || []).map(g => ({
+        ...g,
+        hostCount: g.hostCount || 0
+      }))
     }
   } catch (err) {
     console.error('Failed to load busi groups:', err)
   }
 }
 
-// 加载主机列表（分页加载 CMDB 主机，过滤 N9E 来源）
+// 加载主机列表（后端分页 + sourceType=n9e 过滤）
 const loadTargets = async () => {
   loading.value = true
   try {
-    const allHosts = []
-    const pageSize = 100
-    let page = 1
-    let hasMore = true
-
-    while (hasMore) {
-      const params = { page, pageSize }
-      const res = await cmdbApi.getCmdbHostList(params)
-      if (res.data?.code === 200) {
-        const data = res.data.data
-        const list = data?.list || data || []
-        allHosts.push(...list)
-        const total = data?.total || list.length
-        hasMore = allHosts.length < total && list.length === pageSize
-        page++
-      } else {
-        hasMore = false
-      }
+    const params = {
+      page: pagination.page,
+      pageSize: pagination.pageSize,
+      sourceType: 'n9e'
     }
+    if (filters.keyword) params.keyword = filters.keyword
+    if (filters.groupId) params.groupId = filters.groupId
+    if (filters.status !== null && filters.status !== '') params.status = filters.status
 
-    // 过滤出 N9E 来源的主机
-    targets.value = allHosts.filter(h => h.sourceType === 'n9e')
+    const res = await cmdbApi.getCmdbHostList(params)
+    if (res.data?.code === 200) {
+      const data = res.data.data
+      targets.value = data?.list || []
+      pagination.total = data?.total || 0
+    }
   } catch (err) {
     console.error('Failed to load targets:', err)
   } finally {
@@ -216,8 +207,14 @@ const loadTargets = async () => {
   }
 }
 
+const handleFilterChange = () => {
+  pagination.page = 1
+  loadTargets()
+}
+
 const handleRefresh = () => {
   loadBusiGroups()
+  loadStats()
   loadTargets()
 }
 
@@ -241,14 +238,13 @@ const handleSync = async () => {
 
 onMounted(() => {
   loadBusiGroups()
+  loadStats()
   loadTargets()
 })
 </script>
 
 <style scoped>
-.n9e-monitor-container {
-  padding: 20px;
-}
+.n9e-monitor-container { padding: 20px; }
 
 .filter-bar {
   margin-bottom: 16px;
@@ -258,62 +254,24 @@ onMounted(() => {
   box-shadow: 0 1px 4px rgba(0, 0, 0, 0.08);
 }
 
-.stats-row {
-  margin-bottom: 16px;
-}
-
-.stat-card {
-  border-radius: 8px;
-}
-
-.stat-content {
-  display: flex;
-  align-items: center;
-  gap: 16px;
-}
-
+.stats-row { margin-bottom: 16px; }
+.stat-card { border-radius: 8px; }
+.stat-content { display: flex; align-items: center; gap: 16px; }
 .stat-icon {
-  width: 56px;
-  height: 56px;
-  border-radius: 12px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  color: #fff;
+  width: 56px; height: 56px; border-radius: 12px;
+  display: flex; align-items: center; justify-content: center; color: #fff;
 }
-
 .stat-icon.total { background: linear-gradient(135deg, #409eff, #337ecc); }
 .stat-icon.online { background: linear-gradient(135deg, #67c23a, #529b2e); }
 .stat-icon.offline { background: linear-gradient(135deg, #f56c6c, #c45656); }
 .stat-icon.stale { background: linear-gradient(135deg, #909399, #6b6e75); }
 .stat-icon.groups { background: linear-gradient(135deg, #e6a23c, #b88230); }
+.stat-number { font-size: 28px; font-weight: 700; color: #303133; line-height: 1; }
+.stat-label { font-size: 13px; color: #909399; margin-top: 4px; }
 
-.stat-number {
-  font-size: 28px;
-  font-weight: 700;
-  color: #303133;
-  line-height: 1;
-}
-
-.stat-label {
-  font-size: 13px;
-  color: #909399;
-  margin-top: 4px;
-}
-
-.table-card {
-  border-radius: 8px;
-}
-
+.table-card { border-radius: 8px; }
 .pagination-wrapper {
-  display: flex;
-  justify-content: flex-end;
-  align-items: center;
-  padding: 12px 0 0;
-}
-
-.total-text {
-  color: #909399;
-  font-size: 13px;
+  display: flex; justify-content: flex-end;
+  align-items: center; padding: 16px 0 0;
 }
 </style>
