@@ -23,16 +23,27 @@ func NewCmdbHostDao() CmdbHostDao {
 	}
 }
 
-// 获取主机列表(分页)
-func (d *CmdbHostDao) GetCmdbHostListWithPage(page, pageSize int) ([]model.CmdbHost, int64) {
+// 获取主机列表(分页) — 支持 source_type / groupId / keyword 过滤
+func (d *CmdbHostDao) GetCmdbHostListWithPage(page, pageSize int, sourceType string, groupId uint, keyword string) ([]model.CmdbHost, int64) {
 	var list []model.CmdbHost
 	var total int64
-	
-	// 使用预加载Group信息并优化查询
-	db := d.db.Preload("Group")
-	db.Model(&model.CmdbHost{}).Count(&total)
-	db.Offset((page - 1) * pageSize).Limit(pageSize).Find(&list)
-	
+
+	query := d.db.Model(&model.CmdbHost{})
+	if sourceType != "" {
+		query = query.Where("source_type = ?", sourceType)
+	}
+	if groupId > 0 {
+		query = query.Where("group_id = ?", groupId)
+	}
+	if keyword != "" {
+		like := "%" + keyword + "%"
+		query = query.Where("host_name LIKE ? OR name LIKE ? OR public_ip LIKE ? OR private_ip LIKE ? OR ssh_ip LIKE ?",
+			like, like, like, like, like)
+	}
+
+	query.Count(&total)
+	query.Preload("Group").Offset((page - 1) * pageSize).Limit(pageSize).Find(&list)
+
 	return list, total
 }
 

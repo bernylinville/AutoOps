@@ -9,6 +9,7 @@ import (
 	"fmt"
 	"os"
 	"path/filepath"
+	"strconv"
 	"strings"
 	"time"
 
@@ -76,7 +77,13 @@ func (c *CmdbHostController) GetCmdbHostListWithPage(ctx *gin.Context) {
 		result.Failed(ctx, constant.INVALID_PARAMS, "分页参数错误")
 		return
 	}
-	c.service.GetCmdbHostListWithPage(ctx, params.Page, params.PageSize)
+	sourceType := ctx.Query("sourceType")
+	groupId := uint(0)
+	if gid, err := strconv.Atoi(ctx.Query("groupId")); err == nil && gid > 0 {
+		groupId = uint(gid)
+	}
+	keyword := ctx.Query("keyword")
+	c.service.GetCmdbHostListWithPage(ctx, params.Page, params.PageSize, sourceType, groupId, keyword)
 }
 
 // 创建主机

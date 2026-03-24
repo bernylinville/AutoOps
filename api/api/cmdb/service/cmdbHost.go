@@ -15,7 +15,7 @@ import (
 
 type CmdbHostServiceInterface interface {
 	GetCmdbHostList(c *gin.Context)                                                                           // 获取主机列表
-	GetCmdbHostListWithPage(c *gin.Context, page, pageSize int)                                               // 获取主机列表(分页)
+	GetCmdbHostListWithPage(c *gin.Context, page, pageSize int, sourceType string, groupId uint, keyword string) // 获取主机列表(分页)
 	GetCmdbHostById(c *gin.Context, id uint)                                                                  // 根据ID获取主机
 	GetCmdbHostByName(c *gin.Context, name string)                                                            // 根据名称获取主机
 	CreateCmdbHost(c *gin.Context, dto *model.CreateCmdbHostDto)                                              // 创建主机
@@ -161,8 +161,8 @@ func (s *CmdbHostServiceImpl) ImportHostsFromExcel(c *gin.Context, dto *model.Im
 }
 
 // 获取主机列表(分页)
-func (s *CmdbHostServiceImpl) GetCmdbHostListWithPage(c *gin.Context, page, pageSize int) {
-	list, total := s.dao.GetCmdbHostListWithPage(page, pageSize)
+func (s *CmdbHostServiceImpl) GetCmdbHostListWithPage(c *gin.Context, page, pageSize int, sourceType string, groupId uint, keyword string) {
+	list, total := s.dao.GetCmdbHostListWithPage(page, pageSize, sourceType, groupId, keyword)
 	var vos []model.CmdbHostVo
 	for _, host := range list {
 		group, _ := s.groupDao.GetCmdbGroupById(host.GroupID)

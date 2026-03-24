@@ -44,8 +44,16 @@
               />
             </el-form-item>
             <el-form-item label="主机状态" prop="status">
-              <el-select size="small" placeholder="请选择状态" v-model="queryParams.status" style="width: 120px;">
+              <el-select size="small" placeholder="请选择状态" v-model="queryParams.status" style="width: 120px;" clearable>
                 <el-option v-for="item in statusList" :key="item.value" :label="item.label" :value="item.value"></el-option>
+              </el-select>
+            </el-form-item>
+            <el-form-item label="数据来源" prop="sourceType">
+              <el-select size="small" placeholder="全部来源" v-model="queryParams.sourceType" style="width: 120px;" clearable>
+                <el-option label="N9E 同步" value="n9e" />
+                <el-option label="手动录入" value="manual" />
+                <el-option label="阿里云" value="aliyun" />
+                <el-option label="腾讯云" value="tencent" />
               </el-select>
             </el-form-item>
             <!-- 操作按钮 -->
@@ -396,7 +404,8 @@ export default {
         hostName: '',
         ip: '',
         status: '',
-        groupId: ''
+        groupId: '',
+        sourceType: ''
       },
       hostList: [],
       total: 0,
@@ -655,6 +664,9 @@ export default {
           page: pageNum,
           pageSize: pageSize,
           _t: Date.now() // 添加时间戳防止缓存
+        }
+        if (this.queryParams.sourceType) {
+          baseParams.sourceType = this.queryParams.sourceType
         }
 
         

@@ -172,6 +172,13 @@
           </div>
         </template>
       </el-table-column>
+      <el-table-column label="数据来源" width="100" align="center">
+        <template v-slot="scope">
+          <el-tag v-if="scope.row.sourceType === 'n9e'" type="" size="small" style="background: #7c3aed; color: #fff; border: none;">N9E</el-tag>
+          <el-tag v-else-if="scope.row.sourceType === 'aliyun' || scope.row.sourceType === 'tencent'" type="warning" size="small">云同步</el-tag>
+          <el-tag v-else type="success" size="small">手动</el-tag>
+        </template>
+      </el-table-column>
 
 
     
