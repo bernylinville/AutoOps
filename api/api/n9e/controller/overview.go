@@ -20,12 +20,13 @@ func (ctrl *N9EController) GetOverview(c *gin.Context) {
 
 	// 主机统计
 	var hostStats struct {
-		Total  int64 `json:"total"`
-		N9E    int64 `json:"n9e"`
-		Manual int64 `json:"manual"`
-		Cloud  int64 `json:"cloud"`
-		Online int64 `json:"online"`
-		Stale  int64 `json:"stale"`
+		Total    int64 `json:"total"`
+		N9E      int64 `json:"n9e"`
+		Manual   int64 `json:"manual"`
+		Cloud    int64 `json:"cloud"`
+		Online   int64 `json:"online"`
+		Stale    int64 `json:"stale"`
+		Degraded int64 `json:"degraded"`
 	}
 
 	db.Table("cmdb_host").Count(&hostStats.Total)
@@ -34,6 +35,7 @@ func (ctrl *N9EController) GetOverview(c *gin.Context) {
 	db.Table("cmdb_host").Where("source_type IN ?", []string{"aliyun", "tencent"}).Count(&hostStats.Cloud)
 	db.Table("cmdb_host").Where("status = ?", 1).Count(&hostStats.Online)
 	db.Table("cmdb_host").Where("status = ?", 4).Count(&hostStats.Stale)
+	db.Table("cmdb_host").Where("status = ?", 5).Count(&hostStats.Degraded)
 
 	// 业务组统计
 	var groupCount int64
@@ -57,13 +59,14 @@ func (ctrl *N9EController) GetOverview(c *gin.Context) {
 
 	result.Success(c, gin.H{
 		"hosts": gin.H{
-			"total":   hostStats.Total,
-			"n9e":     hostStats.N9E,
-			"manual":  hostStats.Manual,
-			"cloud":   hostStats.Cloud,
-			"online":  hostStats.Online,
-			"offline": hostStats.Total - hostStats.Online - hostStats.Stale,
-			"stale":   hostStats.Stale,
+			"total":    hostStats.Total,
+			"n9e":      hostStats.N9E,
+			"manual":   hostStats.Manual,
+			"cloud":    hostStats.Cloud,
+			"online":   hostStats.Online,
+			"offline":  hostStats.Total - hostStats.Online - hostStats.Stale - hostStats.Degraded,
+			"stale":    hostStats.Stale,
+			"degraded": hostStats.Degraded,
 		},
 		"n9eBusiGroups":  groupCount,
 		"datasources":    dsCount,

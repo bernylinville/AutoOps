@@ -253,13 +253,13 @@ const deleteNamespace = (row) => {
 }
 
 .namespace-table {
-  border-radius: 12px;
+  border-radius: var(--ao-radius-lg);
   overflow: hidden;
   box-shadow: 0 4px 16px rgba(0, 0, 0, 0.08);
 }
 
 .namespace-table :deep(.el-table__header) {
-  background: linear-gradient(135deg, #667eea, #764ba2);
+  background: var(--ao-bg-page);
 }
 
 .namespace-table :deep(.el-table__header th) {
@@ -281,8 +281,7 @@ const deleteNamespace = (row) => {
 }
 
 .namespace-table :deep(.el-table__row:hover) {
-  background-color: rgba(103, 126, 234, 0.05) !important;
-  transform: translateY(-2px);
+  background-color: rgba(64, 158, 255, 0.05) !important;
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
 }
 
@@ -301,7 +300,7 @@ const deleteNamespace = (row) => {
 
 .namespace-name-link {
   font-weight: 600;
-  color: #667eea;
+  color: var(--ao-primary);
   text-decoration: none;
   transition: all 0.3s ease;
 }
@@ -374,7 +373,6 @@ const deleteNamespace = (row) => {
 .label-icon-button:hover {
   background: transparent;
   color: #409eff;
-  transform: scale(1.1);
 }
 
 .operation-buttons {
@@ -392,7 +390,6 @@ const deleteNamespace = (row) => {
 }
 
 .operation-buttons .el-button:hover {
-  transform: translateY(-2px);
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
 }
 

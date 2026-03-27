@@ -1543,13 +1543,12 @@ export default {
 .cmdb-host-management {
   padding: 20px;
   min-height: 100vh;
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  background: var(--ao-bg-page);
 }
 
 .host-card {
   background: rgba(255, 255, 255, 0.95);
-  backdrop-filter: blur(10px);
-  border-radius: 16px;
+  border-radius: var(--ao-radius-lg);
   box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
   border: 1px solid rgba(255, 255, 255, 0.2);
 }
@@ -1575,9 +1574,9 @@ export default {
 .search-section {
   margin-bottom: 20px;
   padding: 20px;
-  background: rgba(103, 126, 234, 0.05);
-  border-radius: 12px;
-  border: 1px solid rgba(103, 126, 234, 0.1);
+  background: rgba(64, 158, 255, 0.05);
+  border-radius: var(--ao-radius-lg);
+  border: 1px solid rgba(64, 158, 255, 0.1);
 }
 
 /* 🎯 操作按钮区域 */
@@ -1637,7 +1636,6 @@ export default {
 }
 
 .el-button:hover {
-  transform: translateY(-2px);
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
 }
 
@@ -1645,7 +1643,7 @@ export default {
 .el-input :deep(.el-input__wrapper),
 .el-select :deep(.el-input__wrapper) {
   background: rgba(255, 255, 255, 0.8);
-  border: 1px solid rgba(103, 126, 234, 0.2);
+  border: 1px solid rgba(64, 158, 255, 0.2);
   border-radius: 8px;
   box-shadow: none;
   transition: all 0.3s ease;
@@ -1658,8 +1656,8 @@ export default {
 
 .el-input :deep(.el-input__wrapper.is-focus),
 .el-select :deep(.el-input__wrapper.is-focus) {
-  border-color: #667eea;
-  box-shadow: 0 0 0 2px rgba(103, 126, 234, 0.2);
+  border-color: var(--ao-primary);
+  box-shadow: 0 0 0 2px rgba(64, 158, 255, 0.2);
   background: rgba(255, 255, 255, 1);
 }
 
@@ -1683,7 +1681,7 @@ export default {
 
 /* 🖥️ 终端按钮渐变蓝色样式 */
 .terminal-btn {
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%) !important;
+  background: var(--ao-bg-page) !important;
   border: none !important;
   color: white !important;
   box-shadow: 0 4px 12px rgba(102, 126, 234, 0.3);
@@ -1691,7 +1689,6 @@ export default {
 
 .terminal-btn:hover {
   background: linear-gradient(135deg, #5a6fd8 0%, #6a4190 100%) !important;
-  transform: translateY(-2px);
   box-shadow: 0 6px 16px rgba(102, 126, 234, 0.4);
 }
 

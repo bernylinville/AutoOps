@@ -510,13 +510,13 @@ export default {
 
 /* 📊 表格样式 */
 .host-table {
-  border-radius: 12px;
+  border-radius: var(--ao-radius-lg);
   overflow: hidden;
   box-shadow: 0 4px 16px rgba(0, 0, 0, 0.08);
 }
 
 .host-table :deep(.el-table__header) {
-  background: linear-gradient(135deg, #667eea, #764ba2);
+  background: var(--ao-bg-page);
 }
 
 .host-table :deep(.el-table__header th) {
@@ -538,8 +538,7 @@ export default {
 }
 
 .host-table :deep(.el-table__row:hover) {
-  background-color: rgba(103, 126, 234, 0.05) !important;
-  transform: translateY(-2px);
+  background-color: rgba(64, 158, 255, 0.05) !important;
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
 }
 
@@ -556,7 +555,6 @@ export default {
 }
 
 .table-operation .el-button:hover {
-  transform: translateY(-2px);
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
 }
 
@@ -679,7 +677,6 @@ export default {
 
 .copy-icon:hover {
   background-color: rgba(64, 158, 255, 0.1);
-  transform: scale(1.1);
 }
 
 /* 鼠标悬停时显示复制图标 */
@@ -692,7 +689,6 @@ export default {
 /* 复制成功动画效果 */
 .copy-icon.copied {
   color: #67C23A !important;
-  transform: scale(1.2);
 }
 
 /* IP图标样式 */

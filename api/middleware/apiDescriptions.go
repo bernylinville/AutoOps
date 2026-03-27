@@ -65,6 +65,10 @@ func getDescriptionMap() map[string]string {
 		"/api/v1/sysOperationLog/batchDelete": "批量删除操作日志",
 		"/api/v1/sysOperationLog/clean":       "清空操作日志",
 
+		"/api/v1/auditLog/delete":      "删除审计日志",
+		"/api/v1/auditLog/batch/delete": "批量删除审计日志",
+		"/api/v1/auditLog/clean":       "清空审计日志",
+
 		// ========== 配置中心 ==========
 		"/api/v1/config/ecsauthadd":    "新增ECS认证",
 		"/api/v1/config/ecsauthupdate": "修改ECS认证",
@@ -123,6 +127,12 @@ func getDescriptionMap() map[string]string {
 		"/api/v1/apps/deployment/execute":       "执行快速发布",
 		"/api/v1/apps/jenkins-job/validate":     "验证Jenkins任务",
 		"/api/v1/jenkins/test-connection":       "测试Jenkins连接",
+
+		// ========== N9E / VM 监控 ==========
+		"/api/v1/n9e/config":      "N9E 配置管理",
+		"/api/v1/n9e/sync":        "N9E 数据同步",
+		"/api/v1/n9e/vm/query":    "VM PromQL 查询",
+		"/api/v1/n9e/vm/overview": "VM 集群监控总览",
 	}
 
 	return descriptions

@@ -64,4 +64,9 @@ func RegisterSystemRoutes(router *gin.RouterGroup) {
 	router.DELETE("/sysOperationLog/delete", middleware.RbacMiddleware("base:log:delete"), controller.DeleteSysOperationLogById)
 	router.DELETE("/sysOperationLog/batch/delete", middleware.RbacMiddleware("base:log:delete"), controller.BatchDeleteSysOperationLog)
 	router.DELETE("/sysOperationLog/clean", middleware.RbacMiddleware("base:log:clean"), controller.CleanSysOperationLog)
+	// 审计日志
+	router.GET("/auditLog/list", middleware.RbacMiddleware("base:audit:view"), controller.GetSysAuditLogList)
+	router.DELETE("/auditLog/delete", middleware.RbacMiddleware("base:audit:delete"), controller.DeleteSysAuditLogById)
+	router.DELETE("/auditLog/batch/delete", middleware.RbacMiddleware("base:audit:delete"), controller.BatchDeleteSysAuditLog)
+	router.DELETE("/auditLog/clean", middleware.RbacMiddleware("base:audit:clean"), controller.CleanSysAuditLog)
 }

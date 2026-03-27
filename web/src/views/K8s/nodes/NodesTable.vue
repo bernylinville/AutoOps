@@ -324,8 +324,7 @@ const drainNode = (row) => {
 
 .nodes-table {
   background: rgba(255, 255, 255, 0.9);
-  border-radius: 16px;
-  backdrop-filter: blur(10px);
+  border-radius: var(--ao-radius-lg);
   overflow: hidden;
 }
 
@@ -376,7 +375,6 @@ const drainNode = (row) => {
 
 .label-icon-button:hover {
   background: rgba(64, 158, 255, 0.1);
-  transform: scale(1.1);
 }
 
 .taint-icon {
@@ -387,7 +385,6 @@ const drainNode = (row) => {
 
 .taint-icon:hover {
   color: #F56C6C;
-  transform: scale(1.1);
 }
 
 .resource-info {
@@ -422,7 +419,6 @@ const drainNode = (row) => {
 }
 
 .operation-buttons .el-button:hover {
-  transform: translateY(-2px);
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
 }
 </style>

@@ -69,23 +69,27 @@ export default {
 
 <style lang="less" scoped>
 .user-info {
-  position: fixed;
-  right: 30px;
-  top: 10px;
   display: flex;
   align-items: center;
   gap: 10px;
+  flex-shrink: 0;
 }
 
 .user-username {
-  font-size: medium;
+  font-size: 14px;
+  color: var(--ao-text-regular);
 }
 
 .user-avatar {
   cursor: pointer;
-  width: 40px;
-  height: 40px;
-  border-radius: 50%; /* 圆形头像 */
-  object-fit: cover; /* 防止变形 */
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  object-fit: cover;
+  transition: opacity var(--ao-transition);
+
+  &:hover {
+    opacity: 0.85;
+  }
 }
 </style>

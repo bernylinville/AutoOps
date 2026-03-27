@@ -255,7 +255,7 @@ onMounted(() => {
 .stat-card { border-radius: 8px; }
 .stat-content { display: flex; align-items: center; gap: 16px; }
 .stat-icon {
-  width: 56px; height: 56px; border-radius: 12px;
+  width: 56px; height: 56px; border-radius: var(--ao-radius-lg);
   display: flex; align-items: center; justify-content: center; color: #fff;
 }
 .stat-icon.total { background: linear-gradient(135deg, #409eff, #337ecc); }

@@ -39,6 +39,12 @@ func RegisterN9ERoutes(r *gin.RouterGroup) {
 		// PromQL 查询
 		n9eGroup.GET("/query", ctrl.QueryPromQL)
 
+		// VictoriaMetrics 监控查询
+		n9eGroup.GET("/vm/query", ctrl.QueryVMMetrics)
+		n9eGroup.GET("/vm/host/:ident", ctrl.GetHostVMMetrics)
+		n9eGroup.GET("/vm/host/:ident/history", ctrl.GetHostVMHistory)
+		n9eGroup.GET("/vm/overview", ctrl.GetClusterVMOverview)
+
 		// === 告警规则管理 ===
 		n9eGroup.GET("/alert/rules", alertCtrl.GetAlertRules)
 		n9eGroup.POST("/alert/rules", middleware.RbacMiddleware("monitor:alert:add"), alertCtrl.CreateAlertRule)

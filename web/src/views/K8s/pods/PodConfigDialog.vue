@@ -224,13 +224,12 @@ const removeEnvVar = (index) => {
 
 /* 对话框样式 */
 .pod-config-dialog :deep(.el-dialog) {
-  border-radius: 16px;
+  border-radius: var(--ao-radius-lg);
   background: rgba(255, 255, 255, 0.95);
-  backdrop-filter: blur(10px);
 }
 
 .pod-config-dialog :deep(.el-dialog__header) {
-  background: linear-gradient(135deg, #667eea, #764ba2);
+  background: var(--ao-bg-page);
   color: white;
   border-top-left-radius: 16px;
   border-top-right-radius: 16px;

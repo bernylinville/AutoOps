@@ -473,7 +473,6 @@ export default {
 /* 🎨 高科技卡片设计 */
 .group-card {
   background: linear-gradient(145deg, rgba(255, 255, 255, 0.95), rgba(255, 255, 255, 0.85));
-  backdrop-filter: blur(20px);
   border-radius: 20px;
   box-shadow: 
     0 20px 40px rgba(0, 0, 0, 0.1),
@@ -531,7 +530,7 @@ export default {
 
 .main-icon {
   font-size: 20px;
-  color: #667eea;
+  color: var(--ao-primary);
   z-index: 2;
   background: rgba(102, 126, 234, 0.1);
   padding: 8px;
@@ -540,15 +539,13 @@ export default {
 
 @keyframes pulse {
   0% { transform: scale(1); opacity: 1; }
-  50% { transform: scale(1.2); opacity: 0.7; }
-  100% { transform: scale(1.4); opacity: 0; }
 }
 
 .title-content .title {
   font-size: 18px;
   font-weight: 700;
   margin: 0 0 2px 0;
-  background: linear-gradient(135deg, #667eea, #764ba2);
+  background: var(--ao-bg-page);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   white-space: nowrap;
@@ -576,7 +573,7 @@ export default {
 .stats-text {
   font-size: 16px;
   font-weight: 700;
-  color: #667eea;
+  color: var(--ao-primary);
   line-height: 1;
 }
 
@@ -606,7 +603,7 @@ export default {
 .tech-input :deep(.el-input__wrapper) {
   background: rgba(102, 126, 234, 0.03);
   border: 1px solid rgba(102, 126, 234, 0.15);
-  border-radius: 12px;
+  border-radius: var(--ao-radius-lg);
   box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.02);
   transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 }
@@ -617,7 +614,7 @@ export default {
 }
 
 .tech-input :deep(.el-input__wrapper.is-focus) {
-  border-color: #667eea;
+  border-color: var(--ao-primary);
   background: rgba(255, 255, 255, 0.9);
   box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
 }
@@ -628,7 +625,7 @@ export default {
 }
 
 .tech-input:focus-within .search-icon {
-  color: #667eea;
+  color: var(--ao-primary);
 }
 
 .toggle-btn {
@@ -649,7 +646,6 @@ export default {
 }
 
 .toggle-btn:hover {
-  transform: scale(1.1);
 }
 
 .toggle-icon {
@@ -698,7 +694,7 @@ export default {
   top: 50%;
   transform: translateY(-50%);
   z-index: 5;
-  color: #667eea;
+  color: var(--ao-primary);
   font-size: 12px;
   transition: transform 0.3s ease;
 }
@@ -741,7 +737,7 @@ export default {
   right: 0;
   bottom: 0;
   background: linear-gradient(135deg, rgba(102, 126, 234, 0.08), rgba(118, 75, 162, 0.08));
-  border-radius: 12px;
+  border-radius: var(--ao-radius-lg);
   opacity: 0;
   transform: scale(1);
   transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
@@ -806,7 +802,7 @@ export default {
   position: absolute;
   width: 6px;
   height: 6px;
-  background: linear-gradient(135deg, #667eea, #764ba2);
+  background: var(--ao-bg-page);
   border-radius: 50%;
   top: 50%;
   left: -8px;
@@ -931,7 +927,6 @@ export default {
 }
 
 .group-card:hover {
-  transform: translateY(-2px);
   box-shadow: 
     0 25px 50px rgba(0, 0, 0, 0.15),
     0 0 0 1px rgba(255, 255, 255, 0.3),
@@ -985,20 +980,18 @@ export default {
 }
 
 .manage-btn:hover {
-  transform: scale(1.1);
   background: rgba(102, 126, 234, 0.1);
 }
 
 .manage-icon {
   font-size: 16px;
-  color: #667eea;
+  color: var(--ao-primary);
 }
 
 /* 右键菜单样式 */
 .context-menu {
   position: absolute;
   background: rgba(255, 255, 255, 0.95);
-  backdrop-filter: blur(10px);
   border-radius: 8px;
   box-shadow: 0 8px 32px rgba(0, 0, 0, 0.15);
   border: 1px solid rgba(255, 255, 255, 0.2);
@@ -1021,7 +1014,7 @@ export default {
 
 .context-menu-item:hover {
   background: rgba(102, 126, 234, 0.1);
-  color: #667eea;
+  color: var(--ao-primary);
 }
 
 .context-menu-item.danger {

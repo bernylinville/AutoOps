@@ -1356,13 +1356,12 @@ onMounted(() => {
 .taskansible-management {
   padding: 20px;
   min-height: 100vh;
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  background: var(--ao-bg-page);
 }
 
 .taskansible-card {
   background: rgba(255, 255, 255, 0.95);
-  backdrop-filter: blur(10px);
-  border-radius: 16px;
+  border-radius: var(--ao-radius-lg);
   box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
   border: 1px solid rgba(255, 255, 255, 0.2);
 }
@@ -1377,7 +1376,7 @@ onMounted(() => {
   font-size: 20px;
   font-weight: 600;
   color: #2c3e50;
-  background: linear-gradient(45deg, #667eea, #764ba2);
+  background: var(--ao-primary);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
 }
@@ -1385,9 +1384,9 @@ onMounted(() => {
 .search-section {
   margin-bottom: 16px;
   padding: 16px;
-  background: rgba(103, 126, 234, 0.05);
-  border-radius: 12px;
-  border: 1px solid rgba(103, 126, 234, 0.1);
+  background: rgba(64, 158, 255, 0.05);
+  border-radius: var(--ao-radius-lg);
+  border: 1px solid rgba(64, 158, 255, 0.1);
 }
 
 .search-form .el-form-item {
@@ -1416,7 +1415,7 @@ onMounted(() => {
 
 :deep(.el-table) {
   background: rgba(255, 255, 255, 0.9);
-  border-radius: 12px;
+  border-radius: var(--ao-radius-lg);
   overflow: hidden;
   box-shadow: 0 4px 16px rgba(0, 0, 0, 0.1);
 }
@@ -1459,12 +1458,11 @@ onMounted(() => {
 }
 
 .operation-buttons .el-button:hover {
-  transform: translateY(-2px);
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
 }
 
 :deep(.el-button--primary) {
-  background: linear-gradient(135deg, #667eea, #764ba2);
+  background: var(--ao-bg-page);
   border: none;
   border-radius: 8px;
   font-weight: 500;
@@ -1473,7 +1471,6 @@ onMounted(() => {
 
 :deep(.el-button--primary:hover) {
   background: linear-gradient(135deg, #5a6fd8, #6a4190);
-  transform: translateY(-2px);
   box-shadow: 0 6px 20px rgba(102, 126, 234, 0.4);
 }
 
@@ -1492,7 +1489,6 @@ onMounted(() => {
 
 :deep(.el-button--warning:hover) {
   background: linear-gradient(135deg, #e67e22, #d35400);
-  transform: translateY(-2px);
   box-shadow: 0 6px 20px rgba(243, 156, 18, 0.4);
 }
 
@@ -1511,7 +1507,6 @@ onMounted(() => {
 
 :deep(.el-button--success:hover) {
   background: linear-gradient(135deg, #2ecc71, #16a085);
-  transform: translateY(-2px);
   box-shadow: 0 6px 20px rgba(46, 204, 113, 0.4);
 }
 
@@ -1537,12 +1532,12 @@ onMounted(() => {
 }
 
 :deep(.el-input__wrapper.is-focus) {
-  border-color: #667eea;
+  border-color: var(--ao-primary);
   box-shadow: 0 0 0 2px rgba(102, 126, 234, 0.2);
 }
 
 :deep(.el-select .el-input.is-focus .el-input__wrapper) {
-  border-color: #667eea;
+  border-color: var(--ao-primary);
   box-shadow: 0 0 0 2px rgba(102, 126, 234, 0.2);
 }
 
@@ -1562,22 +1557,21 @@ onMounted(() => {
 }
 
 :deep(.el-pager li.is-active) {
-  background: linear-gradient(135deg, #667eea, #764ba2);
+  background: var(--ao-bg-page);
   color: white;
 }
 
 /* 对话框样式 */
 :deep(.modern-dialog .el-dialog) {
   background: rgba(255, 255, 255, 0.95);
-  backdrop-filter: blur(20px);
-  border-radius: 16px;
+  border-radius: var(--ao-radius-lg);
   border: 1px solid rgba(255, 255, 255, 0.2);
   box-shadow: 0 8px 32px rgba(31, 38, 135, 0.37);
 }
 
 :deep(.modern-dialog .el-dialog__header) {
   background: linear-gradient(135deg, rgba(102, 126, 234, 0.1), rgba(118, 75, 162, 0.1));
-  border-radius: 16px 16px 0 0;
+  border-radius: var(--ao-radius-lg) 16px 0 0;
   padding: 20px 24px 16px;
   border-bottom: 1px solid rgba(102, 126, 234, 0.2);
 }
@@ -1633,7 +1627,7 @@ onMounted(() => {
 }
 
 .task-name-link {
-  color: #667eea;
+  color: var(--ao-primary);
   cursor: pointer;
   font-weight: 500;
   transition: all 0.3s ease;

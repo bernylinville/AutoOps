@@ -190,13 +190,12 @@ onMounted(() => {
 .service-market {
   padding: 20px;
   height: 80vh;
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  background: var(--ao-bg-page);
 }
 
 .market-card {
   background: rgba(255, 255, 255, 0.95);
-  backdrop-filter: blur(10px);
-  border-radius: 16px;
+  border-radius: var(--ao-radius-lg);
   box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
   border: 1px solid rgba(255, 255, 255, 0.2);
   height: calc(80vh - 40px);
@@ -214,7 +213,7 @@ onMounted(() => {
   font-size: 20px;
   font-weight: 600;
   color: #2c3e50;
-  background: linear-gradient(45deg, #667eea, #764ba2);
+  background: var(--ao-primary);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
 }
@@ -222,9 +221,9 @@ onMounted(() => {
 .category-filter {
   margin-bottom: 20px;
   padding: 20px;
-  background: rgba(103, 126, 234, 0.05);
-  border-radius: 12px;
-  border: 1px solid rgba(103, 126, 234, 0.1);
+  background: rgba(64, 158, 255, 0.05);
+  border-radius: var(--ao-radius-lg);
+  border: 1px solid rgba(64, 158, 255, 0.1);
 }
 
 /* 内部切换（参考 k8s-storage PVC/PV 样式） */
@@ -264,7 +263,7 @@ onMounted(() => {
   cursor: pointer;
   transition: all 0.3s ease;
   text-align: center;
-  border-radius: 12px;
+  border-radius: var(--ao-radius-lg);
 }
 
 .service-card :deep(.el-card__body) {
@@ -272,8 +271,7 @@ onMounted(() => {
 }
 
 .service-card:hover {
-  transform: translateY(-5px);
-  box-shadow: 0 8px 24px rgba(103, 126, 234, 0.3);
+  box-shadow: 0 8px 24px rgba(64, 158, 255, 0.3);
 }
 
 .service-icon {
@@ -335,7 +333,6 @@ onMounted(() => {
 }
 
 :deep(.el-radio-button__inner:hover) {
-  transform: translateY(-2px);
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
 }
 </style>

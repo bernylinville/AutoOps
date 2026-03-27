@@ -37,6 +37,7 @@ var models = []interface{}{
 	&appmodel.QuickDeployment{},
 	&appmodel.QuickDeploymentTask{},
 	&systemmodel.SysOperationLog{},
+	&systemmodel.SysAuditLog{},
 	&toolmodel.Tool{},
 	&toolmodel.ServiceDeploy{},
 	// M7: N9E 模型

@@ -1248,13 +1248,12 @@ export { getProgressColor }
 .k8s-namespace-management {
   padding: 20px;
   min-height: 100vh;
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  background: var(--ao-bg-page);
 }
 
 .namespace-card {
   background: rgba(255, 255, 255, 0.95);
-  backdrop-filter: blur(10px);
-  border-radius: 16px;
+  border-radius: var(--ao-radius-lg);
   box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
   border: 1px solid rgba(255, 255, 255, 0.2);
 }
@@ -1269,7 +1268,7 @@ export { getProgressColor }
   font-size: 20px;
   font-weight: 600;
   color: #2c3e50;
-  background: linear-gradient(45deg, #667eea, #764ba2);
+  background: var(--ao-primary);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;
@@ -1284,9 +1283,9 @@ export { getProgressColor }
 .search-section {
   margin-bottom: 24px;
   padding: 20px;
-  background: rgba(103, 126, 234, 0.05);
-  border-radius: 12px;
-  border: 1px solid rgba(103, 126, 234, 0.1);
+  background: rgba(64, 158, 255, 0.05);
+  border-radius: var(--ao-radius-lg);
+  border: 1px solid rgba(64, 158, 255, 0.1);
 }
 
 .search-form .el-form-item {
@@ -1305,9 +1304,8 @@ export { getProgressColor }
 .limit-range-dialog :deep(.el-dialog),
 .create-quota-dialog :deep(.el-dialog),
 .create-limit-range-dialog :deep(.el-dialog) {
-  border-radius: 16px;
+  border-radius: var(--ao-radius-lg);
   background: rgba(255, 255, 255, 0.95);
-  backdrop-filter: blur(10px);
 }
 
 .namespace-detail-dialog :deep(.el-dialog__header),
@@ -1315,7 +1313,7 @@ export { getProgressColor }
 .limit-range-dialog :deep(.el-dialog__header),
 .create-quota-dialog :deep(.el-dialog__header),
 .create-limit-range-dialog :deep(.el-dialog__header) {
-  background: linear-gradient(135deg, #667eea, #764ba2);
+  background: var(--ao-bg-page);
   color: white;
   border-top-left-radius: 16px;
   border-top-right-radius: 16px;
@@ -1381,7 +1379,6 @@ export { getProgressColor }
 }
 
 .label-tag:hover {
-  transform: translateY(-2px);
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
 }
 
@@ -1448,12 +1445,12 @@ export { getProgressColor }
 
 .header-actions .el-select .el-input__wrapper {
   background: rgba(255, 255, 255, 0.9);
-  border: 1px solid rgba(103, 126, 234, 0.3);
+  border: 1px solid rgba(64, 158, 255, 0.3);
 }
 
 .header-actions .el-select .el-input__wrapper.is-focus {
-  border-color: #667eea;
-  box-shadow: 0 0 0 2px rgba(103, 126, 234, 0.2);
+  border-color: var(--ao-primary);
+  box-shadow: 0 0 0 2px rgba(64, 158, 255, 0.2);
 }
 
 /* 通用元素样式 */
@@ -1470,14 +1467,13 @@ export { getProgressColor }
 }
 
 .el-button:hover {
-  transform: translateY(-2px);
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
 }
 
 .el-input :deep(.el-input__wrapper),
 .el-select :deep(.el-input__wrapper) {
   background: rgba(255, 255, 255, 0.8);
-  border: 1px solid rgba(103, 126, 234, 0.2);
+  border: 1px solid rgba(64, 158, 255, 0.2);
   border-radius: 8px;
   box-shadow: none;
   transition: all 0.3s ease;
@@ -1490,14 +1486,13 @@ export { getProgressColor }
 
 .el-input :deep(.el-input__wrapper.is-focus),
 .el-select :deep(.el-input__wrapper.is-focus) {
-  border-color: #667eea;
-  box-shadow: 0 0 0 2px rgba(103, 126, 234, 0.2);
+  border-color: var(--ao-primary);
+  box-shadow: 0 0 0 2px rgba(64, 158, 255, 0.2);
   background: rgba(255, 255, 255, 1);
 }
 
 .el-loading-mask {
-  background-color: rgba(103, 126, 234, 0.1);
-  backdrop-filter: blur(4px);
+  background-color: rgba(64, 158, 255, 0.1);
 }
 
 /* ResourceQuota和LimitRange操作按钮样式 */
@@ -1520,7 +1515,6 @@ export { getProgressColor }
 
 .quota-operation-buttons .el-button:hover,
 .limit-range-operation-buttons .el-button:hover {
-  transform: translateY(-1px);
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
 }
 
@@ -1528,9 +1522,9 @@ export { getProgressColor }
 .form-hint {
   margin-top: 4px;
   padding: 4px 8px;
-  background: rgba(103, 126, 234, 0.05);
+  background: rgba(64, 158, 255, 0.05);
   border-radius: 4px;
-  border-left: 3px solid rgba(103, 126, 234, 0.3);
+  border-left: 3px solid rgba(64, 158, 255, 0.3);
 }
 
 .form-hint .el-text {
@@ -1538,7 +1532,7 @@ export { getProgressColor }
 }
 
 .create-namespace-dialog :deep(.el-divider__text) {
-  background: linear-gradient(45deg, #667eea, #764ba2);
+  background: var(--ao-primary);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;

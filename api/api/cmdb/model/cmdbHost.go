@@ -22,7 +22,7 @@ type CmdbHost struct {
 	InstanceID  string     `gorm:"column:instance_id;varchar(128);comment:'实例ID'" json:"instanceId"`
 	Name        string     `gorm:"column:name;varchar(64);comment:'ecs主机名称';NOT NULL" json:"name"`
 	OS          string     `gorm:"column:os;varchar(128);comment:'操作系统'" json:"os"`
-	Status      int        `gorm:"column:status;comment:'状态:1->认证成功,2->未认证,3->认证失败'" json:"status"`
+	Status      int        `gorm:"column:status;comment:'状态:1->在线,2->未认证,3->离线,4->失联,5->降级'" json:"status"`
 	CPU         string     `gorm:"column:cpu;varchar(32);comment:'CPU信息'" json:"cpu"`
 	Memory      string     `gorm:"column:memory;varchar(32);comment:'内存信息'" json:"memory"`
 	Disk        string     `gorm:"column:disk;varchar(128);comment:'磁盘信息'" json:"disk"`

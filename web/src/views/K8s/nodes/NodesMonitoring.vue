@@ -698,16 +698,15 @@ defineExpose({
 <style scoped>
 .nodes-monitoring {
   padding: 0;
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  background: var(--ao-bg-page);
   min-height: 100vh;
   padding: 20px;
-  border-radius: 16px;
+  border-radius: var(--ao-radius-lg);
 }
 
 /* 节点卡片 */
 .node-card {
   background: rgba(255, 255, 255, 0.95);
-  backdrop-filter: blur(20px);
   border-radius: 20px;
   padding: 24px;
   box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
@@ -729,7 +728,6 @@ defineExpose({
 }
 
 .node-card:hover {
-  transform: translateY(-8px) scale(1.02);
   box-shadow: 0 16px 64px rgba(0, 0, 0, 0.15);
   border-color: rgba(79, 172, 254, 0.4);
 }
@@ -756,7 +754,7 @@ defineExpose({
   width: 48px;
   height: 48px;
   background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
-  border-radius: 12px;
+  border-radius: var(--ao-radius-lg);
   box-shadow: 0 4px 16px rgba(79, 172, 254, 0.4);
 }
 
@@ -837,7 +835,7 @@ defineExpose({
 .metric-item {
   margin-bottom: 20px;
   background: rgba(255, 255, 255, 0.6);
-  border-radius: 12px;
+  border-radius: var(--ao-radius-lg);
   padding: 16px;
   border: 1px solid rgba(255, 255, 255, 0.3);
   transition: all 0.3s ease;
@@ -845,7 +843,6 @@ defineExpose({
 
 .metric-item:hover {
   background: rgba(255, 255, 255, 0.8);
-  transform: translateX(4px);
 }
 
 .metric-header {
@@ -864,7 +861,6 @@ defineExpose({
 
 @keyframes iconFloat {
   0%, 100% { transform: translateY(0px); }
-  50% { transform: translateY(-2px); }
 }
 
 .metric-label {
@@ -967,7 +963,7 @@ defineExpose({
 }
 
 .pods-icon {
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  background: var(--ao-bg-page);
 }
 
 .time-icon {
@@ -992,12 +988,10 @@ defineExpose({
 
 @keyframes iconDot {
   0%, 100% { transform: scale(1); }
-  50% { transform: scale(1.2); }
 }
 
 @keyframes iconPulse {
   0% { transform: scale(1); opacity: 1; }
-  50% { transform: scale(1.3); opacity: 0.7; }
   100% { transform: scale(1); opacity: 1; }
 }
 
@@ -1024,7 +1018,7 @@ defineExpose({
   text-align: center;
   padding: 40px 20px;
   background: rgba(255, 255, 255, 0.3);
-  border-radius: 12px;
+  border-radius: var(--ao-radius-lg);
   margin-bottom: 20px;
 }
 
@@ -1086,7 +1080,6 @@ defineExpose({
 }
 
 .primary-btn:hover {
-  transform: translateY(-2px);
   box-shadow: 0 8px 24px rgba(79, 172, 254, 0.5);
 }
 
@@ -1099,7 +1092,6 @@ defineExpose({
 .secondary-btn:hover {
   background: rgba(79, 172, 254, 0.1);
   border-color: rgba(79, 172, 254, 0.5);
-  transform: translateY(-1px);
 }
 
 .btn-icon {
@@ -1139,7 +1131,6 @@ defineExpose({
 .node-detail-dialog :deep(.el-dialog) {
   border-radius: 20px;
   background: rgba(255, 255, 255, 0.95);
-  backdrop-filter: blur(20px);
   border: 1px solid rgba(255, 255, 255, 0.2);
   max-height: 90vh;
   overflow: hidden;
@@ -1172,8 +1163,7 @@ defineExpose({
 /* 资源卡片 */
 .resource-card {
   background: rgba(255, 255, 255, 0.9);
-  backdrop-filter: blur(15px);
-  border-radius: 16px;
+  border-radius: var(--ao-radius-lg);
   padding: 20px;
   border: 1px solid rgba(255, 255, 255, 0.3);
   box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
@@ -1213,14 +1203,13 @@ defineExpose({
   gap: 8px;
   padding: 16px;
   background: rgba(255, 255, 255, 0.5);
-  border-radius: 12px;
+  border-radius: var(--ao-radius-lg);
   border: 1px solid rgba(255, 255, 255, 0.3);
   transition: all 0.3s ease;
 }
 
 .metric-row-detail:hover {
   background: rgba(255, 255, 255, 0.7);
-  transform: translateX(4px);
 }
 
 .metric-info {
@@ -1262,8 +1251,7 @@ defineExpose({
 /* Pod列表卡片 */
 .pod-list-card {
   background: rgba(255, 255, 255, 0.9);
-  backdrop-filter: blur(15px);
-  border-radius: 16px;
+  border-radius: var(--ao-radius-lg);
   padding: 20px;
   border: 1px solid rgba(255, 255, 255, 0.3);
   box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
@@ -1273,7 +1261,7 @@ defineExpose({
 .pod-icon {
   width: 32px;
   height: 32px;
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  background: var(--ao-bg-page);
   border-radius: 8px;
   display: flex;
   align-items: center;
@@ -1305,7 +1293,7 @@ defineExpose({
 
 .pod-table {
   background: rgba(255, 255, 255, 0.6);
-  border-radius: 12px;
+  border-radius: var(--ao-radius-lg);
   overflow: hidden;
   border: 1px solid rgba(255, 255, 255, 0.3);
 }
@@ -1366,11 +1354,11 @@ defineExpose({
 
 .namespace-tag {
   padding: 2px 8px;
-  background: rgba(103, 126, 234, 0.1);
-  color: #667eea;
-  border-radius: 12px;
+  background: rgba(64, 158, 255, 0.1);
+  color: var(--ao-primary);
+  border-radius: var(--ao-radius-lg);
   font-size: 11px;
-  border: 1px solid rgba(103, 126, 234, 0.2);
+  border: 1px solid rgba(64, 158, 255, 0.2);
 }
 
 .resource-value {

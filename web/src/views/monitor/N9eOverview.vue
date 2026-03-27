@@ -15,7 +15,7 @@
 
     <!-- 主机统计卡片 -->
     <el-row :gutter="16" class="stats-row">
-      <el-col :span="4" v-for="item in hostCards" :key="item.label">
+      <el-col :span="3" v-for="item in hostCards" :key="item.label">
         <el-card shadow="hover" class="stat-card">
           <div class="stat-content">
             <div class="stat-icon" :class="item.cls">
@@ -94,6 +94,42 @@
       </el-col>
     </el-row>
 
+    <!-- VM 监控数据 -->
+    <el-row :gutter="20" style="margin-top: 20px;" v-if="vmOverview">
+      <el-col :span="24">
+        <el-card shadow="hover" class="chart-card">
+          <template #header>
+            <div class="card-header">
+              <span class="card-title">📊 VictoriaMetrics 监控总览</span>
+              <el-tag type="success" size="small" effect="plain">{{ vmOverview.hostCount || 0 }} 台主机有监控数据</el-tag>
+            </div>
+          </template>
+          <el-row :gutter="16">
+            <el-col :span="4" v-for="item in vmCards" :key="item.label">
+              <div class="vm-metric">
+                <div class="vm-metric-value" :style="{ color: item.color }">{{ item.value }}</div>
+                <div class="vm-metric-label">{{ item.label }}</div>
+              </div>
+            </el-col>
+          </el-row>
+
+          <el-divider />
+
+          <el-row :gutter="20">
+            <el-col :span="8" v-for="topList in vmTopLists" :key="topList.title">
+              <h4 style="margin: 0 0 8px; font-size: 13px; color: #606266;">{{ topList.title }}</h4>
+              <div v-for="(host, idx) in topList.hosts" :key="host.ident" class="top-host-item">
+                <span class="top-rank">{{ idx + 1 }}</span>
+                <span class="top-ident">{{ host.ident }}</span>
+                <span class="top-value">{{ host.value.toFixed(1) }}%</span>
+              </div>
+              <el-empty v-if="!topList.hosts || topList.hosts.length === 0" description="暂无数据" :image-size="30" />
+            </el-col>
+          </el-row>
+        </el-card>
+      </el-col>
+    </el-row>
+
     <!-- 最近同步记录 -->
     <el-card shadow="hover" class="log-card" style="margin-top: 20px;">
       <template #header>
@@ -141,7 +177,7 @@
 
 <script setup>
 import { ref, reactive, computed, onMounted, onBeforeUnmount, nextTick } from 'vue'
-import { Monitor, CircleCheckFilled, CircleCloseFilled, WarningFilled, FolderOpened, Connection, Refresh } from '@element-plus/icons-vue'
+import { Monitor, CircleCheckFilled, CircleCloseFilled, WarningFilled, FolderOpened, Connection, Refresh, SemiSelect } from '@element-plus/icons-vue'
 import n9eApi from '@/api/n9e'
 import * as echarts from 'echarts'
 
@@ -153,7 +189,7 @@ let countdownTimer = null
 const REFRESH_INTERVAL = 30
 
 const overview = reactive({
-  hosts: { total: 0, n9e: 0, manual: 0, cloud: 0, online: 0, offline: 0, stale: 0 },
+  hosts: { total: 0, n9e: 0, manual: 0, cloud: 0, online: 0, offline: 0, stale: 0, degraded: 0 },
   n9eBusiGroups: 0,
   datasources: 0,
   cmdbGroups: 0,
@@ -169,11 +205,38 @@ let chartInstance = null
 const hostCards = computed(() => [
   { label: '主机总数', value: overview.hosts.total, icon: Monitor, cls: 'total' },
   { label: '在线', value: overview.hosts.online, icon: CircleCheckFilled, cls: 'online' },
+  { label: '降级', value: overview.hosts.degraded, icon: SemiSelect, cls: 'degraded' },
   { label: '离线', value: overview.hosts.offline, icon: CircleCloseFilled, cls: 'offline' },
   { label: '失联', value: overview.hosts.stale, icon: WarningFilled, cls: 'stale' },
   { label: 'N9E 来源', value: overview.hosts.n9e, icon: Connection, cls: 'n9e' },
-  { label: 'CMDB 分组', value: overview.cmdbGroups, icon: FolderOpened, cls: 'groups' }
+  { label: 'CMDB 分组', value: overview.cmdbGroups, icon: FolderOpened, cls: 'groups' },
+  { label: '数据源', value: overview.datasources, icon: Monitor, cls: 'total' }
 ])
+
+// VictoriaMetrics 监控数据
+const vmOverview = ref(null)
+
+const vmCards = computed(() => {
+  if (!vmOverview.value) return []
+  const v = vmOverview.value
+  return [
+    { label: '平均CPU', value: v.avgCpuUsage?.toFixed(1) + '%', color: v.avgCpuUsage > 80 ? '#f56c6c' : '#67c23a' },
+    { label: '平均内存', value: v.avgMemUsage?.toFixed(1) + '%', color: v.avgMemUsage > 80 ? '#f56c6c' : '#67c23a' },
+    { label: '最高CPU', value: v.maxCpuUsage?.toFixed(1) + '%', color: v.maxCpuUsage > 90 ? '#f56c6c' : '#e6a23c' },
+    { label: '最高内存', value: v.maxMemUsage?.toFixed(1) + '%', color: v.maxMemUsage > 90 ? '#f56c6c' : '#e6a23c' },
+    { label: '最高磁盘', value: v.maxDiskUsage?.toFixed(1) + '%', color: v.maxDiskUsage > 90 ? '#f56c6c' : '#e6a23c' },
+    { label: '监控主机', value: String(v.hostCount || 0), color: '#409eff' }
+  ]
+})
+
+const vmTopLists = computed(() => {
+  if (!vmOverview.value) return []
+  return [
+    { title: 'TOP CPU 使用率', hosts: vmOverview.value.topCpuHosts || [] },
+    { title: 'TOP 内存使用率', hosts: vmOverview.value.topMemHosts || [] },
+    { title: 'TOP 磁盘使用率', hosts: vmOverview.value.topDiskHosts || [] }
+  ]
+})
 
 const loadOverview = async () => {
   try {
@@ -258,8 +321,21 @@ const formatLogTime = (timeStr) => {
 const manualRefresh = () => {
   loadOverview()
   loadRecentLogs()
+  loadVMOverview()
   if (autoRefresh.value) {
     countdown.value = REFRESH_INTERVAL
+  }
+}
+
+const loadVMOverview = async () => {
+  try {
+    const res = await n9eApi.getClusterVMOverview()
+    if (res.data?.code === 200 && res.data.data) {
+      vmOverview.value = res.data.data
+    }
+  } catch (err) {
+    // VM 监控可能未配置，静默失败
+    console.debug('VM overview not available:', err)
   }
 }
 
@@ -283,6 +359,7 @@ const toggleAutoRefresh = (val) => {
 onMounted(() => {
   loadOverview()
   loadRecentLogs()
+  loadVMOverview()
 })
 
 onBeforeUnmount(() => {
@@ -331,4 +408,18 @@ onBeforeUnmount(() => {
 .info-value { color: #303133; font-weight: 500; font-size: 14px; }
 
 .sync-result h4 { margin: 0 0 10px 0; color: #303133; font-size: 14px; }
+
+.stat-icon.degraded { background: linear-gradient(135deg, #e6a23c, #b88230); }
+
+.vm-metric { text-align: center; padding: 12px 0; }
+.vm-metric-value { font-size: 22px; font-weight: 700; line-height: 1.2; }
+.vm-metric-label { font-size: 12px; color: #909399; margin-top: 4px; }
+
+.top-host-item { display: flex; align-items: center; padding: 4px 0; font-size: 13px; }
+.top-rank { width: 20px; height: 20px; border-radius: 50%; background: #f0f0f0; display: flex; align-items: center; justify-content: center; font-size: 11px; font-weight: 600; color: #606266; margin-right: 8px; flex-shrink: 0; }
+.top-host-item:nth-child(1) .top-rank { background: #f56c6c; color: #fff; }
+.top-host-item:nth-child(2) .top-rank { background: #e6a23c; color: #fff; }
+.top-host-item:nth-child(3) .top-rank { background: #409eff; color: #fff; }
+.top-ident { flex: 1; color: #303133; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.top-value { font-weight: 600; color: #606266; margin-left: 8px; }
 </style>

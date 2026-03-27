@@ -817,7 +817,7 @@ onMounted(() => {
 .k8s-cluster-details {
   padding: 20px;
   min-height: 100vh;
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  background: var(--ao-bg-page);
   position: relative;
 }
 
@@ -840,8 +840,7 @@ onMounted(() => {
   margin-bottom: 24px;
   padding: 16px 20px;
   background: rgba(255, 255, 255, 0.95);
-  backdrop-filter: blur(10px);
-  border-radius: 12px;
+  border-radius: var(--ao-radius-lg);
   box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
   border: 1px solid rgba(255, 255, 255, 0.2);
   position: relative;
@@ -858,15 +857,13 @@ onMounted(() => {
   border-radius: 8px;
   background: rgba(255, 255, 255, 0.9);
   border: 1px solid rgba(102, 126, 234, 0.3);
-  color: #667eea;
-  backdrop-filter: blur(5px);
+  color: var(--ao-primary);
   transition: all 0.3s ease;
 }
 
 .back-btn:hover {
   background: rgba(102, 126, 234, 0.1);
-  border-color: #667eea;
-  transform: translateY(-1px);
+  border-color: var(--ao-primary);
   box-shadow: 0 4px 12px rgba(102, 126, 234, 0.3);
 }
 
@@ -918,16 +915,14 @@ onMounted(() => {
 }
 
 .overview-card {
-  border-radius: 12px;
+  border-radius: var(--ao-radius-lg);
   border: none;
   transition: all 0.3s ease;
   background: rgba(255, 255, 255, 0.9);
-  backdrop-filter: blur(10px);
   border: 1px solid rgba(255, 255, 255, 0.2);
 }
 
 .overview-card:hover {
-  transform: translateY(-4px);
   box-shadow: 0 12px 40px rgba(102, 126, 234, 0.3);
   background: rgba(255, 255, 255, 0.95);
 }
@@ -941,7 +936,7 @@ onMounted(() => {
 .card-icon {
   width: 48px;
   height: 48px;
-  border-radius: 12px;
+  border-radius: var(--ao-radius-lg);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -949,7 +944,7 @@ onMounted(() => {
 }
 
 .nodes-card .card-icon {
-  background: linear-gradient(135deg, #667eea, #764ba2);
+  background: var(--ao-bg-page);
 }
 
 .workloads-card .card-icon {
@@ -973,7 +968,6 @@ onMounted(() => {
 }
 
 .overview-card:hover .svg-icon {
-  transform: scale(1.1) rotate(5deg);
   filter: brightness(0) invert(1) drop-shadow(0 0 8px rgba(255, 255, 255, 0.5));
 }
 
@@ -1022,17 +1016,15 @@ onMounted(() => {
 }
 
 .info-card {
-  border-radius: 12px;
+  border-radius: var(--ao-radius-lg);
   border: none;
   margin-bottom: 16px;
   transition: all 0.3s ease;
   background: rgba(255, 255, 255, 0.9);
-  backdrop-filter: blur(10px);
   border: 1px solid rgba(255, 255, 255, 0.2);
 }
 
 .info-card:hover {
-  transform: translateY(-2px);
   box-shadow: 0 8px 32px rgba(102, 126, 234, 0.2);
   background: rgba(255, 255, 255, 0.95);
 }
@@ -1203,7 +1195,7 @@ onMounted(() => {
 }
 
 .ip-link {
-  color: #667eea !important;
+  color: var(--ao-primary) !important;
   font-weight: 500;
   transition: all 0.3s ease;
 }

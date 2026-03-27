@@ -14,6 +14,7 @@ import N9eOverview from '@/views/monitor/N9eOverview.vue'
 import N9eSyncLog from '@/views/monitor/N9eSyncLog.vue'
 import AlertRules from '@/views/monitor/AlertRules.vue'
 import AlertEvents from '@/views/monitor/AlertEvents.vue'
+import AuditLog from '@/views/monitor/AuditLog.vue'
 const routes = [
     {
         path: '/system/personal',
@@ -59,6 +60,11 @@ const routes = [
         path: '/monitor/dblog',
         component: DBLog,
         meta: {sTitle: '日志管理', tTitle: '数据日志'}
+    },
+    {
+        path: '/monitor/audit-log',
+        component: AuditLog,
+        meta: {sTitle: '日志管理', tTitle: '审计日志'}
     },
     {
         path: '/system/n9e',

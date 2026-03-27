@@ -495,13 +495,12 @@ onMounted(() => {
 .ansible-config-management {
   padding: 20px;
   min-height: 100vh;
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  background: var(--ao-bg-page);
 }
 
 .config-card {
   background: rgba(255, 255, 255, 0.95);
-  backdrop-filter: blur(10px);
-  border-radius: 16px;
+  border-radius: var(--ao-radius-lg);
   box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
   border: 1px solid rgba(255, 255, 255, 0.2);
   min-height: 80vh;
@@ -518,7 +517,7 @@ onMounted(() => {
   font-size: 20px;
   font-weight: 600;
   color: #2c3e50;
-  background: linear-gradient(45deg, #667eea, #764ba2);
+  background: var(--ao-primary);
   background-clip: text;
   -webkit-text-fill-color: transparent;
 }
@@ -527,8 +526,8 @@ onMounted(() => {
   margin-bottom: 20px;
   padding: 16px;
   background: rgba(255, 255, 255, 0.5);
-  border-radius: 12px;
-  border: 1px solid rgba(103, 126, 234, 0.1);
+  border-radius: var(--ao-radius-lg);
+  border: 1px solid rgba(64, 158, 255, 0.1);
 }
 
 .search-form {
@@ -548,7 +547,7 @@ onMounted(() => {
 }
 
 .config-tabs :deep(.el-tabs__item.is-active) {
-  color: #667eea;
+  color: var(--ao-primary);
   font-weight: 600;
 }
 
@@ -587,7 +586,7 @@ onMounted(() => {
 
 /* Dialog Styles */
 :deep(.modern-dialog) {
-  border-radius: 12px;
+  border-radius: var(--ao-radius-lg);
   overflow: hidden;
 }
 

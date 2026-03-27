@@ -258,14 +258,14 @@ const handleProgressClose = () => {
 }
 
 :deep(.el-dialog) {
-  border-radius: 12px;
+  border-radius: var(--ao-radius-lg);
 }
 
 :deep(.el-dialog__header) {
-  background: linear-gradient(135deg, #667eea, #764ba2);
+  background: var(--ao-bg-page);
   color: #fff;
   padding: 20px;
-  border-radius: 12px 12px 0 0;
+  border-radius: var(--ao-radius-lg) 12px 0 0;
 }
 
 :deep(.el-dialog__title) {
@@ -288,8 +288,8 @@ const handleProgressClose = () => {
 }
 
 .el-input :deep(.el-input__wrapper.is-focus) {
-  border-color: #667eea;
-  box-shadow: 0 0 0 2px rgba(103, 126, 234, 0.2);
+  border-color: var(--ao-primary);
+  box-shadow: 0 0 0 2px rgba(64, 158, 255, 0.2);
 }
 
 .el-select :deep(.el-input__wrapper) {
@@ -303,7 +303,6 @@ const handleProgressClose = () => {
 }
 
 .el-button:hover {
-  transform: translateY(-2px);
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
 }
 </style>

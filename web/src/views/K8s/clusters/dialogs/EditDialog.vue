@@ -253,14 +253,13 @@ watch(() => props.visible, (newVisible) => {
 <style scoped>
 /* 编辑对话框样式 */
 .edit-dialog :deep(.el-dialog) {
-  border-radius: 16px;
+  border-radius: var(--ao-radius-lg);
   background: rgba(255, 255, 255, 0.95);
-  backdrop-filter: blur(10px);
   box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
 }
 
 .edit-dialog :deep(.el-dialog__header) {
-  background: linear-gradient(135deg, #667eea, #764ba2);
+  background: var(--ao-bg-page);
   color: white;
   border-top-left-radius: 16px;
   border-top-right-radius: 16px;
@@ -307,8 +306,8 @@ watch(() => props.visible, (newVisible) => {
 }
 
 .edit-dialog .el-input :deep(.el-input__wrapper.is-focus) {
-  border-color: #667eea;
-  box-shadow: 0 0 0 2px rgba(103, 126, 234, 0.2);
+  border-color: var(--ao-primary);
+  box-shadow: 0 0 0 2px rgba(64, 158, 255, 0.2);
 }
 
 .edit-dialog .el-textarea :deep(.el-textarea__inner) {
@@ -321,8 +320,8 @@ watch(() => props.visible, (newVisible) => {
 }
 
 .edit-dialog .el-textarea :deep(.el-textarea__inner):focus {
-  border-color: #667eea;
-  box-shadow: 0 0 0 2px rgba(103, 126, 234, 0.2);
+  border-color: var(--ao-primary);
+  box-shadow: 0 0 0 2px rgba(64, 158, 255, 0.2);
 }
 
 /* 版本提示样式 */
@@ -373,12 +372,11 @@ watch(() => props.visible, (newVisible) => {
 }
 
 .dialog-footer .el-button:hover:not(:disabled) {
-  transform: translateY(-1px);
   box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
 }
 
 .dialog-footer .el-button--primary {
-  background: linear-gradient(135deg, #667eea, #764ba2);
+  background: var(--ao-bg-page);
   border: none;
 }
 

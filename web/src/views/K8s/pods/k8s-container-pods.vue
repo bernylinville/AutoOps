@@ -494,7 +494,6 @@ const viewAllImages = () => {
 }
 
 .pod-count-tag:hover {
-  transform: translateY(-1px);
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
 }
 
@@ -540,7 +539,6 @@ const viewAllImages = () => {
 
 .image-tag-wrapper:hover {
   background: #dbeafe;
-  transform: translateY(-1px);
 }
 
 .copy-icon {
@@ -626,7 +624,6 @@ const viewAllImages = () => {
 }
 
 .label-tag:hover {
-  transform: translateY(-1px);
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
 }
 

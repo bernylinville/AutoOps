@@ -1235,13 +1235,12 @@ export { getProgressColor }
 .k8s-nodes-management {
   padding: 20px;
   min-height: 100vh;
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  background: var(--ao-bg-page);
 }
 
 .nodes-card {
   background: rgba(255, 255, 255, 0.95);
-  backdrop-filter: blur(10px);
-  border-radius: 16px;
+  border-radius: var(--ao-radius-lg);
   box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
   border: 1px solid rgba(255, 255, 255, 0.2);
 }
@@ -1256,7 +1255,7 @@ export { getProgressColor }
   font-size: 20px;
   font-weight: 600;
   color: #2c3e50;
-  background: linear-gradient(45deg, #667eea, #764ba2);
+  background: var(--ao-primary);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;
@@ -1271,9 +1270,9 @@ export { getProgressColor }
 .search-section {
   margin-bottom: 24px;
   padding: 20px;
-  background: rgba(103, 126, 234, 0.05);
-  border-radius: 12px;
-  border: 1px solid rgba(103, 126, 234, 0.1);
+  background: rgba(64, 158, 255, 0.05);
+  border-radius: var(--ao-radius-lg);
+  border: 1px solid rgba(64, 158, 255, 0.1);
 }
 
 .search-form .el-form-item {
@@ -1292,16 +1291,15 @@ export { getProgressColor }
 .taint-dialog :deep(.el-dialog),
 .label-dialog :deep(.el-dialog),
 .drain-dialog :deep(.el-dialog) {
-  border-radius: 16px;
+  border-radius: var(--ao-radius-lg);
   background: rgba(255, 255, 255, 0.95);
-  backdrop-filter: blur(10px);
 }
 
 .resources-dialog :deep(.el-dialog__header),
 .taint-dialog :deep(.el-dialog__header),
 .label-dialog :deep(.el-dialog__header),
 .drain-dialog :deep(.el-dialog__header) {
-  background: linear-gradient(135deg, #667eea, #764ba2);
+  background: var(--ao-bg-page);
   color: white;
   border-top-left-radius: 16px;
   border-top-right-radius: 16px;
@@ -1359,7 +1357,6 @@ export { getProgressColor }
 
 .taint-tag:hover,
 .label-tag:hover {
-  transform: translateY(-2px);
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
 }
 
@@ -1375,8 +1372,8 @@ export { getProgressColor }
 }
 
 .resource-card {
-  border-radius: 12px;
-  border: 1px solid rgba(103, 126, 234, 0.2);
+  border-radius: var(--ao-radius-lg);
+  border: 1px solid rgba(64, 158, 255, 0.2);
 }
 
 .resource-header {
@@ -1395,9 +1392,9 @@ export { getProgressColor }
 .resource-unit {
   font-size: 12px;
   color: #909399;
-  background: rgba(103, 126, 234, 0.1);
+  background: rgba(64, 158, 255, 0.1);
   padding: 2px 8px;
-  border-radius: 12px;
+  border-radius: var(--ao-radius-lg);
 }
 
 .resource-progress {
@@ -1449,14 +1446,13 @@ export { getProgressColor }
 }
 
 .el-button:hover {
-  transform: translateY(-2px);
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
 }
 
 .el-input :deep(.el-input__wrapper),
 .el-select :deep(.el-input__wrapper) {
   background: rgba(255, 255, 255, 0.8);
-  border: 1px solid rgba(103, 126, 234, 0.2);
+  border: 1px solid rgba(64, 158, 255, 0.2);
   border-radius: 8px;
   box-shadow: none;
   transition: all 0.3s ease;
@@ -1469,14 +1465,13 @@ export { getProgressColor }
 
 .el-input :deep(.el-input__wrapper.is-focus),
 .el-select :deep(.el-input__wrapper.is-focus) {
-  border-color: #667eea;
-  box-shadow: 0 0 0 2px rgba(103, 126, 234, 0.2);
+  border-color: var(--ao-primary);
+  box-shadow: 0 0 0 2px rgba(64, 158, 255, 0.2);
   background: rgba(255, 255, 255, 1);
 }
 
 .el-loading-mask {
-  background-color: rgba(103, 126, 234, 0.1);
-  backdrop-filter: blur(4px);
+  background-color: rgba(64, 158, 255, 0.1);
 }
 
 /* 集群选择样式 */
@@ -1502,12 +1497,12 @@ export { getProgressColor }
 
 .header-actions .el-select .el-input__wrapper {
   background: rgba(255, 255, 255, 0.9);
-  border: 1px solid rgba(103, 126, 234, 0.3);
+  border: 1px solid rgba(64, 158, 255, 0.3);
 }
 
 .header-actions .el-select .el-input__wrapper.is-focus {
-  border-color: #667eea;
-  box-shadow: 0 0 0 2px rgba(103, 126, 234, 0.2);
+  border-color: var(--ao-primary);
+  box-shadow: 0 0 0 2px rgba(64, 158, 255, 0.2);
 }
 
 /* 污点效果选项样式 */
@@ -1570,7 +1565,6 @@ export { getProgressColor }
 
 .label-icon:hover {
   color: #66b1ff;
-  transform: scale(1.1);
 }
 
 .label-icon-button {
@@ -1583,18 +1577,16 @@ export { getProgressColor }
 .label-icon-button:hover {
   background: transparent;
   color: #409eff;
-  transform: scale(1.1);
 }
 
 /* 标签查看对话框样式 */
 .node-labels-view-dialog :deep(.el-dialog) {
-  border-radius: 16px;
+  border-radius: var(--ao-radius-lg);
   background: rgba(255, 255, 255, 0.95);
-  backdrop-filter: blur(10px);
 }
 
 .node-labels-view-dialog :deep(.el-dialog__header) {
-  background: linear-gradient(135deg, #667eea, #764ba2);
+  background: var(--ao-bg-page);
   color: white;
   border-top-left-radius: 16px;
   border-top-right-radius: 16px;
@@ -1646,7 +1638,6 @@ export { getProgressColor }
 }
 
 .label-tag:hover {
-  transform: translateY(-2px);
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
 }
 

@@ -58,15 +58,15 @@ export default {
 }
 </script>
 
-<style>
+<style scoped>
 .tags {
-    padding-left: 20px;
-    padding-top: 2px;
-    padding-bottom: 2px;
+  padding: 4px var(--ao-page-padding);
+  background-color: var(--ao-bg-white);
+  border-bottom: 1px solid var(--ao-border-lighter);
 }
 .tag {
   cursor: pointer;
-  margin-right: 3px;
+  margin-right: 4px;
 }
 .circular {
   width: 8px;

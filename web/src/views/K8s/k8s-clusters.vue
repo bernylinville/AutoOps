@@ -735,13 +735,12 @@ onMounted(() => {
 .k8s-cluster-management {
   padding: 20px;
   min-height: 100vh;
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  background: var(--ao-bg-page);
 }
 
 .cluster-card {
   background: rgba(255, 255, 255, 0.95);
-  backdrop-filter: blur(10px);
-  border-radius: 16px;
+  border-radius: var(--ao-radius-lg);
   box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
   border: 1px solid rgba(255, 255, 255, 0.2);
 }
@@ -756,7 +755,7 @@ onMounted(() => {
   font-size: 20px;
   font-weight: 600;
   color: #2c3e50;
-  background: linear-gradient(45deg, #667eea, #764ba2);
+  background: var(--ao-primary);
    background-clip: text;
   -webkit-text-fill-color: transparent;
 }
@@ -770,15 +769,14 @@ onMounted(() => {
 .register-dialog :deep(.el-dialog),
 .edit-dialog :deep(.el-dialog),
 .create-dialog :deep(.el-dialog) {
-  border-radius: 16px;
+  border-radius: var(--ao-radius-lg);
   background: rgba(255, 255, 255, 0.95);
-  backdrop-filter: blur(10px);
 }
 
 .register-dialog :deep(.el-dialog__header),
 .edit-dialog :deep(.el-dialog__header),
 .create-dialog :deep(.el-dialog__header) {
-  background: linear-gradient(135deg, #667eea, #764ba2);
+  background: var(--ao-bg-page);
   color: white;
   border-top-left-radius: 16px;
   border-top-right-radius: 16px;
@@ -817,14 +815,13 @@ onMounted(() => {
 }
 
 .el-button:hover {
-  transform: translateY(-2px);
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
 }
 
 .el-input :deep(.el-input__wrapper),
 .el-select :deep(.el-input__wrapper) {
   background: rgba(255, 255, 255, 0.8);
-  border: 1px solid rgba(103, 126, 234, 0.2);
+  border: 1px solid rgba(64, 158, 255, 0.2);
   border-radius: 8px;
   box-shadow: none;
   transition: all 0.3s ease;
@@ -837,8 +834,8 @@ onMounted(() => {
 
 .el-input :deep(.el-input__wrapper.is-focus),
 .el-select :deep(.el-input__wrapper.is-focus) {
-  border-color: #667eea;
-  box-shadow: 0 0 0 2px rgba(103, 126, 234, 0.2);
+  border-color: var(--ao-primary);
+  box-shadow: 0 0 0 2px rgba(64, 158, 255, 0.2);
   background: rgba(255, 255, 255, 1);
 }
 
@@ -851,18 +848,17 @@ onMounted(() => {
 
 .el-textarea :deep(.el-textarea__inner) {
   border-radius: 8px;
-  border: 1px solid rgba(103, 126, 234, 0.2);
+  border: 1px solid rgba(64, 158, 255, 0.2);
   transition: all 0.3s ease;
 }
 
 .el-textarea :deep(.el-textarea__inner):focus {
-  border-color: #667eea;
-  box-shadow: 0 0 0 2px rgba(103, 126, 234, 0.2);
+  border-color: var(--ao-primary);
+  box-shadow: 0 0 0 2px rgba(64, 158, 255, 0.2);
 }
 
 .el-loading-mask {
-  background-color: rgba(103, 126, 234, 0.1);
-  backdrop-filter: blur(4px);
+  background-color: rgba(64, 158, 255, 0.1);
 }
 
 .host-selection-container {
@@ -870,10 +866,10 @@ onMounted(() => {
 }
 
 .selected-hosts {
-  background: rgba(103, 126, 234, 0.05);
+  background: rgba(64, 158, 255, 0.05);
   padding: 12px;
   border-radius: 8px;
-  border: 1px solid rgba(103, 126, 234, 0.2);
+  border: 1px solid rgba(64, 158, 255, 0.2);
 }
 
 .hosts-info {
@@ -1043,7 +1039,7 @@ onMounted(() => {
 
 /* 按钮样式调整 */
 .plugin-single-line .el-button {
-  border-radius: 12px;
+  border-radius: var(--ao-radius-lg);
   font-size: 10px;
   padding: 3px 6px;
   height: 22px;
@@ -1147,17 +1143,17 @@ onMounted(() => {
 .private-registry-config {
   margin-top: 12px;
   padding: 12px;
-  background: rgba(103, 126, 234, 0.05);
+  background: rgba(64, 158, 255, 0.05);
   border-radius: 8px;
-  border: 1px solid rgba(103, 126, 234, 0.1);
+  border: 1px solid rgba(64, 158, 255, 0.1);
 }
 
 .private-registry-config .el-input :deep(.el-input-group__prepend) {
-  background: rgba(103, 126, 234, 0.1);
+  background: rgba(64, 158, 255, 0.1);
   color: #606266;
   font-weight: 500;
   font-size: 12px;
-  border-color: rgba(103, 126, 234, 0.2);
+  border-color: rgba(64, 158, 255, 0.2);
 }
 
 .private-registry-config .form-row {

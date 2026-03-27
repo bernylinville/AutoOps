@@ -1,0 +1,169 @@
+/* ============================================================
+   AutoOps Element Plus Overrides
+   全局覆盖 Element Plus 默认样式，注入 AutoOps Design Tokens
+   目标：收敛圆角、提升密度、增强边框克制感、优化响应态
+   ============================================================ */
+
+/* ── 1. 卡片 (Card) ── */
+.el-card {
+  border: 1px solid var(--ao-border-lighter) !important;
+  border-radius: var(--ao-radius) !important;
+  box-shadow: none !important; /* 默认无阴影，保持扁平严谨 */
+  background-color: var(--ao-bg-white) !important;
+  transition: box-shadow var(--ao-transition-fast);
+}
+
+.el-card:hover {
+  box-shadow: var(--ao-shadow-sm) !important; /* 仅在 hover 时给与轻微浮起感 */
+}
+
+.el-card__header {
+  padding: 12px 16px !important;
+  border-bottom: 1px solid var(--ao-border-lighter) !important;
+  font-weight: 600;
+  color: var(--ao-text-primary);
+}
+
+.el-card__body {
+  padding: 16px !important;
+}
+
+/* ── 2. 表格 (Table) 密度优化 ── */
+.el-table {
+  --el-table-border-color: var(--ao-border-lighter);
+  --el-table-header-bg-color: var(--ao-fill);
+  --el-table-header-text-color: var(--ao-text-regular);
+  --el-table-text-color: var(--ao-text-primary);
+  --el-table-row-hover-bg-color: var(--ao-primary-light-9);
+  font-size: 13px !important; /* B端表格全局缩小字号提升密度 */
+  border-radius: var(--ao-radius);
+  border: 1px solid var(--ao-border-lighter);
+}
+
+/* 表头加粗提神 */
+.el-table th.el-table__cell {
+  font-weight: 600 !important;
+  background-color: var(--ao-fill) !important;
+  padding: 8px 0 !important;
+}
+
+/* 单元格致密化 */
+.el-table .el-table__cell {
+  padding: 8px 0 !important; 
+}
+
+/* 去除表格内部纵向边线，只保留横线，更现代 */
+.el-table--border .el-table__cell {
+  border-right: none !important;
+}
+.el-table--border {
+  border-right: 1px solid var(--ao-border-lighter) !important;
+}
+
+/* ── 3. 按钮 (Button) 质感 ── */
+.el-button {
+  border-radius: var(--ao-radius);
+  font-weight: 500;
+}
+
+.el-button--primary {
+  --el-button-bg-color: var(--ao-primary);
+  --el-button-border-color: var(--ao-primary);
+  --el-button-hover-bg-color: var(--ao-primary-light-3);
+  --el-button-hover-border-color: var(--ao-primary-light-3);
+  --el-button-active-bg-color: var(--ao-primary-dark);
+}
+
+/* ── 4. 输入框 (Input) / 表单 (Form) ── */
+.el-input__wrapper, .el-textarea__inner, .el-select__wrapper {
+  box-shadow: 0 0 0 1px var(--ao-border) inset !important;
+  border-radius: var(--ao-radius) !important;
+  background-color: var(--ao-bg-white) !important;
+  transition: box-shadow var(--ao-transition-fast) !important;
+}
+
+.el-input__wrapper:hover, .el-textarea__inner:hover, .el-select__wrapper:hover {
+  box-shadow: 0 0 0 1px var(--ao-text-placeholder) inset !important;
+}
+
+.el-input__wrapper.is-focus, .el-textarea__inner:focus, .el-select__wrapper.is-focused {
+  box-shadow: 0 0 0 1px var(--ao-primary) inset, 0 0 0 2px var(--ao-primary-light-7) !important;
+}
+
+.el-form-item__label {
+  font-weight: 500;
+  color: var(--ao-text-regular);
+}
+
+/* ── 5. 弹窗 (Dialog) / 抽屉 (Drawer) ── */
+.el-dialog, .el-drawer {
+  border-radius: var(--ao-radius-lg) !important;
+  overflow: hidden;
+  box-shadow: var(--ao-shadow-lg) !important;
+}
+
+.el-dialog__header, .el-drawer__header {
+  margin-bottom: 0 !important;
+  padding: 16px 20px !important;
+  border-bottom: 1px solid var(--ao-border-lighter);
+  background: var(--ao-bg-white);
+  color: var(--ao-text-primary);
+  font-weight: 600;
+}
+
+.el-dialog__body, .el-drawer__body {
+  padding: 24px 20px !important;
+  background: var(--ao-bg-page); /* 表单区使用浅灰底色，区分内容区 */
+}
+
+/* 弹窗内的表单通常带卡片背景 */
+.el-dialog__body .el-form, .el-drawer__body .el-form {
+  background: var(--ao-bg-white);
+  padding: 20px;
+  border-radius: var(--ao-radius);
+  border: 1px solid var(--ao-border-lighter);
+}
+
+.el-dialog__footer, .el-drawer__footer {
+  padding: 12px 20px !important;
+  border-top: 1px solid var(--ao-border-lighter);
+  background: var(--ao-bg-white);
+}
+
+/* ── 6. 标签 (Tag) 胶囊化 ── */
+.el-tag {
+  border-radius: 12px; /* 胶囊状更现代 */
+  padding: 0 10px;
+  font-weight: 500;
+  border: none !important;
+}
+
+.el-tag--primary { background-color: var(--ao-primary-light-9); color: var(--ao-primary-dark); }
+.el-tag--success { background-color: var(--ao-success-light); color: var(--ao-success); }
+.el-tag--warning { background-color: var(--ao-warning-light); color: var(--ao-warning); }
+.el-tag--danger { background-color: var(--ao-danger-light); color: var(--ao-danger); }
+.el-tag--info { background-color: var(--ao-fill); color: var(--ao-text-regular); }
+
+/* ── 7. 其他控件细节 ── */
+.el-pagination {
+  --el-pagination-button-bg-color: var(--ao-bg-white);
+  --el-pagination-hover-color: var(--ao-primary);
+  margin-top: 16px;
+  justify-content: flex-end;
+}
+
+/* 树形组件优化 */
+.el-tree {
+  --el-tree-node-hover-bg-color: var(--ao-fill);
+  color: var(--ao-text-regular);
+}
+.el-tree-node__content {
+  height: 32px !important; /* 稍微提升树节点的点击区域，但保持紧凑 */
+  border-radius: var(--ao-radius-sm);
+  margin-bottom: 2px;
+}
+.el-tree-node.is-current > .el-tree-node__content {
+  background-color: var(--ao-primary-light-9) !important;
+  color: var(--ao-primary) !important;
+  font-weight: 500;
+}

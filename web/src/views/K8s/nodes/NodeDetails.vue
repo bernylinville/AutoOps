@@ -753,7 +753,7 @@ onMounted(() => {
 <style scoped>
 .node-details-container {
   min-height: 100vh;
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  background: var(--ao-bg-page);
   padding: 20px;
   position: relative;
 }
@@ -776,8 +776,7 @@ onMounted(() => {
   margin-bottom: 24px;
   padding: 16px 20px;
   background: rgba(255, 255, 255, 0.95);
-  backdrop-filter: blur(10px);
-  border-radius: 12px;
+  border-radius: var(--ao-radius-lg);
   box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
   border: 1px solid rgba(255, 255, 255, 0.2);
   position: relative;
@@ -788,15 +787,13 @@ onMounted(() => {
   border-radius: 8px;
   background: rgba(255, 255, 255, 0.9);
   border: 1px solid rgba(102, 126, 234, 0.3);
-  color: #667eea;
-  backdrop-filter: blur(5px);
+  color: var(--ao-primary);
   transition: all 0.3s ease;
 }
 
 .back-btn:hover {
   background: rgba(102, 126, 234, 0.1);
-  border-color: #667eea;
-  transform: translateY(-1px);
+  border-color: var(--ao-primary);
   box-shadow: 0 4px 12px rgba(102, 126, 234, 0.3);
 }
 
@@ -821,11 +818,10 @@ onMounted(() => {
 }
 
 .overview-card {
-  border-radius: 16px;
+  border-radius: var(--ao-radius-lg);
   border: none;
   transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
   background: rgba(255, 255, 255, 0.9);
-  backdrop-filter: blur(20px);
   border: 1px solid rgba(255, 255, 255, 0.3);
   position: relative;
   overflow: hidden;
@@ -843,13 +839,11 @@ onMounted(() => {
 }
 
 .overview-card:hover {
-  transform: translateY(-8px) scale(1.02);
   box-shadow: 0 20px 60px rgba(102, 126, 234, 0.4);
   background: rgba(255, 255, 255, 0.95);
 }
 
 .overview-card:hover .card-icon {
-  transform: scale(1.1) rotate(5deg);
   box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
 }
 
@@ -865,7 +859,7 @@ onMounted(() => {
 .overview-card .card-icon {
   width: 60px;
   height: 60px;
-  border-radius: 16px;
+  border-radius: var(--ao-radius-lg);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -888,7 +882,7 @@ onMounted(() => {
 }
 
 .status-icon {
-  background: linear-gradient(135deg, #667eea, #764ba2);
+  background: var(--ao-bg-page);
 }
 
 .cpu-icon {
@@ -949,7 +943,7 @@ onMounted(() => {
   font-size: 16px;
   padding: 8px 16px;
   font-weight: 600;
-  border-radius: 12px;
+  border-radius: var(--ao-radius-lg);
   box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
 }
 
@@ -986,7 +980,6 @@ onMounted(() => {
 
 .overview-card:hover .svg-icon,
 .advanced-resource:hover .svg-icon-small {
-  transform: scale(1.1);
   filter: brightness(0) invert(1) drop-shadow(0 0 8px rgba(255, 255, 255, 0.5));
 }
 
@@ -1056,7 +1049,6 @@ onMounted(() => {
     opacity: 1;
   }
   50% {
-    transform: scale(1.5);
     opacity: 0.3;
   }
   100% {
@@ -1083,7 +1075,7 @@ onMounted(() => {
   gap: 16px;
   padding: 20px;
   background: linear-gradient(135deg, rgba(255, 255, 255, 0.8), rgba(248, 249, 252, 0.9));
-  border-radius: 12px;
+  border-radius: var(--ao-radius-lg);
   border: 1px solid rgba(102, 126, 234, 0.1);
   transition: all 0.3s ease;
   position: relative;
@@ -1097,7 +1089,7 @@ onMounted(() => {
   left: 0;
   width: 4px;
   height: 100%;
-  background: linear-gradient(135deg, #667eea, #764ba2);
+  background: var(--ao-bg-page);
   transition: width 0.3s ease;
 }
 
@@ -1106,7 +1098,6 @@ onMounted(() => {
 }
 
 .advanced-resource:hover {
-  transform: translateX(4px);
   box-shadow: 0 8px 25px rgba(102, 126, 234, 0.15);
   background: linear-gradient(135deg, rgba(255, 255, 255, 0.95), rgba(248, 249, 252, 0.95));
 }
@@ -1114,7 +1105,7 @@ onMounted(() => {
 .resource-icon {
   width: 48px;
   height: 48px;
-  border-radius: 12px;
+  border-radius: var(--ao-radius-lg);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -1163,7 +1154,7 @@ onMounted(() => {
   padding: 4px 12px;
   border-radius: 20px;
   background: rgba(102, 126, 234, 0.1);
-  color: #667eea;
+  color: var(--ao-primary);
 }
 
 .resource-details {
@@ -1230,16 +1221,14 @@ onMounted(() => {
 
 .info-card {
   background: rgba(255, 255, 255, 0.9);
-  backdrop-filter: blur(10px);
   border: 1px solid rgba(255, 255, 255, 0.2);
-  border-radius: 12px;
+  border-radius: var(--ao-radius-lg);
   overflow: hidden;
   transition: all 0.3s ease;
   box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
 }
 
 .info-card:hover {
-  transform: translateY(-2px);
   box-shadow: 0 12px 40px rgba(102, 126, 234, 0.3);
   background: rgba(255, 255, 255, 0.95);
 }
@@ -1343,7 +1332,7 @@ onMounted(() => {
 .label-tag {
   background: rgba(102, 126, 234, 0.1);
   border: 1px solid rgba(102, 126, 234, 0.3);
-  color: #667eea;
+  color: var(--ao-primary);
 }
 
 .annotations-container {

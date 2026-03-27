@@ -2943,13 +2943,12 @@ const handleGoBack = () => {
 .k8s-pod-management {
   padding: 20px;
   min-height: 100vh;
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  background: var(--ao-bg-page);
 }
 
 .pod-card {
   background: rgba(255, 255, 255, 0.95);
-  backdrop-filter: blur(10px);
-  border-radius: 16px;
+  border-radius: var(--ao-radius-lg);
   box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
   border: 1px solid rgba(255, 255, 255, 0.2);
 }
@@ -2970,7 +2969,7 @@ const handleGoBack = () => {
   font-size: 18px;
   font-weight: 600;
   color: #2c3e50;
-  background: linear-gradient(45deg, #667eea, #764ba2);
+  background: var(--ao-primary);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;
@@ -2991,8 +2990,8 @@ const handleGoBack = () => {
 }
 
 .info-card :deep(.el-card__header) {
-  background: rgba(103, 126, 234, 0.05);
-  border-bottom: 1px solid rgba(103, 126, 234, 0.1);
+  background: rgba(64, 158, 255, 0.05);
+  border-bottom: 1px solid rgba(64, 158, 255, 0.1);
   font-weight: 600;
   padding: 12px 16px;
 }
@@ -3015,7 +3014,6 @@ const handleGoBack = () => {
 
 .pod-name-container:hover {
   color: #409eff;
-  transform: translateY(-1px);
 }
 
 .k8s-icon {

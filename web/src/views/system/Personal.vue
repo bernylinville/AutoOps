@@ -66,8 +66,8 @@
                   <el-form-item label="用户头像" prop="icon">
                     <el-upload :headers="headers" class="avatar-uploader" :action="uploadIconUrl"
                                :show-file-list="false" :on-success="handleAvatarSuccess">
-                      <img v-if="icon" :src="icon" :key="avatarKey" class="avatar" title="点击更换头像">
-                      <img v-else :src="adminDetail.icon" :key="avatarKey" class="avatar" title="点击更换头像">
+                      <img v-if="icon" :src="icon" :key="'new-'+avatarKey" class="avatar" title="点击更换头像">
+                      <img v-else :src="adminDetail.icon" :key="'old-'+avatarKey" class="avatar" title="点击更换头像">
                     </el-upload>
                   </el-form-item>
                   <el-form-item label="用户账号" prop="username">
@@ -213,15 +213,13 @@ export default {
 .personal-management {
   padding: 20px;
   min-height: 100vh;
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  background: var(--ao-bg-page);
 }
 
 .profile-card,
 .detail-card {
   background: rgba(255, 255, 255, 0.95);
-  backdrop-filter: blur(10px);
-  border-radius: 16px;
-  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+  border-radius: var(--ao-radius-lg);
   border: 1px solid rgba(255, 255, 255, 0.2);
 }
 
@@ -235,7 +233,7 @@ export default {
   font-size: 20px;
   font-weight: 600;
   color: #2c3e50;
-  background: linear-gradient(45deg, #667eea, #764ba2);
+  background: var(--ao-primary);
    background-clip: text;
   -webkit-text-fill-color: transparent;
 }
@@ -250,14 +248,12 @@ export default {
 }
 
 .profile-avatar {
-  border: 4px solid rgba(103, 126, 234, 0.2);
-  box-shadow: 0 4px 16px rgba(103, 126, 234, 0.3);
+  border: 4px solid rgba(64, 158, 255, 0.2);
   transition: all 0.3s ease;
 }
 
 .profile-avatar:hover {
   transform: scale(1.05);
-  box-shadow: 0 6px 20px rgba(103, 126, 234, 0.4);
 }
 
 .profile-form .el-form-item {
@@ -273,7 +269,7 @@ export default {
   color: #2c3e50;
   font-weight: 500;
   padding: 4px 8px;
-  background: rgba(103, 126, 234, 0.1);
+  background: rgba(64, 158, 255, 0.1);
   border-radius: 6px;
   display: inline-block;
   min-width: 120px;
@@ -304,11 +300,11 @@ export default {
 }
 
 .personal-tabs :deep(.el-tabs__item:hover) {
-  color: #667eea;
+  color: var(--ao-primary);
 }
 
 .personal-tabs :deep(.el-tabs__item.is-active) {
-  color: #667eea;
+  color: var(--ao-primary);
   font-weight: 600;
 }
 
@@ -318,8 +314,8 @@ export default {
 
 .edit-form {
   padding: 20px;
-  background: rgba(103, 126, 234, 0.02);
-  border-radius: 12px;
+  background: rgba(64, 158, 255, 0.02);
+  border-radius: var(--ao-radius-lg);
 }
 
 .edit-form .el-form-item {
@@ -335,7 +331,7 @@ export default {
   text-align: center;
   margin-top: 32px;
   padding-top: 24px;
-  border-top: 1px solid rgba(103, 126, 234, 0.1);
+  border-top: 1px solid rgba(64, 158, 255, 0.1);
 }
 
 .form-actions .el-button {
@@ -343,22 +339,20 @@ export default {
 }
 
 .avatar-uploader {
-  border: 2px dashed rgba(103, 126, 234, 0.3);
-  border-radius: 12px;
+  border: 2px dashed rgba(64, 158, 255, 0.3);
+  border-radius: var(--ao-radius-lg);
   cursor: pointer;
   width: 80px;
   height: 80px;
   position: relative;
   overflow: hidden;
   transition: all 0.3s ease;
-  background: rgba(103, 126, 234, 0.05);
+  background: rgba(64, 158, 255, 0.05);
 }
 
 .avatar-uploader:hover {
-  border-color: #667eea;
-  background: rgba(103, 126, 234, 0.1);
-  transform: translateY(-2px);
-  box-shadow: 0 6px 16px rgba(103, 126, 234, 0.2);
+  border-color: var(--ao-primary);
+  background: rgba(64, 158, 255, 0.1);
 }
 
 .avatar-uploader .avatar {
@@ -375,22 +369,18 @@ export default {
   padding: 8px 24px;
 }
 
-.el-button:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
-}
+
 
 .el-input :deep(.el-input__inner) {
   border-radius: 8px;
-  border: 1px solid rgba(103, 126, 234, 0.2);
+  border: 1px solid rgba(64, 158, 255, 0.2);
   transition: all 0.3s ease;
   background: rgba(255, 255, 255, 0.8);
   color: #2c3e50;
 }
 
 .el-input :deep(.el-input__inner):focus {
-  border-color: #667eea;
-  box-shadow: 0 0 0 2px rgba(103, 126, 234, 0.2);
+  border-color: var(--ao-primary);
   background: rgba(255, 255, 255, 1);
 }
 

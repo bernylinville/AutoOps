@@ -213,97 +213,21 @@ export default {
 
 <style scoped>
 .operator-management {
-  padding: 20px;
-  min-height: 100vh;
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  padding: 16px;
 }
 
-.operator-card {
-  background: rgba(255, 255, 255, 0.95);
-  backdrop-filter: blur(10px);
-  border-radius: 16px;
-  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
-  border: 1px solid rgba(255, 255, 255, 0.2);
-}
-
-.card-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-}
-
-.title {
-  font-size: 20px;
+.card-header .title {
   font-weight: 600;
-  color: #2c3e50;
-  background: linear-gradient(45deg, #667eea, #764ba2);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
+  font-size: 16px;
+  color: var(--ao-text-primary);
 }
 
-.search-section {
-  margin-bottom: 24px;
-  padding: 20px;
-  background: rgba(103, 126, 234, 0.05);
-  border-radius: 12px;
-  border: 1px solid rgba(103, 126, 234, 0.1);
-}
-
-.search-form .el-form-item {
-  margin-bottom: 0;
-  margin-right: 16px;
-}
-
-.search-form .el-form-item__label {
-  color: #606266;
-  font-weight: 500;
+.filter-bar {
+  margin-bottom: 16px;
 }
 
 .action-section {
-  margin-bottom: 24px;
-  padding: 12px 0;
-}
-
-.action-section .el-button {
-  margin-right: 12px;
-}
-
-.table-section {
-  margin-bottom: 24px;
-}
-
-.operator-table {
-  border-radius: 12px;
-  overflow: hidden;
-  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.08);
-}
-
-.operator-table :deep(.el-table__header) {
-  background: linear-gradient(135deg, #667eea, #764ba2);
-}
-
-.operator-table :deep(.el-table__header th) {
-  background: transparent !important;
-  color: #2c3e50 !important;
-  font-weight: 700 !important;
-  border-bottom: none;
-  text-shadow: 0 1px 2px rgba(255, 255, 255, 0.8);
-}
-
-.operator-table :deep(.el-table__header th .cell) {
-  color: #2c3e50 !important;
-  font-weight: 700 !important;
-  text-shadow: 0 1px 2px rgba(255, 255, 255, 0.8);
-}
-
-.operator-table :deep(.el-table__row) {
-  transition: all 0.3s ease;
-}
-
-.operator-table :deep(.el-table__row:hover) {
-  background-color: rgba(103, 126, 234, 0.05) !important;
-  transform: translateY(-2px);
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  margin-bottom: 12px;
 }
 
 .operation-buttons {
@@ -311,95 +235,5 @@ export default {
   gap: 8px;
   justify-content: center;
 }
-
-.operation-buttons .el-button {
-  transition: all 0.3s ease;
-}
-
-.operation-buttons .el-button:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
-}
-
-.pagination-section {
-  display: flex;
-  justify-content: center;
-  padding: 20px 0;
-}
-
-.el-tag {
-  font-weight: 500;
-  border-radius: 8px;
-  border: none;
-}
-
-.el-button {
-  border-radius: 8px;
-  font-weight: 500;
-  transition: all 0.3s ease;
-}
-
-.el-button:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
-}
-
-.el-input :deep(.el-input__wrapper),
-.el-select :deep(.el-input__wrapper) {
-  background: rgba(255, 255, 255, 0.8);
-  border: 1px solid rgba(103, 126, 234, 0.2);
-  border-radius: 8px;
-  box-shadow: none;
-  transition: all 0.3s ease;
-}
-
-.el-input :deep(.el-input__inner),
-.el-select :deep(.el-input__inner) {
-  background: transparent;
-  border: none;
-  color: #2c3e50;
-}
-
-.el-date-picker :deep(.el-input__inner) {
-  border-radius: 8px;
-  border: 1px solid rgba(103, 126, 234, 0.2);
-  transition: all 0.3s ease;
-}
-
-.el-input :deep(.el-input__wrapper):hover,
-.el-select :deep(.el-input__wrapper):hover {
-  border-color: #c0c4cc;
-}
-
-.el-input :deep(.el-input__wrapper.is-focus),
-.el-select :deep(.el-input__wrapper.is-focus),
-.el-date-picker :deep(.el-input__inner):focus {
-  border-color: #667eea;
-  box-shadow: 0 0 0 2px rgba(103, 126, 234, 0.2);
-  background: rgba(255, 255, 255, 1);
-}
-
-.el-loading-mask {
-  background-color: rgba(103, 126, 234, 0.1);
-  backdrop-filter: blur(4px);
-}
-
-.el-pagination {
-  background: transparent;
-}
-
-.el-pagination :deep(.btn-next),
-.el-pagination :deep(.btn-prev),
-.el-pagination :deep(.el-pager li) {
-  border-radius: 6px;
-  margin: 0 2px;
-  transition: all 0.3s ease;
-}
-
-.el-pagination :deep(.btn-next):hover,
-.el-pagination :deep(.btn-prev):hover,
-.el-pagination :deep(.el-pager li):hover {
-  transform: translateY(-2px);
-  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-}
 </style>
+

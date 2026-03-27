@@ -170,13 +170,12 @@ watch(() => props.credential, (newCredential) => {
 <style scoped>
 /* 凭证查看对话框样式 */
 .credential-view-dialog :deep(.el-dialog) {
-  border-radius: 16px;
+  border-radius: var(--ao-radius-lg);
   background: rgba(255, 255, 255, 0.95);
-  backdrop-filter: blur(10px);
 }
 
 .credential-view-dialog :deep(.el-dialog__header) {
-  background: linear-gradient(135deg, #667eea, #764ba2);
+  background: var(--ao-bg-page);
   color: white;
   border-top-left-radius: 16px;
   border-top-right-radius: 16px;
@@ -225,7 +224,6 @@ watch(() => props.credential, (newCredential) => {
 }
 
 .credential-header .el-button:hover {
-  transform: translateY(-1px);
   box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
 }
 

@@ -4,3 +4,26 @@ api/devops
 docker/mysql/data/
 docker/redis/data/
 docker/prometheus/data/
+docker/pushgateway/data/
+
+# SSH keys (sensitive)
+docker/api/ssh_keys/
+
+# Environment config (use .env.example as template)
+docker/.env
+
+# Development tools
+.agents/
+.claude/
+.impeccable.md
+skills-lock.json
+DEVELOPMENT.md
+
+# Build artifacts
+web/dist/
+
+# IDE
+.idea/
+.vscode/
+*.swp
+*.swo

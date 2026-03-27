@@ -174,10 +174,13 @@ func (s *SyncService) syncHosts(targets []model.TargetData) (model.SyncStats, er
 				err2 := db.Where("(public_ip = ? OR private_ip = ? OR ssh_ip = ?) AND source_type = 'manual'",
 					ip, ip, ip).First(&existing).Error
 				if err2 == nil {
-					// 根据 target_up 设置状态: 1=在线, 0=离线(3)
+					// N9E target_up 语义: 2=alive(心跳<60s), 1=degraded(心跳<180s), 0=dead
+					// CMDB status: 1=在线, 3=离线, 5=降级
 					hostStatus := 3
-					if target.TargetUp == 1 {
+					if target.TargetUp == 2 {
 						hostStatus = 1
+					} else if target.TargetUp == 1 {
+						hostStatus = 5
 					}
 					updates := map[string]interface{}{
 						"source_type": "n9e",
@@ -204,10 +207,13 @@ func (s *SyncService) syncHosts(targets []model.TargetData) (model.SyncStats, er
 			if groupID == 0 {
 				groupID = 1 // 默认分组
 			}
-			// 根据 target_up 设置状态: 1=在线, 0=离线(3)
+			// N9E target_up 语义: 2=alive(心跳<60s), 1=degraded(心跳<180s), 0=dead
+			// CMDB status: 1=在线, 3=离线, 5=降级
 			hostStatus := 3
-			if target.TargetUp == 1 {
+			if target.TargetUp == 2 {
 				hostStatus = 1
+			} else if target.TargetUp == 1 {
+				hostStatus = 5
 			}
 			newHost := cmdbModel.CmdbHost{
 				HostName:   hostname,
@@ -246,20 +252,14 @@ func (s *SyncService) syncHosts(targets []model.TargetData) (model.SyncStats, er
 			"os":          strings.TrimSpace(target.OS),
 			"update_time": util.HTime{Time: time.Now()},
 		}
-		// 如果之前是 stale，根据 target_up 恢复状态
-		if existing.Status == 4 {
-			if target.TargetUp == 1 {
-				updates["status"] = 1
-			} else {
-				updates["status"] = 3
-			}
+		// N9E target_up 语义: 2=alive(心跳<60s), 1=degraded(心跳<180s), 0=dead
+		// CMDB status: 1=在线, 3=离线, 5=降级
+		if target.TargetUp == 2 {
+			updates["status"] = 1
+		} else if target.TargetUp == 1 {
+			updates["status"] = 5
 		} else {
-			// 正常更新也同步最新 target_up 状态
-			if target.TargetUp == 1 {
-				updates["status"] = 1
-			} else {
-				updates["status"] = 3
-			}
+			updates["status"] = 3
 		}
 		if hostname != "" && existing.HostName == "" {
 			updates["host_name"] = hostname

@@ -429,13 +429,12 @@ onUnmounted(() => {
 .deploy-manage {
   padding: 20px;
   height: 80vh;
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  background: var(--ao-bg-page);
 }
 
 .manage-card {
   background: rgba(255, 255, 255, 0.95);
-  backdrop-filter: blur(10px);
-  border-radius: 16px;
+  border-radius: var(--ao-radius-lg);
   box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
   border: 1px solid rgba(255, 255, 255, 0.2);
   height: calc(80vh - 40px);
@@ -453,7 +452,7 @@ onUnmounted(() => {
   font-size: 20px;
   font-weight: 600;
   color: #2c3e50;
-  background: linear-gradient(45deg, #667eea, #764ba2);
+  background: var(--ao-primary);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
 }
@@ -461,9 +460,9 @@ onUnmounted(() => {
 .search-section {
   margin-bottom: 5px;
   padding: 20px;
-  background: rgba(103, 126, 234, 0.05);
-  border-radius: 12px;
-  border: 1px solid rgba(103, 126, 234, 0.1);
+  background: rgba(64, 158, 255, 0.05);
+  border-radius: var(--ao-radius-lg);
+  border: 1px solid rgba(64, 158, 255, 0.1);
 }
 
 .search-form .el-form-item {
@@ -483,13 +482,13 @@ onUnmounted(() => {
 }
 
 .deploy-table {
-  border-radius: 12px;
+  border-radius: var(--ao-radius-lg);
   overflow: hidden;
   box-shadow: 0 4px 16px rgba(0, 0, 0, 0.08);
 }
 
 .deploy-table :deep(.el-table__header) {
-  background: linear-gradient(135deg, #667eea, #764ba2);
+  background: var(--ao-bg-page);
 }
 
 .deploy-table :deep(.el-table__header th) {
@@ -511,8 +510,7 @@ onUnmounted(() => {
 }
 
 .deploy-table :deep(.el-table__row:hover) {
-  background-color: rgba(103, 126, 234, 0.05) !important;
-  transform: translateY(-2px);
+  background-color: rgba(64, 158, 255, 0.05) !important;
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
 }
 
@@ -535,14 +533,13 @@ onUnmounted(() => {
 }
 
 .el-button:hover {
-  transform: translateY(-2px);
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
 }
 
 .el-input :deep(.el-input__wrapper),
 .el-select :deep(.el-input__wrapper) {
   background: rgba(255, 255, 255, 0.8);
-  border: 1px solid rgba(103, 126, 234, 0.2);
+  border: 1px solid rgba(64, 158, 255, 0.2);
   border-radius: 8px;
   box-shadow: none;
   transition: all 0.3s ease;
@@ -555,8 +552,8 @@ onUnmounted(() => {
 
 .el-input :deep(.el-input__wrapper.is-focus),
 .el-select :deep(.el-input__wrapper.is-focus) {
-  border-color: #667eea;
-  box-shadow: 0 0 0 2px rgba(103, 126, 234, 0.2);
+  border-color: var(--ao-primary);
+  box-shadow: 0 0 0 2px rgba(64, 158, 255, 0.2);
   background: rgba(255, 255, 255, 1);
 }
 
@@ -575,7 +572,6 @@ onUnmounted(() => {
 .el-pagination :deep(.btn-next):hover,
 .el-pagination :deep(.btn-prev):hover,
 .el-pagination :deep(.el-pager li):hover {
-  transform: translateY(-2px);
   box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
 }
 </style>

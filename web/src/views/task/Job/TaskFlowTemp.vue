@@ -681,7 +681,6 @@ div.flow-container {
   }
   100% {
     opacity: 0;
-    transform: translateX(10px);
   }
 }
 
@@ -715,7 +714,6 @@ div.flow-container {
   }
   100% {
     opacity: 0;
-    transform: translateX(20px);
   }
 }
 
@@ -769,7 +767,6 @@ div.flow-container {
 }
 
 .flow-card:hover {
-  transform: translateY(-8px) scale(1.03);
   box-shadow: 0 8px 24px 0 rgba(0, 0, 0, 0.5);
   z-index: 10;
   filter: brightness(1.05);

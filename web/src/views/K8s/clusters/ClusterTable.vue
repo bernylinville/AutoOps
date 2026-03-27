@@ -501,9 +501,9 @@ onMounted(() => {
 .search-section {
   margin-bottom: 24px;
   padding: 20px;
-  background: rgba(103, 126, 234, 0.05);
-  border-radius: 12px;
-  border: 1px solid rgba(103, 126, 234, 0.1);
+  background: rgba(64, 158, 255, 0.05);
+  border-radius: var(--ao-radius-lg);
+  border: 1px solid rgba(64, 158, 255, 0.1);
 }
 
 .search-form .el-form-item {
@@ -521,13 +521,13 @@ onMounted(() => {
 }
 
 .cluster-table {
-  border-radius: 12px;
+  border-radius: var(--ao-radius-lg);
   overflow: hidden;
   box-shadow: 0 4px 16px rgba(0, 0, 0, 0.08);
 }
 
 .cluster-table :deep(.el-table__header) {
-  background: linear-gradient(135deg, #667eea, #764ba2);
+  background: var(--ao-bg-page);
 }
 
 .cluster-table :deep(.el-table__header th) {
@@ -549,8 +549,7 @@ onMounted(() => {
 }
 
 .cluster-table :deep(.el-table__row:hover) {
-  background-color: rgba(103, 126, 234, 0.05) !important;
-  transform: translateY(-2px);
+  background-color: rgba(64, 158, 255, 0.05) !important;
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
 }
 
@@ -588,7 +587,7 @@ onMounted(() => {
 
 .cluster-name-link {
   font-weight: 600;
-  color: #667eea;
+  color: var(--ao-primary);
   text-decoration: none;
   transition: all 0.3s ease;
 }
@@ -613,7 +612,6 @@ onMounted(() => {
   background-color: #409eff !important;
   border-color: #409eff !important;
   color: white !important;
-  transform: scale(1.1) !important;
 }
 
 .operation-buttons {
@@ -627,7 +625,6 @@ onMounted(() => {
 }
 
 .operation-buttons .el-button:hover {
-  transform: translateY(-2px);
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
 }
 
@@ -644,14 +641,13 @@ onMounted(() => {
 }
 
 .el-button:hover {
-  transform: translateY(-2px);
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
 }
 
 .el-input :deep(.el-input__wrapper),
 .el-select :deep(.el-input__wrapper) {
   background: rgba(255, 255, 255, 0.8);
-  border: 1px solid rgba(103, 126, 234, 0.2);
+  border: 1px solid rgba(64, 158, 255, 0.2);
   border-radius: 8px;
   box-shadow: none;
   transition: all 0.3s ease;
@@ -664,8 +660,8 @@ onMounted(() => {
 
 .el-input :deep(.el-input__wrapper.is-focus),
 .el-select :deep(.el-input__wrapper.is-focus) {
-  border-color: #667eea;
-  box-shadow: 0 0 0 2px rgba(103, 126, 234, 0.2);
+  border-color: var(--ao-primary);
+  box-shadow: 0 0 0 2px rgba(64, 158, 255, 0.2);
   background: rgba(255, 255, 255, 1);
 }
 
@@ -677,8 +673,7 @@ onMounted(() => {
 }
 
 .el-loading-mask {
-  background-color: rgba(103, 126, 234, 0.1);
-  backdrop-filter: blur(4px);
+  background-color: rgba(64, 158, 255, 0.1);
 }
 
 /* 备注信息样式 */

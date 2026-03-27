@@ -496,7 +496,7 @@ export default {
   background-color: #f39c12 !important;
   border-color: #f39c12 !important;
   color: #ffffff !important;
-  border-radius: 12px !important;
+  border-radius: var(--ao-radius-lg) !important;
   padding: 10px 16px !important;
   font-weight: 500 !important;
   transition: all 0.3s ease !important;
@@ -506,7 +506,6 @@ export default {
   background-color: #e67e22 !important;
   border-color: #e67e22 !important;
   color: #ffffff !important;
-  transform: translateY(-1px) !important;
   box-shadow: 0 4px 8px rgba(243, 156, 18, 0.3) !important;
 }
 

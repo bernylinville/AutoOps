@@ -2141,13 +2141,12 @@ onMounted(async () => {
 .k8s-network-management {
   padding: 20px;
   min-height: 100vh;
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  background: var(--ao-bg-page);
 }
 
 .network-card {
   background: rgba(255, 255, 255, 0.95);
-  backdrop-filter: blur(10px);
-  border-radius: 16px;
+  border-radius: var(--ao-radius-lg);
   box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
   border: 1px solid rgba(255, 255, 255, 0.2);
 }
@@ -2162,7 +2161,7 @@ onMounted(async () => {
   font-size: 20px;
   font-weight: 600;
   color: #2c3e50;
-  background: linear-gradient(45deg, #667eea, #764ba2);
+  background: var(--ao-primary);
   background-clip: text;
   -webkit-text-fill-color: transparent;
 }
@@ -2176,8 +2175,8 @@ onMounted(async () => {
   margin-bottom: 20px;
   padding: 16px;
   background: rgba(255, 255, 255, 0.5);
-  border-radius: 12px;
-  border: 1px solid rgba(103, 126, 234, 0.1);
+  border-radius: var(--ao-radius-lg);
+  border: 1px solid rgba(64, 158, 255, 0.1);
 }
 
 .search-form {
@@ -2190,7 +2189,7 @@ onMounted(async () => {
   align-items: flex-start;
   margin-top: 16px;
   padding-top: 16px;
-  border-top: 1px solid rgba(103, 126, 234, 0.1);
+  border-top: 1px solid rgba(64, 158, 255, 0.1);
 }
 
 .network-tabs {
@@ -2249,18 +2248,18 @@ onMounted(async () => {
 
 .selector-section .el-select :deep(.el-input__wrapper) {
   background: rgba(255, 255, 255, 0.9);
-  border: 1px solid rgba(103, 126, 234, 0.3);
+  border: 1px solid rgba(64, 158, 255, 0.3);
   border-radius: 8px;
   transition: all 0.3s ease;
 }
 
 .selector-section .el-select :deep(.el-input__wrapper):hover {
-  border-color: #667eea;
+  border-color: var(--ao-primary);
 }
 
 .selector-section .el-select :deep(.el-input__wrapper.is-focus) {
-  border-color: #667eea;
-  box-shadow: 0 0 0 2px rgba(103, 126, 234, 0.2);
+  border-color: var(--ao-primary);
+  box-shadow: 0 0 0 2px rgba(64, 158, 255, 0.2);
 }
 
 .header-actions {
@@ -2279,11 +2278,11 @@ onMounted(async () => {
 }
 
 .resource-table :deep(.el-table__header) {
-  background: rgba(103, 126, 234, 0.1);
+  background: rgba(64, 158, 255, 0.1);
 }
 
 .resource-table :deep(.el-table__header th) {
-  background: rgba(103, 126, 234, 0.1);
+  background: rgba(64, 158, 255, 0.1);
   color: #2c3e50;
   font-weight: 600;
   border: none;
@@ -2294,7 +2293,7 @@ onMounted(async () => {
 }
 
 .resource-table :deep(.el-table__row:hover) {
-  background: rgba(103, 126, 234, 0.05);
+  background: rgba(64, 158, 255, 0.05);
 }
 
 .resource-name {
@@ -2304,12 +2303,12 @@ onMounted(async () => {
 }
 
 .resource-icon {
-  color: #667eea;
+  color: var(--ao-primary);
   font-size: 16px;
 }
 
 .resource-name-link {
-  color: #667eea;
+  color: var(--ao-primary);
   cursor: pointer;
   font-weight: 500;
   font-size: 14px;
@@ -2322,7 +2321,6 @@ onMounted(async () => {
 .resource-name-link:hover {
   color: #409eff;
   border-bottom-color: #409eff;
-  transform: translateY(-1px);
 }
 
 .copy-button {
@@ -2342,7 +2340,6 @@ onMounted(async () => {
 .copy-button:hover {
   color: #409eff;
   background-color: rgba(64, 158, 255, 0.1);
-  transform: scale(1.1);
 }
 
 .ports-info,
@@ -2410,7 +2407,6 @@ onMounted(async () => {
 }
 
 .operation-buttons .el-button:hover:not(.is-disabled) {
-  transform: translateY(-2px);
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
 }
 
@@ -2450,13 +2446,12 @@ onMounted(async () => {
 
 /* 详情对话框样式 */
 .detail-dialog :deep(.el-dialog) {
-  border-radius: 16px;
+  border-radius: var(--ao-radius-lg);
   background: rgba(255, 255, 255, 0.95);
-  backdrop-filter: blur(10px);
 }
 
 .detail-dialog :deep(.el-dialog__header) {
-  background: linear-gradient(135deg, #667eea, #764ba2);
+  background: var(--ao-bg-page);
   color: white;
   border-top-left-radius: 16px;
   border-top-right-radius: 16px;
@@ -2474,13 +2469,12 @@ onMounted(async () => {
 
 /* YAML 对话框样式 */
 .yaml-dialog :deep(.el-dialog) {
-  border-radius: 16px;
+  border-radius: var(--ao-radius-lg);
   background: rgba(255, 255, 255, 0.95);
-  backdrop-filter: blur(10px);
 }
 
 .yaml-dialog :deep(.el-dialog__header) {
-  background: linear-gradient(135deg, #667eea, #764ba2);
+  background: var(--ao-bg-page);
   color: white;
   border-top-left-radius: 16px;
   border-top-right-radius: 16px;
@@ -2506,13 +2500,12 @@ onMounted(async () => {
 
 /* 事件对话框样式 */
 .events-dialog :deep(.el-dialog) {
-  border-radius: 16px;
+  border-radius: var(--ao-radius-lg);
   background: rgba(255, 255, 255, 0.95);
-  backdrop-filter: blur(10px);
 }
 
 .events-dialog :deep(.el-dialog__header) {
-  background: linear-gradient(135deg, #667eea, #764ba2);
+  background: var(--ao-bg-page);
   color: white;
   border-top-left-radius: 16px;
   border-top-right-radius: 16px;
@@ -2531,14 +2524,13 @@ onMounted(async () => {
 /* 对话框样式 */
 .create-dialog :deep(.el-dialog),
 .edit-dialog :deep(.el-dialog) {
-  border-radius: 16px;
+  border-radius: var(--ao-radius-lg);
   background: rgba(255, 255, 255, 0.95);
-  backdrop-filter: blur(10px);
 }
 
 .create-dialog :deep(.el-dialog__header),
 .edit-dialog :deep(.el-dialog__header) {
-  background: linear-gradient(135deg, #667eea, #764ba2);
+  background: var(--ao-bg-page);
   color: white;
   border-top-left-radius: 16px;
   border-top-right-radius: 16px;
@@ -2676,14 +2668,13 @@ onMounted(async () => {
 }
 
 .el-button:hover {
-  transform: translateY(-2px);
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
 }
 
 .el-input :deep(.el-input__wrapper),
 .el-select :deep(.el-input__wrapper) {
   background: rgba(255, 255, 255, 0.8);
-  border: 1px solid rgba(103, 126, 234, 0.2);
+  border: 1px solid rgba(64, 158, 255, 0.2);
   border-radius: 8px;
   box-shadow: none;
   transition: all 0.3s ease;
@@ -2696,20 +2687,20 @@ onMounted(async () => {
 
 .el-input :deep(.el-input__wrapper.is-focus),
 .el-select :deep(.el-input__wrapper.is-focus) {
-  border-color: #667eea;
-  box-shadow: 0 0 0 2px rgba(103, 126, 234, 0.2);
+  border-color: var(--ao-primary);
+  box-shadow: 0 0 0 2px rgba(64, 158, 255, 0.2);
   background: rgba(255, 255, 255, 1);
 }
 
 .el-textarea :deep(.el-textarea__inner) {
   border-radius: 8px;
-  border: 1px solid rgba(103, 126, 234, 0.2);
+  border: 1px solid rgba(64, 158, 255, 0.2);
   transition: all 0.3s ease;
 }
 
 .el-textarea :deep(.el-textarea__inner):focus {
-  border-color: #667eea;
-  box-shadow: 0 0 0 2px rgba(103, 126, 234, 0.2);
+  border-color: var(--ao-primary);
+  box-shadow: 0 0 0 2px rgba(64, 158, 255, 0.2);
 }
 
 /* 响应式设计 */
@@ -2818,13 +2809,12 @@ onMounted(async () => {
 
 /* 测试对话框样式 */
 .test-dialog :deep(.el-dialog) {
-  border-radius: 16px;
+  border-radius: var(--ao-radius-lg);
   background: rgba(255, 255, 255, 0.95);
-  backdrop-filter: blur(10px);
 }
 
 .test-dialog :deep(.el-dialog__header) {
-  background: linear-gradient(135deg, #667eea, #764ba2);
+  background: var(--ao-bg-page);
   color: white;
   border-top-left-radius: 16px;
   border-top-right-radius: 16px;
@@ -2850,7 +2840,7 @@ onMounted(async () => {
   margin-top: 20px;
   padding: 20px;
   background: rgba(249, 250, 251, 0.5);
-  border-radius: 12px;
+  border-radius: var(--ao-radius-lg);
   border: 1px solid #e4e7ed;
 }
 

@@ -352,6 +352,34 @@ export default {
             data: { id }
         })
     },
+    // AuditLog审计日志
+    queryAuditLogList(params) {
+        return request({
+            url: 'auditLog/list',
+            method: 'get',
+            params: params
+        })
+    },
+    batchDeleteAuditLog(ids) {
+        return request({
+            url: 'auditLog/batch/delete',
+            method: 'delete',
+            data: { ids }
+        })
+    },
+    cleanAuditLog() {
+        return request({
+            url: 'auditLog/clean',
+            method: 'delete'
+        })
+    },
+    deleteAuditLog(id) {
+        return request({
+            url: 'auditLog/delete',
+            method: 'delete',
+            data: { id }
+        })
+    },
     // 文件上传
     getUploadUrl() {
         return '/api/v1/upload'

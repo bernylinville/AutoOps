@@ -389,7 +389,6 @@ defineExpose({
 }
 
 .validate-btn:hover {
-  transform: translateY(-1px);
   box-shadow: 0 4px 12px rgba(79, 172, 254, 0.4);
   background: linear-gradient(135deg, #00f2fe 0%, #4facfe 100%);
 }
@@ -403,7 +402,6 @@ defineExpose({
 }
 
 .copy-btn:hover {
-  transform: translateY(-1px);
   box-shadow: 0 4px 12px rgba(168, 237, 234, 0.4);
   background: linear-gradient(135deg, #fed6e3 0%, #a8edea 100%);
 }
@@ -463,16 +461,15 @@ defineExpose({
 
 /* 对话框样式 */
 .pod-yaml-dialog :deep(.el-dialog) {
-  border-radius: 16px;
+  border-radius: var(--ao-radius-lg);
   background: rgba(255, 255, 255, 0.95);
-  backdrop-filter: blur(10px);
   max-height: 90vh;
   display: flex;
   flex-direction: column;
 }
 
 .pod-yaml-dialog :deep(.el-dialog__header) {
-  background: linear-gradient(135deg, #667eea, #764ba2);
+  background: var(--ao-bg-page);
   color: white;
   border-top-left-radius: 16px;
   border-top-right-radius: 16px;

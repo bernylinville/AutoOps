@@ -111,6 +111,7 @@ func register(router *gin.Engine) {
 		jwtGroup := apiGroup.Group("")
 		jwtGroup.Use(middleware.AuthMiddleware())
 		jwtGroup.Use(middleware.LogMiddleware())
+		jwtGroup.Use(middleware.AuditMiddleware())
 		{
 			system.RegisterSystemRoutes(jwtGroup)
 			cmdb.RegisterCmdbRoutes(jwtGroup)

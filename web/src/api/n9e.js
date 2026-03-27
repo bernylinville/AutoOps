@@ -91,5 +91,43 @@ export default {
             url: `n9e/datasources/${id}/check`,
             method: 'post'
         })
+    },
+
+    // ========= VictoriaMetrics 监控 =========
+
+    // 通用 VM PromQL 查询
+    queryVM(params) {
+        return request({
+            url: 'n9e/vm/query',
+            method: 'get',
+            params
+        })
+    },
+
+    // 获取主机实时监控数据
+    getHostVMMetrics(ident, params = {}) {
+        return request({
+            url: `n9e/vm/host/${ident}`,
+            method: 'get',
+            params
+        })
+    },
+
+    // 获取主机历史监控数据
+    getHostVMHistory(ident, params) {
+        return request({
+            url: `n9e/vm/host/${ident}/history`,
+            method: 'get',
+            params
+        })
+    },
+
+    // 获取集群监控总览
+    getClusterVMOverview(params = {}) {
+        return request({
+            url: 'n9e/vm/overview',
+            method: 'get',
+            params
+        })
     }
 }

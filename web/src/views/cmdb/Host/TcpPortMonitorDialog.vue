@@ -546,7 +546,7 @@ export default {
 }
 
 .port-table .el-table__row:hover {
-  background-color: rgba(103, 126, 234, 0.1) !important;
+  background-color: rgba(64, 158, 255, 0.1) !important;
 }
 
 .port-table .el-table__row--striped {

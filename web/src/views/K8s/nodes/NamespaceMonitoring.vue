@@ -610,17 +610,16 @@ onMounted(() => {
 <style scoped>
 .namespaces-monitoring {
   padding: 0;
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  background: var(--ao-bg-page);
   min-height: 100vh;
   padding: 12px;
-  border-radius: 16px;
+  border-radius: var(--ao-radius-lg);
 }
 
 /* 命名空间卡片 */
 .namespace-card {
   background: rgba(255, 255, 255, 0.95);
-  backdrop-filter: blur(20px);
-  border-radius: 16px;
+  border-radius: var(--ao-radius-lg);
   padding: 18px;
   box-shadow: 0 6px 24px rgba(0, 0, 0, 0.1);
   border: 1px solid rgba(255, 255, 255, 0.2);
@@ -641,7 +640,6 @@ onMounted(() => {
 }
 
 .namespace-card:hover {
-  transform: translateY(-8px) scale(1.02);
   box-shadow: 0 16px 64px rgba(0, 0, 0, 0.15);
   border-color: rgba(79, 172, 254, 0.4);
 }
@@ -668,7 +666,7 @@ onMounted(() => {
   width: 48px;
   height: 48px;
   background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
-  border-radius: 12px;
+  border-radius: var(--ao-radius-lg);
   box-shadow: 0 4px 16px rgba(79, 172, 254, 0.4);
 }
 
@@ -746,7 +744,6 @@ onMounted(() => {
 
 .metric-item:hover {
   background: rgba(255, 255, 255, 0.8);
-  transform: translateX(4px);
 }
 
 .metric-header {
@@ -839,7 +836,7 @@ onMounted(() => {
   gap: 12px;
   background: rgba(255, 255, 255, 0.6);
   padding: 12px;
-  border-radius: 12px;
+  border-radius: var(--ao-radius-lg);
   border: 1px solid rgba(255, 255, 255, 0.3);
   transition: all 0.3s ease;
 }
@@ -859,7 +856,7 @@ onMounted(() => {
 }
 
 .pods-icon {
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  background: var(--ao-bg-page);
 }
 
 .services-icon {
@@ -905,7 +902,7 @@ onMounted(() => {
   text-align: center;
   padding: 40px 20px;
   background: rgba(255, 255, 255, 0.3);
-  border-radius: 12px;
+  border-radius: var(--ao-radius-lg);
   margin-bottom: 20px;
 }
 
@@ -963,7 +960,6 @@ onMounted(() => {
 }
 
 .primary-btn:hover {
-  transform: translateY(-2px);
   box-shadow: 0 8px 24px rgba(79, 172, 254, 0.5);
 }
 
@@ -976,7 +972,6 @@ onMounted(() => {
 .secondary-btn:hover {
   background: rgba(79, 172, 254, 0.1);
   border-color: rgba(79, 172, 254, 0.5);
-  transform: translateY(-1px);
 }
 
 .btn-icon {
@@ -1011,14 +1006,13 @@ onMounted(() => {
 /* 对话框样式 */
 .namespace-detail-dialog :deep(.el-dialog) {
   background: rgba(255, 255, 255, 0.95);
-  backdrop-filter: blur(20px);
-  border-radius: 16px;
+  border-radius: var(--ao-radius-lg);
   border: 1px solid rgba(255, 255, 255, 0.3);
 }
 
 .namespace-detail-dialog :deep(.el-dialog__header) {
   background: linear-gradient(135deg, rgba(102, 126, 234, 0.1), rgba(118, 75, 162, 0.1));
-  border-radius: 16px 16px 0 0;
+  border-radius: var(--ao-radius-lg) 16px 0 0;
   border-bottom: 1px solid rgba(255, 255, 255, 0.2);
   padding: 16px 20px;
 }
@@ -1058,7 +1052,7 @@ onMounted(() => {
 }
 
 .section-icon {
-  color: #667eea;
+  color: var(--ao-primary);
   margin-right: 6px;
   width: 16px;
   height: 16px;
@@ -1157,7 +1151,6 @@ onMounted(() => {
 
 .pod-item:hover {
   background: rgba(255, 255, 255, 0.8);
-  transform: translateX(4px);
 }
 
 .pod-name {
@@ -1202,12 +1195,10 @@ onMounted(() => {
 
 @keyframes iconFloat {
   0%, 100% { transform: translateY(0px); }
-  50% { transform: translateY(-2px); }
 }
 
 @keyframes iconPulse {
   0%, 100% { opacity: 1; transform: scale(1); }
-  50% { opacity: 0.7; transform: scale(1.1); }
 }
 
 @keyframes progressGlow {

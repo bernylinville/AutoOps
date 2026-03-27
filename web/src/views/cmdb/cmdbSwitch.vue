@@ -223,7 +223,7 @@ export default {
 }
 
 .switch-card {
-  border-radius: 12px;
+  border-radius: var(--ao-radius-lg);
 }
 
 .card-header {
@@ -235,7 +235,7 @@ export default {
 .card-header .title {
   font-size: 18px;
   font-weight: 600;
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  background: var(--ao-bg-page);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
 }

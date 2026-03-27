@@ -1,0 +1,96 @@
+/* ============================================================
+   AutoOps Design Tokens
+   全局 CSS 变量 — 所有颜色、间距、圆角、阴影的唯一来源
+   ============================================================ */
+
+:root {
+  /* ── 主色 ── */
+  --ao-primary: #409EFF;
+  --ao-primary-light: #ECF5FF;
+  --ao-primary-light-3: #79BBFF;
+  --ao-primary-light-5: #A0CFFF;
+  --ao-primary-light-7: #C6E2FF;
+  --ao-primary-light-9: #D9ECFF;
+  --ao-primary-dark: #337ECC;
+
+  /* ── 语义色 ── */
+  --ao-success: #67C23A;
+  --ao-success-light: #E1F3D8;
+  --ao-warning: #E6A23C;
+  --ao-warning-light: #FAECD8;
+  --ao-danger: #F56C6C;
+  --ao-danger-light: #FDE2E2;
+  --ao-info: #909399;
+  --ao-info-light: #E9E9EB;
+
+  /* ── 中性色 / 文字 ── */
+  --ao-text-primary: #303133;
+  --ao-text-regular: #606266;
+  --ao-text-secondary: #909399;
+  --ao-text-placeholder: #C0C4CC;
+
+  /* ── 边框 ── */
+  --ao-border: #DCDFE6;
+  --ao-border-light: #E4E7ED;
+  --ao-border-lighter: #EBEEF5;
+
+  /* ── 填充 / 背景 ── */
+  --ao-fill: #F5F7FA;
+  --ao-bg: #FAFBFC;
+  --ao-bg-page: #F0F2F5;
+  --ao-bg-white: #FFFFFF;
+
+  /* ── 侧边栏 ── */
+  --ao-sidebar-width: 200px;
+  --ao-sidebar-collapsed-width: 64px;
+  --ao-sidebar-bg: #1e293b;
+  --ao-sidebar-bg-deeper: #162032;
+  --ao-sidebar-text: rgba(255, 255, 255, 0.75);
+  --ao-sidebar-text-hover: rgba(255, 255, 255, 0.95);
+  --ao-sidebar-active-bg: rgba(64, 158, 255, 0.15);
+  --ao-sidebar-active-text: #FFFFFF;
+  --ao-sidebar-active-border: var(--ao-primary);
+  --ao-sidebar-submenu-bg: rgba(0, 0, 0, 0.15);
+
+  /* ── 顶栏 ── */
+  --ao-header-height: 50px;
+  --ao-header-bg: #FFFFFF;
+  --ao-header-border: var(--ao-border-light);
+
+  /* ── 间距 ── */
+  --ao-spacing-xs: 4px;
+  --ao-spacing-sm: 8px;
+  --ao-spacing-md: 16px;
+  --ao-spacing-lg: 24px;
+  --ao-page-padding: 20px;
+
+  /* ── 圆角 ── */
+  --ao-radius-sm: 2px;
+  --ao-radius: 4px;
+  --ao-radius-md: 6px;
+  --ao-radius-lg: 8px;
+
+  /* ── 阴影 ── */
+  --ao-shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.06);
+  --ao-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
+  --ao-shadow-md: 0 4px 12px rgba(0, 0, 0, 0.10);
+  --ao-shadow-lg: 0 8px 24px rgba(0, 0, 0, 0.12);
+
+  /* ── 过渡 ── */
+  --ao-transition-fast: 0.15s ease;
+  --ao-transition: 0.2s ease;
+  --ao-transition-slow: 0.3s ease;
+
+  /* ── 字体 ── */
+  --ao-font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", sans-serif;
+  --ao-font-family-mono: "JetBrains Mono", "Fira Code", "SF Mono", "Menlo", monospace;
+
+  /* ── 字号 ── */
+  --ao-font-size-xs: 12px;
+  --ao-font-size-sm: 13px;
+  --ao-font-size: 14px;
+  --ao-font-size-md: 16px;
+  --ao-font-size-lg: 18px;
+  --ao-font-size-xl: 20px;
+  --ao-font-size-stat: 28px;
+}

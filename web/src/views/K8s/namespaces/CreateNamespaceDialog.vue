@@ -211,13 +211,12 @@ defineExpose({
 <style scoped>
 /* 对话框样式 */
 .create-namespace-dialog :deep(.el-dialog) {
-  border-radius: 16px;
+  border-radius: var(--ao-radius-lg);
   background: rgba(255, 255, 255, 0.95);
-  backdrop-filter: blur(10px);
 }
 
 .create-namespace-dialog :deep(.el-dialog__header) {
-  background: linear-gradient(135deg, #667eea, #764ba2);
+  background: var(--ao-bg-page);
   color: white;
   border-top-left-radius: 16px;
   border-top-right-radius: 16px;
@@ -243,9 +242,9 @@ defineExpose({
 .form-hint {
   margin-top: 4px;
   padding: 4px 8px;
-  background: rgba(103, 126, 234, 0.05);
+  background: rgba(64, 158, 255, 0.05);
   border-radius: 4px;
-  border-left: 3px solid rgba(103, 126, 234, 0.3);
+  border-left: 3px solid rgba(64, 158, 255, 0.3);
 }
 
 .form-hint .el-text {
@@ -253,7 +252,7 @@ defineExpose({
 }
 
 .create-namespace-dialog :deep(.el-divider__text) {
-  background: linear-gradient(45deg, #667eea, #764ba2);
+  background: var(--ao-primary);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;
@@ -278,13 +277,12 @@ defineExpose({
 }
 
 .el-button:hover {
-  transform: translateY(-2px);
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
 }
 
 .el-input :deep(.el-input__wrapper) {
   background: rgba(255, 255, 255, 0.8);
-  border: 1px solid rgba(103, 126, 234, 0.2);
+  border: 1px solid rgba(64, 158, 255, 0.2);
   border-radius: 8px;
   box-shadow: none;
   transition: all 0.3s ease;
@@ -295,8 +293,8 @@ defineExpose({
 }
 
 .el-input :deep(.el-input__wrapper.is-focus) {
-  border-color: #667eea;
-  box-shadow: 0 0 0 2px rgba(103, 126, 234, 0.2);
+  border-color: var(--ao-primary);
+  box-shadow: 0 0 0 2px rgba(64, 158, 255, 0.2);
   background: rgba(255, 255, 255, 1);
 }
 </style>

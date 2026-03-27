@@ -2176,13 +2176,12 @@ const deleteWorkload = async (row) => {
 .k8s-workloads-management {
   padding: 20px;
   min-height: 100vh;
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  background: var(--ao-bg-page);
 }
 
 .workloads-card {
   background: rgba(255, 255, 255, 0.95);
-  backdrop-filter: blur(10px);
-  border-radius: 16px;
+  border-radius: var(--ao-radius-lg);
   box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
   border: 1px solid rgba(255, 255, 255, 0.2);
 }
@@ -2197,7 +2196,7 @@ const deleteWorkload = async (row) => {
   font-size: 20px;
   font-weight: 600;
   color: #2c3e50;
-  background: linear-gradient(45deg, #667eea, #764ba2);
+  background: var(--ao-primary);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;
@@ -2212,9 +2211,9 @@ const deleteWorkload = async (row) => {
 .search-section {
   margin-bottom: 24px;
   padding: 20px;
-  background: rgba(103, 126, 234, 0.05);
-  border-radius: 12px;
-  border: 1px solid rgba(103, 126, 234, 0.1);
+  background: rgba(64, 158, 255, 0.05);
+  border-radius: var(--ao-radius-lg);
+  border: 1px solid rgba(64, 158, 255, 0.1);
 }
 
 .search-form .el-form-item {
@@ -2226,7 +2225,7 @@ const deleteWorkload = async (row) => {
 .workload-type-section {
   margin-top: 20px;
   padding-top: 20px;
-  border-top: 1px solid rgba(103, 126, 234, 0.1);
+  border-top: 1px solid rgba(64, 158, 255, 0.1);
 }
 
 .workload-tabs {
@@ -2257,13 +2256,13 @@ const deleteWorkload = async (row) => {
 }
 
 .workloads-table {
-  border-radius: 12px;
+  border-radius: var(--ao-radius-lg);
   overflow: hidden;
   box-shadow: 0 4px 16px rgba(0, 0, 0, 0.08);
 }
 
 .workloads-table :deep(.el-table__header) {
-  background: linear-gradient(135deg, #667eea, #764ba2);
+  background: var(--ao-bg-page);
 }
 
 .workloads-table :deep(.el-table__header th) {
@@ -2279,8 +2278,7 @@ const deleteWorkload = async (row) => {
 }
 
 .workloads-table :deep(.el-table__row:hover) {
-  background-color: rgba(103, 126, 234, 0.05) !important;
-  transform: translateY(-2px);
+  background-color: rgba(64, 158, 255, 0.05) !important;
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
 }
 
@@ -2352,7 +2350,7 @@ const deleteWorkload = async (row) => {
 
 .workload-name-link {
   font-weight: 600;
-  color: #667eea;
+  color: var(--ao-primary);
   text-decoration: none;
   transition: all 0.3s ease;
 }
@@ -2471,7 +2469,6 @@ const deleteWorkload = async (row) => {
 }
 
 .image-tag:hover {
-  transform: translateY(-2px);
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
 }
 
@@ -2502,7 +2499,6 @@ const deleteWorkload = async (row) => {
 }
 
 .pod-count-tag:hover {
-  transform: translateY(-2px);
   box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
 }
 
@@ -2561,7 +2557,6 @@ const deleteWorkload = async (row) => {
 .label-icon-button:hover {
   background: transparent;
   color: #409eff;
-  transform: scale(1.1);
 }
 
 /* 镜像显示优化 */
@@ -2575,7 +2570,6 @@ const deleteWorkload = async (row) => {
 }
 
 .image-tag-wrapper:hover {
-  transform: translateY(-1px);
 }
 
 .image-tag-wrapper .full-image-name {
@@ -2648,7 +2642,6 @@ const deleteWorkload = async (row) => {
 }
 
 .operation-buttons .el-button:hover:not(.is-disabled) {
-  transform: translateY(-2px);
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
 }
 
@@ -2672,9 +2665,8 @@ const deleteWorkload = async (row) => {
 .scale-dialog :deep(.el-dialog),
 .workload-labels-view-dialog :deep(.el-dialog),
 .all-images-dialog :deep(.el-dialog) {
-  border-radius: 16px;
+  border-radius: var(--ao-radius-lg);
   background: rgba(255, 255, 255, 0.95);
-  backdrop-filter: blur(10px);
 }
 
 .pod-list-dialog :deep(.el-dialog__header),
@@ -2683,7 +2675,7 @@ const deleteWorkload = async (row) => {
 .scale-dialog :deep(.el-dialog__header),
 .workload-labels-view-dialog :deep(.el-dialog__header),
 .all-images-dialog :deep(.el-dialog__header) {
-  background: linear-gradient(135deg, #667eea, #764ba2);
+  background: var(--ao-bg-page);
   color: white;
   border-top-left-radius: 16px;
   border-top-right-radius: 16px;
@@ -2704,7 +2696,7 @@ const deleteWorkload = async (row) => {
 .yaml-controls {
   margin-bottom: 16px;
   padding: 16px;
-  background: rgba(103, 126, 234, 0.05);
+  background: rgba(64, 158, 255, 0.05);
   border-radius: 8px;
 }
 
@@ -2789,14 +2781,13 @@ const deleteWorkload = async (row) => {
 }
 
 .el-button:hover {
-  transform: translateY(-2px);
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
 }
 
 .el-input :deep(.el-input__wrapper),
 .el-select :deep(.el-input__wrapper) {
   background: rgba(255, 255, 255, 0.8);
-  border: 1px solid rgba(103, 126, 234, 0.2);
+  border: 1px solid rgba(64, 158, 255, 0.2);
   border-radius: 8px;
   box-shadow: none;
   transition: all 0.3s ease;
@@ -2809,14 +2800,13 @@ const deleteWorkload = async (row) => {
 
 .el-input :deep(.el-input__wrapper.is-focus),
 .el-select :deep(.el-input__wrapper.is-focus) {
-  border-color: #667eea;
-  box-shadow: 0 0 0 2px rgba(103, 126, 234, 0.2);
+  border-color: var(--ao-primary);
+  box-shadow: 0 0 0 2px rgba(64, 158, 255, 0.2);
   background: rgba(255, 255, 255, 1);
 }
 
 .el-loading-mask {
-  background-color: rgba(103, 126, 234, 0.1);
-  backdrop-filter: blur(4px);
+  background-color: rgba(64, 158, 255, 0.1);
 }
 
 /* 响应式设计 */
@@ -2881,14 +2871,14 @@ const deleteWorkload = async (row) => {
 }
 
 .image-card {
-  border: 1px solid rgba(103, 126, 234, 0.2);
+  border: 1px solid rgba(64, 158, 255, 0.2);
   border-radius: 8px;
   transition: all 0.3s ease;
 }
 
 .image-card:hover {
-  border-color: #667eea;
-  box-shadow: 0 4px 12px rgba(103, 126, 234, 0.15);
+  border-color: var(--ao-primary);
+  box-shadow: 0 4px 12px rgba(64, 158, 255, 0.15);
 }
 
 .image-info {
@@ -2907,7 +2897,7 @@ const deleteWorkload = async (row) => {
 }
 
 .image-icon {
-  color: #667eea;
+  color: var(--ao-primary);
   font-size: 16px;
   flex-shrink: 0;
 }

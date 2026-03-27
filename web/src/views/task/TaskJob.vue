@@ -883,13 +883,12 @@ onMounted(async () => {
 .taskjob-management {
   padding: 20px;
   min-height: 100vh;
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  background: var(--ao-bg-page);
 }
 
 .taskjob-card {
   background: rgba(255, 255, 255, 0.95);
-  backdrop-filter: blur(10px);
-  border-radius: 16px;
+  border-radius: var(--ao-radius-lg);
   box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
   border: 1px solid rgba(255, 255, 255, 0.2);
 }
@@ -904,7 +903,7 @@ onMounted(async () => {
   font-size: 20px;
   font-weight: 600;
   color: #2c3e50;
-  background: linear-gradient(45deg, #667eea, #764ba2);
+  background: var(--ao-primary);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
 }
@@ -912,9 +911,9 @@ onMounted(async () => {
 .search-section {
   margin-bottom: 16px;
   padding: 16px;
-  background: rgba(103, 126, 234, 0.05);
-  border-radius: 12px;
-  border: 1px solid rgba(103, 126, 234, 0.1);
+  background: rgba(64, 158, 255, 0.05);
+  border-radius: var(--ao-radius-lg);
+  border: 1px solid rgba(64, 158, 255, 0.1);
 }
 
 .search-form .el-form-item {
@@ -943,7 +942,7 @@ onMounted(async () => {
 
 :deep(.el-table) {
   background: rgba(255, 255, 255, 0.9);
-  border-radius: 12px;
+  border-radius: var(--ao-radius-lg);
   overflow: hidden;
   box-shadow: 0 4px 16px rgba(0, 0, 0, 0.1);
 }
@@ -986,7 +985,6 @@ onMounted(async () => {
 }
 
 .operation-buttons .el-button:hover {
-  transform: translateY(-2px);
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
 }
 
@@ -1000,22 +998,21 @@ onMounted(async () => {
 }
 
 :deep(.modern-btn:hover) {
-  transform: translateY(-2px);
   box-shadow: 0 6px 20px rgba(0, 0, 0, 0.2);
 }
 
 :deep(.primary-btn) {
-  background: linear-gradient(45deg, #409EFF, #66B3FF);
+  background: var(--ao-primary);
   color: white;
 }
 
 :deep(.reset-btn) {
-  background: linear-gradient(45deg, #E6A23C, #EEBE77);
+  background: var(--ao-warning);
   color: white;
 }
 
 :deep(.success-btn) {
-  background: linear-gradient(45deg, #67C23A, #85CE61);
+  background: var(--ao-success);
   color: white;
 }
 

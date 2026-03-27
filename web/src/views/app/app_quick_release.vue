@@ -1,6 +1,6 @@
 <template>
   <div class="quick-release-management">
-    <div class="glass-card main-card">
+    <div class="main-card">
       <!-- 卡片标题 -->
       <div class="card-header">
         <h1 class="gradient-title">快速发布</h1>
@@ -1183,17 +1183,9 @@ onMounted(() => {
 .quick-release-management {
   padding: 20px;
   min-height: 100vh;
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  background: var(--ao-bg-page);
 }
 
-.glass-card {
-  background: rgba(255, 255, 255, 0.95);
-  backdrop-filter: blur(10px);
-  border-radius: 16px;
-  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
-  border: 1px solid rgba(255, 255, 255, 0.2);
-  padding: 24px;
-}
 
 .card-header {
   display: flex;
@@ -1208,7 +1200,7 @@ onMounted(() => {
   font-size: 24px;
   font-weight: 700;
   margin: 0;
-  background: linear-gradient(45deg, #667eea, #764ba2);
+  background: var(--ao-primary);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
 }
@@ -1216,9 +1208,9 @@ onMounted(() => {
 .search-section {
   margin-bottom: 24px;
   padding: 20px;
-  background: rgba(103, 126, 234, 0.05);
-  border-radius: 12px;
-  border: 1px solid rgba(103, 126, 234, 0.1);
+  background: rgba(64, 158, 255, 0.05);
+  border-radius: var(--ao-radius-lg);
+  border: 1px solid rgba(64, 158, 255, 0.1);
 }
 
 .search-form .el-form-item {
@@ -1233,7 +1225,6 @@ onMounted(() => {
 }
 
 .modern-btn:hover {
-  transform: translateY(-2px);
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
 }
 
@@ -1242,13 +1233,13 @@ onMounted(() => {
 }
 
 .modern-table {
-  border-radius: 12px;
+  border-radius: var(--ao-radius-lg);
   overflow: hidden;
   box-shadow: 0 4px 16px rgba(0, 0, 0, 0.08);
 }
 
 .modern-table :deep(.el-table__header) {
-  background: linear-gradient(135deg, #667eea, #764ba2);
+  background: var(--ao-bg-page);
 }
 
 .modern-table :deep(.el-table__header th) {
@@ -1259,10 +1250,10 @@ onMounted(() => {
 }
 
 .id-badge {
-  background: linear-gradient(45deg, #667eea, #764ba2);
+  background: var(--ao-primary);
   color: white;
   padding: 2px 8px;
-  border-radius: 12px;
+  border-radius: var(--ao-radius-lg);
   font-size: 12px;
   font-weight: 600;
 }
@@ -1487,7 +1478,7 @@ onMounted(() => {
 }
 
 .modern-dialog :deep(.el-dialog__header) {
-  background: linear-gradient(135deg, #667eea, #764ba2);
+  background: var(--ao-bg-page);
   color: white;
   padding: 20px 24px;
 }

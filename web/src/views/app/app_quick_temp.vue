@@ -1,6 +1,6 @@
 <template>
   <div class="quick-deployment-container">
-    <div class="glass-card main-card">
+    <div class="main-card">
       <div class="deployment-header">
       <div class="header-info">
         <h2 class="deployment-title">{{ deploymentInfo.title || '发布任务' }}</h2>
@@ -891,19 +891,12 @@ window.addEventListener('resize', () => {
 .quick-deployment-container {
   padding: 20px;
   min-height: 100vh;
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  background: var(--ao-bg-page);
   position: relative;
   display: flex;
   flex-direction: column;
 }
 
-.glass-card {
-  background: rgba(255, 255, 255, 0.95);
-  backdrop-filter: blur(10px);
-  border-radius: 16px;
-  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
-  border: 1px solid rgba(255, 255, 255, 0.2);
-}
 
 .main-card {
   padding: 24px;
@@ -926,7 +919,7 @@ window.addEventListener('resize', () => {
   font-size: 24px;
   font-weight: 700;
   margin: 0 0 12px 0;
-  background: linear-gradient(45deg, #667eea, #764ba2);
+  background: var(--ao-primary);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
 }
@@ -970,9 +963,9 @@ window.addEventListener('resize', () => {
   gap: 90px;
   padding: 50px;
   position: relative;
-  background: rgba(103, 126, 234, 0.05);
-  border-radius: 12px;
-  border: 1px solid rgba(103, 126, 234, 0.1);
+  background: rgba(64, 158, 255, 0.05);
+  border-radius: var(--ao-radius-lg);
+  border: 1px solid rgba(64, 158, 255, 0.1);
   min-height: 400px;
   justify-content: flex-start;
   align-items: flex-start;
@@ -999,7 +992,7 @@ window.addEventListener('resize', () => {
   padding: 16px 16px 12px 16px;
   width: 100%;
   height: 180px;
-  border-radius: 12px;
+  border-radius: var(--ao-radius-lg);
   box-shadow: 0 4px 16px rgba(0, 0, 0, 0.08);
   transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
   color: #333;
@@ -1013,7 +1006,6 @@ window.addEventListener('resize', () => {
   justify-content: space-between;
   box-sizing: border-box;
   background: rgba(255, 255, 255, 0.95);
-  backdrop-filter: blur(10px);
 }
 
 /* 任务状态样式 - 参考 Ansible */
@@ -1034,7 +1026,6 @@ window.addEventListener('resize', () => {
 }
 
 .deployment-card:hover {
-  transform: translateY(-8px) scale(1.03);
   box-shadow: 0 8px 32px rgba(0, 0, 0, 0.15);
   z-index: 10;
 }
@@ -1046,7 +1037,7 @@ window.addEventListener('resize', () => {
   right: 8px;
   font-size: 10px;
   padding: 4px 8px;
-  border-radius: 12px;
+  border-radius: var(--ao-radius-lg);
   white-space: nowrap;
   display: inline-block;
   min-width: auto;
@@ -1138,7 +1129,6 @@ window.addEventListener('resize', () => {
 
 .btn-icon:hover {
   background: linear-gradient(45deg, #3a8ee6, #5ca7f0);
-  transform: translateY(-2px);
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
 }
 
@@ -1169,7 +1159,7 @@ window.addEventListener('resize', () => {
 
 /* 任务详情对话框样式 */
 .task-detail-dialog {
-  border-radius: 12px;
+  border-radius: var(--ao-radius-lg);
 }
 
 .task-detail-content {
@@ -1243,7 +1233,7 @@ window.addEventListener('resize', () => {
   font-size: 12px;
   font-weight: 600;
   padding: 2px 8px;
-  border-radius: 12px;
+  border-radius: var(--ao-radius-lg);
   background: rgba(255, 255, 255, 0.9);
 }
 
@@ -1374,7 +1364,7 @@ window.addEventListener('resize', () => {
 
 /* 现代对话框样式 */
 .modern-dialog :deep(.el-dialog__header) {
-  background: linear-gradient(135deg, #667eea, #764ba2);
+  background: var(--ao-bg-page);
   color: white;
   padding: 20px 24px;
 }
@@ -1391,7 +1381,6 @@ window.addEventListener('resize', () => {
 }
 
 .modern-btn:hover {
-  transform: translateY(-2px);
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
 }
 
