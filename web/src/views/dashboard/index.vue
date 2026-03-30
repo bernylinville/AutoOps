@@ -6,6 +6,7 @@ import { getDashboardStats, getBusinessDistribution } from '@/api/dashboard'
 import { GetAllTools, CreateTool, UpdateTool, DeleteTool as DeleteToolAPI, UploadIcon } from '@/api/tool'
 import n9eApi from '@/api/n9e'
 import flashdutyApi from '@/api/flashduty'
+import FlashDutyIncidents from './FlashDutyIncidents.vue'
 import { ElMessage, ElMessageBox } from 'element-plus'
 
 const router = useRouter()
@@ -80,13 +81,21 @@ const fdSREMetrics = reactive({
   noiseReductionPct: 0,
   ackPct: 0,
   totalIncidents: 0,
+  totalIncidents: 0,
   totalAlerts: 0
 })
+
+const fdIncidentsVisible = ref(false)
+const handleRefreshFlashDuty = () => {
+  loadFlashDutyData()
+  // Optional: could manually reload the chart here if needed
+}
 
 // 图表实例
 let trendChart = null
 let pieChart = null
 let heatChart = null
+let sreTrendChart = null
 
 // 发布统计时间维度
 const deployTimeRange = ref('week')
@@ -506,11 +515,102 @@ const formatDuration = (seconds) => {
   return (seconds / 3600).toFixed(1) + 'h'
 }
 
+// 初始化 SRE 指标趋势图
+const initSreTrendChart = async () => {
+  const chartDom = document.getElementById('sreTrendChart')
+  if (!chartDom) return
+  if (!sreTrendChart) sreTrendChart = echarts.init(chartDom)
+  sreTrendChart.showLoading({ text: '加载中...', color: AUTOOPS_PALETTE[0] })
+
+  try {
+    const res = await flashdutyApi.getTrendData(7)
+    if (res.data && res.data.trendData) {
+      const tData = res.data.trendData
+      const dates = tData.map(item => {
+        const d = new Date(item.timestamp * 1000)
+        return `${d.getMonth() + 1}-${d.getDate()}`
+      })
+      const mtta = tData.map(item => (item.mtta / 60).toFixed(1)) // 转换为分钟
+      const mttr = tData.map(item => (item.mttr / 3600).toFixed(1)) // 转换为小时
+      const incidents = tData.map(item => item.incidentCount)
+
+      const option = {
+        grid: { left: 50, right: 50, top: 40, bottom: 40 },
+        tooltip: {
+          trigger: 'axis',
+          backgroundColor: 'rgba(48, 49, 51, 0.92)',
+          borderWidth: 0, textStyle: { color: '#fff' }
+        },
+        legend: {
+          data: ['MTTA (分钟)', 'MTTR (小时)', '触发故障数'],
+          bottom: 4, icon: 'circle',
+          textStyle: { color: '#606266' }
+        },
+        xAxis: {
+          type: 'category', data: dates,
+          axisLine: { lineStyle: { color: '#E4E7ED' } },
+          axisTick: { show: false },
+          axisLabel: { color: '#606266' }
+        },
+        yAxis: [
+          {
+            type: 'value',
+            name: '时长',
+            position: 'left',
+            splitLine: { lineStyle: { type: 'dashed', color: '#E4E7ED' } },
+            axisLabel: { color: '#909399' }
+          },
+          {
+            type: 'value',
+            name: '笔数',
+            position: 'right',
+            splitLine: { show: false },
+            axisLabel: { color: '#909399' },
+            minInterval: 1 // 整数
+          }
+        ],
+        series: [
+          {
+            name: '触发故障数',
+            type: 'bar',
+            yAxisIndex: 1,
+            barWidth: '30%',
+            itemStyle: { color: 'rgba(103, 194, 58, 0.2)', borderRadius: [4, 4, 0, 0] },
+            data: incidents
+          },
+          {
+            name: 'MTTA (分钟)',
+            type: 'line',
+            symbol: 'circle', symbolSize: 6,
+            itemStyle: { color: AUTOOPS_PALETTE[0] }, // Primary
+            lineStyle: { width: 3, shadowColor: 'rgba(64,158,255, 0.3)', shadowBlur: 10, shadowOffsetY: 5 },
+            data: mtta
+          },
+          {
+            name: 'MTTR (小时)',
+            type: 'line',
+            symbol: 'circle', symbolSize: 6,
+            itemStyle: { color: AUTOOPS_PALETTE[2] }, // Warning
+            lineStyle: { width: 3, shadowColor: 'rgba(230,162,60, 0.3)', shadowBlur: 10, shadowOffsetY: 5 },
+            data: mttr
+          }
+        ]
+      }
+      sreTrendChart.setOption(option)
+    }
+  } catch (error) {
+    console.error('加载 SRE 趋势失败:', error)
+  } finally {
+    sreTrendChart.hideLoading()
+  }
+}
+
 // 窗口大小改变时重绘图表
 const handleResize = () => {
   trendChart?.resize()
   pieChart?.resize()
   heatChart?.resize()
+  sreTrendChart?.resize()
 }
 
 onMounted(async () => {
@@ -521,6 +621,7 @@ onMounted(async () => {
     initTrendChart()
     await initPieChart()
     initHeatChart()
+    if (fdConfigured.value) initSreTrendChart()
   }, 100)
   window.addEventListener('resize', handleResize)
 })
@@ -530,6 +631,7 @@ onUnmounted(() => {
   trendChart?.dispose()
   pieChart?.dispose()
   heatChart?.dispose()
+  sreTrendChart?.dispose()
 })
 </script>
 
@@ -615,7 +717,7 @@ onUnmounted(() => {
         </div>
 
         <!-- 故障统计 -->
-        <div class="fd-card fd-card--incident">
+        <div class="fd-card fd-card--incident" style="cursor: pointer" @click="fdIncidentsVisible = true" title="点击展开处理故障">
           <div class="fd-card-header">
             <span class="fd-card-title">故障处理</span>
             <span class="fd-badge" :class="fdAlertSummary.triggeredCount > 0 ? 'fd-badge--danger' : 'fd-badge--success'">
@@ -676,6 +778,16 @@ onUnmounted(() => {
               <span class="fd-sre-label">响应率</span>
             </div>
           </div>
+        </div>
+      </div>
+
+      <!-- SRE 趋势图表区 -->
+      <div class="charts-row mt-4">
+        <div class="chart-card" style="grid-column: span 2">
+          <div class="chart-card-header">
+            <span class="chart-card-title">SRE 黄金指标趋势 <small class="text-muted" style="margin-left: 8px; font-weight: normal; color: #909399">(近 7 天)</small></span>
+          </div>
+          <div id="sreTrendChart" class="chart-body" style="height: 280px; width: 100%;"></div>
         </div>
       </div>
     </div>
@@ -764,6 +876,9 @@ onUnmounted(() => {
         <el-button type="primary" @click="saveToolEdit">保存入口</el-button>
       </template>
     </el-dialog>
+
+    <!-- FlashDuty 故障操作抽屉 -->
+    <FlashDutyIncidents v-model:visible="fdIncidentsVisible" @refresh-dashboard="handleRefreshFlashDuty" />
   </div>
 </template>
 

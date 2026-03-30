@@ -247,6 +247,10 @@ func matchDynamicRoute(url string) string {
 		{regexp.MustCompile(`^/api/v1/k8s/cluster/\d+/nodes/[^/]+/drain$`), "驱逐节点"},
 		{regexp.MustCompile(`^/api/v1/k8s/cluster/\d+/yaml/validate$`), "验证K8s YAML"},
 		{regexp.MustCompile(`^/api/v1/k8s/cluster/\d+/namespaces/[^/]+/workload-yaml$`), "更新工作负载YAML"},
+
+		// FlashDuty 告警操作
+		{regexp.MustCompile(`^/api/v1/flashduty/incidents/[^/]+/claim$`), "认领 FlashDuty 故障"},
+		{regexp.MustCompile(`^/api/v1/flashduty/incidents/[^/]+/close$`), "关闭 FlashDuty 故障"},
 	}
 
 	// 遍历匹配规则

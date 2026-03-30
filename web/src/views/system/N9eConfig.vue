@@ -7,7 +7,7 @@
     </div>
 
     <el-row :gutter="20">
-      <!-- 左侧：配置表单 -->
+      <!-- 左侧：配置表单和 Webhook 引导 -->
       <el-col :span="14">
         <el-card shadow="hover" class="config-card">
           <template #header>
@@ -52,6 +52,49 @@
             </el-form-item>
           </el-form>
         </el-card>
+
+        <!-- Webhook 配置指引 -->
+        <el-card shadow="hover" class="webhook-card">
+          <template #header>
+            <div class="card-header webhook-header">
+              <span><el-icon><Bell /></el-icon> 告警 Webhook 接入指引</span>
+              <el-tooltip content="配置在 N9E 的推板或配置中，将告警通过 Webhook 推送到 AutoOps 统一处理留痕" placement="top">
+                <el-icon class="info-icon"><QuestionFilled /></el-icon>
+              </el-tooltip>
+            </div>
+          </template>
+          
+          <el-alert
+            title="通过配置 Webhook, 可使 N9E 发生告警时自动将事件推送到 AutoOps, 并交由内置规则分析。"
+            type="info"
+            show-icon
+            :closable="false"
+            style="margin-bottom: 20px"
+          />
+
+          <el-form label-position="top">
+            <el-form-item label="Webhook URL (推送端点)">
+              <div class="copy-box">
+                <span class="code-text">{{ webhookUrl }}</span>
+                <el-button type="primary" link :icon="DocumentCopy" @click="copyText(webhookUrl)">复制</el-button>
+              </div>
+            </el-form-item>
+            
+            <el-form-item label="X-Webhook-Token (安全校验 Header)">
+              <div class="copy-box">
+                <span class="code-text">webhook-notify-token-2024</span>
+                <el-button type="primary" link :icon="DocumentCopy" @click="copyText('webhook-notify-token-2024')">复制</el-button>
+              </div>
+            </el-form-item>
+          </el-form>
+          
+          <div class="webhook-note">
+            <h4><el-icon><Warning /></el-icon> 注意事项：</h4>
+            <p>1. 请在 N9E "告警规则" 的 "回调地址" 中填入上述 URL，并在请求头中添加鉴权 Token。</p>
+            <p>2. 如您在 N9E 已配置 <strong>FlashDuty 官方集成通道</strong>, 我们建议您保留原生通道用于故障闭环，AutoOps 的这一通道纯用于「运维变更与告警强关联分析」与控制台监控。</p>
+          </div>
+        </el-card>
+
       </el-col>
 
       <!-- 右侧：同步状态 -->
@@ -123,10 +166,40 @@
 </template>
 
 <script setup>
-import { ref, reactive, onMounted } from 'vue'
+import { ref, reactive, onMounted, computed } from 'vue'
 import { ElMessage } from 'element-plus'
-import { Setting, Link, Key, Check, Connection, Refresh } from '@element-plus/icons-vue'
+import { Setting, Link, Key, Check, Connection, Refresh, Bell, DocumentCopy, QuestionFilled, Warning } from '@element-plus/icons-vue'
 import n9eApi from '@/api/n9e'
+
+// 生成当前环境下的 Webhook API
+const webhookUrl = computed(() => {
+  const host = window.location.host // eg. localhost:18088
+  const protocol = window.location.protocol
+  return `${protocol}//${host}/api/v1/n9e/alert/webhook`
+})
+
+// 剪贴板复制方法
+const copyText = async (text) => {
+  try {
+    if (navigator.clipboard && window.isSecureContext) {
+      await navigator.clipboard.writeText(text)
+    } else {
+      const textArea = document.createElement("textarea")
+      textArea.value = text
+      // 使文本框不在视口内
+      textArea.style.position = "absolute"
+      textArea.style.left = "-999999px"
+      document.body.prepend(textArea)
+      textArea.select()
+      document.execCommand('copy')
+      textArea.remove()
+    }
+    ElMessage.success('复制成功')
+  } catch (err) {
+    ElMessage.error('复制失败，请手动选取复制')
+  }
+}
+
 
 // 表单数据
 const configForm = reactive({
@@ -350,5 +423,63 @@ onMounted(() => {
 
 .sync-detail {
   margin-top: 10px;
+}
+
+/* Webhook 设计样式 */
+.webhook-card {
+  margin-top: 20px;
+  border-radius: 8px;
+}
+
+.webhook-header {
+  color: #E6A23C;
+}
+
+.info-icon {
+  color: #909399;
+  cursor: help;
+  font-size: 16px;
+}
+
+.copy-box {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  background-color: #f8f9fa;
+  border: 1px solid #EBEEF5;
+  border-radius: 4px;
+  padding: 8px 16px;
+  width: 100%;
+}
+
+.code-text {
+  font-family: Consolas, Monaco, monospace;
+  color: #e83e8c;
+  font-size: 14px;
+  word-break: break-all;
+}
+
+.webhook-note {
+  margin-top: 24px;
+  padding: 12px 16px;
+  background-color: #fdf6ec;
+  border-left: 4px solid #e6a23c;
+  border-radius: 4px;
+}
+
+.webhook-note h4 {
+  margin: 0 0 8px 0;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  color: #e6a23c;
+  font-size: 14px;
+}
+
+.webhook-note p {
+  margin: 4px 0;
+  font-size: 13px;
+  color: #606266;
+  line-height: 1.6;
 }
 </style>

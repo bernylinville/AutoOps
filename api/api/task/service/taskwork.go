@@ -13,6 +13,7 @@ import (
 	"strings"
 	"time"
 
+	flashdutyService "dodevops-api/api/flashduty/service"
 	"github.com/robfig/cron/v3"
 )
 
@@ -159,12 +160,25 @@ func (s *TaskWorkServiceImpl) executeJob(job *model.TaskWork) error {
 			if updateErr := s.dao.UpdateStatus(job.ID, 4); updateErr != nil {
 				return fmt.Errorf("SSH连接失败且状态更新失败: %v (原错误: %v)", updateErr, sshErr)
 			}
-			// 同时更新任务日志记录失败原因
 			s.dao.UpdateLog(job.ID, fmt.Sprintf("SSH连接失败: %v", sshErr))
+			
+			// === 异常推送 FlashDuty ===
+			flashdutyService.PushStandardEvent(
+				fmt.Sprintf("AutoOps主机任务失败 - 节点 %s", host.Name),
+				fmt.Sprintf("任务主机IP: %s\n模板名称: %s\n失败原因: %v", host.SSHIP, template.Name, sshErr),
+				"Critical",
+			)
 			return fmt.Errorf("SSH连接失败: %v", sshErr)
 		} else {
 			// 命令执行问题不标记为异常，但记录详细日志
 			logContent = fmt.Sprintf("命令执行出错: %v\n%s", sshErr, logContent)
+			
+			// === 异常推送 FlashDuty ===
+			flashdutyService.PushStandardEvent(
+				fmt.Sprintf("AutoOps命令执行失败 - 节点 %s", host.Name),
+				fmt.Sprintf("任务主机IP: %s\n模板名称: %s\n错误日志: %v", host.SSHIP, template.Name, sshErr),
+				"Warning",
+			)
 			break
 		}
 	}

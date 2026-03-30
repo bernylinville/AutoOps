@@ -46,6 +46,7 @@ monitor:
 # FlashDuty 告警中心配置
 # 获取 APP Key: FlashDuty 控制台 → 账户设置 → APP Key
 flashduty:
-  app_key: "your_flashduty_app_key"
+  app_key: "c253b27163f9da8d19760086fb6c48de27"
+  integration_key: "mock_integration_key_here"
   base_url: "https://api.flashcat.cloud"
   timeout: 30

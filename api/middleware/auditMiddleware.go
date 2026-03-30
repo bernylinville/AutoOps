@@ -137,6 +137,7 @@ func inferModule(url string) string {
 		"apps":           "app",
 		"jenkins":        "app",
 		"dashboard":      "dashboard",
+		"flashduty":      "monitor",
 	}
 
 	if module, ok := moduleMap[first]; ok {

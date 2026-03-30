@@ -34,9 +34,10 @@ type pushgateway struct {
 
 // FlashDuty 告警中心配置
 type flashduty struct {
-	AppKey  string `yaml:"app_key"`
-	BaseURL string `yaml:"base_url"`
-	Timeout int    `yaml:"timeout"` // 请求超时(秒),默认30
+	AppKey         string `yaml:"app_key"`
+	IntegrationKey string `yaml:"integration_key"`
+	BaseURL        string `yaml:"base_url"`
+	Timeout        int    `yaml:"timeout"` // 请求超时(秒),默认30
 }
 
 // Agent配置
