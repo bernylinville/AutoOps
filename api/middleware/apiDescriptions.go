@@ -133,6 +133,14 @@ func getDescriptionMap() map[string]string {
 		"/api/v1/n9e/sync":        "N9E 数据同步",
 		"/api/v1/n9e/vm/query":    "VM PromQL 查询",
 		"/api/v1/n9e/vm/overview": "VM 集群监控总览",
+
+		// ========== FlashDuty 告警中心 ==========
+		"/api/v1/flashduty/test-connection":   "FlashDuty 连接测试",
+		"/api/v1/flashduty/alerts/summary":    "FlashDuty 告警概况",
+		"/api/v1/flashduty/incidents/active":  "FlashDuty 故障列表",
+		"/api/v1/flashduty/oncall/today":      "FlashDuty 今日值班",
+		"/api/v1/flashduty/insight/metrics":   "FlashDuty SRE指标",
+		"/api/v1/flashduty/insight/trend":     "FlashDuty 趋势数据",
 	}
 
 	return descriptions

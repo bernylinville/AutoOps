@@ -17,6 +17,7 @@ type config struct {
 	ImageSettings imageSettings `yaml:"imageSettings"`
 	Log           log           `yaml:"log"`
 	Monitor       monitor       `yaml:"monitor"`
+	FlashDuty     flashduty     `yaml:"flashduty"`
 }
 
 // 监控配置
@@ -29,6 +30,13 @@ type monitor struct {
 // Pushgateway配置
 type pushgateway struct {
 	URL string `yaml:"url"`
+}
+
+// FlashDuty 告警中心配置
+type flashduty struct {
+	AppKey  string `yaml:"app_key"`
+	BaseURL string `yaml:"base_url"`
+	Timeout int    `yaml:"timeout"` // 请求超时(秒),默认30
 }
 
 // Agent配置

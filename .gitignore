@@ -12,6 +12,10 @@ docker/api/ssh_keys/
 # Environment config (use .env.example as template)
 docker/.env
 
+# API config (contains credentials)
+api/config.yaml
+docker/api/config.yaml
+
 # Development tools
 .agents/
 .claude/
@@ -27,3 +31,6 @@ web/dist/
 .vscode/
 *.swp
 *.swo
+
+.venv/
+.hippocampus/

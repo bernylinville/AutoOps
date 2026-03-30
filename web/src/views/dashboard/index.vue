@@ -5,6 +5,7 @@ import * as echarts from 'echarts'
 import { getDashboardStats, getBusinessDistribution } from '@/api/dashboard'
 import { GetAllTools, CreateTool, UpdateTool, DeleteTool as DeleteToolAPI, UploadIcon } from '@/api/tool'
 import n9eApi from '@/api/n9e'
+import flashdutyApi from '@/api/flashduty'
 import { ElMessage, ElMessageBox } from 'element-plus'
 
 const router = useRouter()
@@ -58,6 +59,28 @@ const stats = reactive({
       { label: '健康度', value: 0, unit: '%' }
     ]
   }
+})
+
+// FlashDuty 数据
+const fdConfigured = ref(false)
+const fdLoading = ref(false)
+const fdAlertSummary = reactive({
+  activeAlerts: 0,
+  criticalCount: 0,
+  warningCount: 0,
+  infoCount: 0,
+  activeIncidents: 0,
+  triggeredCount: 0,
+  processingCount: 0
+})
+const fdOnCall = ref([])
+const fdSREMetrics = reactive({
+  mtta: 0,
+  mttr: 0,
+  noiseReductionPct: 0,
+  ackPct: 0,
+  totalIncidents: 0,
+  totalAlerts: 0
 })
 
 // 图表实例
@@ -443,6 +466,46 @@ const loadData = async () => {
   }
 }
 
+// 加载 FlashDuty 数据
+const loadFlashDutyData = async () => {
+  fdLoading.value = true
+  try {
+    const statusRes = await flashdutyApi.getConfigStatus()
+    if (statusRes.data?.configured) {
+      fdConfigured.value = true
+
+      // 并行加载所有 FlashDuty 数据
+      const [summaryRes, onCallRes, metricsRes] = await Promise.allSettled([
+        flashdutyApi.getAlertSummary(),
+        flashdutyApi.getTodayOnCall(),
+        flashdutyApi.getSREMetrics(7)
+      ])
+
+      if (summaryRes.status === 'fulfilled' && summaryRes.value.data) {
+        Object.assign(fdAlertSummary, summaryRes.value.data)
+      }
+      if (onCallRes.status === 'fulfilled' && onCallRes.value.data?.items) {
+        fdOnCall.value = onCallRes.value.data.items
+      }
+      if (metricsRes.status === 'fulfilled' && metricsRes.value.data) {
+        Object.assign(fdSREMetrics, metricsRes.value.data)
+      }
+    }
+  } catch (e) {
+    console.warn('FlashDuty data not available:', e)
+  } finally {
+    fdLoading.value = false
+  }
+}
+
+// 格式化秒数
+const formatDuration = (seconds) => {
+  if (!seconds || seconds <= 0) return '0s'
+  if (seconds < 60) return Math.round(seconds) + 's'
+  if (seconds < 3600) return Math.round(seconds / 60) + 'm'
+  return (seconds / 3600).toFixed(1) + 'h'
+}
+
 // 窗口大小改变时重绘图表
 const handleResize = () => {
   trendChart?.resize()
@@ -453,6 +516,7 @@ const handleResize = () => {
 onMounted(async () => {
   await loadData()
   await loadTools()
+  loadFlashDutyData() // 不阻塞
   setTimeout(async () => {
     initTrendChart()
     await initPieChart()
@@ -514,6 +578,104 @@ onUnmounted(() => {
             <span class="chart-card-title">业务组应用分布</span>
           </div>
           <div id="pieChart" class="chart-body"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ════════════════ FlashDuty 告警中心 ════════════════ -->
+    <div class="dashboard-section mt-4" v-if="fdConfigured">
+      <div class="section-header">
+        <span class="section-title">告警中心</span>
+        <span class="section-subtitle">FlashDuty Alert Center</span>
+      </div>
+
+      <div class="fd-grid" v-loading="fdLoading">
+        <!-- 告警统计 -->
+        <div class="fd-card fd-card--alert">
+          <div class="fd-card-header">
+            <span class="fd-card-title">告警概况</span>
+            <span class="fd-badge" :class="fdAlertSummary.activeAlerts > 0 ? 'fd-badge--danger' : 'fd-badge--success'">
+              {{ fdAlertSummary.activeAlerts > 0 ? '有告警' : '正常' }}
+            </span>
+          </div>
+          <div class="fd-stats-row">
+            <div class="fd-stat">
+              <span class="fd-stat-value mono-font val-danger">{{ fdAlertSummary.criticalCount }}</span>
+              <span class="fd-stat-label">严重</span>
+            </div>
+            <div class="fd-stat">
+              <span class="fd-stat-value mono-font val-warning">{{ fdAlertSummary.warningCount }}</span>
+              <span class="fd-stat-label">警告</span>
+            </div>
+            <div class="fd-stat">
+              <span class="fd-stat-value mono-font">{{ fdAlertSummary.infoCount }}</span>
+              <span class="fd-stat-label">信息</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- 故障统计 -->
+        <div class="fd-card fd-card--incident">
+          <div class="fd-card-header">
+            <span class="fd-card-title">故障处理</span>
+            <span class="fd-badge" :class="fdAlertSummary.triggeredCount > 0 ? 'fd-badge--danger' : 'fd-badge--success'">
+              {{ fdAlertSummary.activeIncidents }} 活跃
+            </span>
+          </div>
+          <div class="fd-stats-row">
+            <div class="fd-stat">
+              <span class="fd-stat-value mono-font val-danger">{{ fdAlertSummary.triggeredCount }}</span>
+              <span class="fd-stat-label">待处理</span>
+            </div>
+            <div class="fd-stat">
+              <span class="fd-stat-value mono-font val-warning">{{ fdAlertSummary.processingCount }}</span>
+              <span class="fd-stat-label">处理中</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- 今日值班 -->
+        <div class="fd-card fd-card--oncall">
+          <div class="fd-card-header">
+            <span class="fd-card-title">今日值班</span>
+          </div>
+          <div class="fd-oncall-list" v-if="fdOnCall.length > 0">
+            <div class="fd-oncall-item" v-for="person in fdOnCall" :key="person.personName">
+              <div class="fd-oncall-avatar">{{ person.personName?.charAt(0) || '?' }}</div>
+              <div class="fd-oncall-info">
+                <span class="fd-oncall-name">{{ person.personName }}</span>
+                <span class="fd-oncall-schedule">{{ person.scheduleName }}</span>
+              </div>
+            </div>
+          </div>
+          <div class="fd-oncall-empty" v-else>
+            <span>暂无值班信息</span>
+          </div>
+        </div>
+
+        <!-- SRE 指标 -->
+        <div class="fd-card fd-card--sre">
+          <div class="fd-card-header">
+            <span class="fd-card-title">SRE 指标 <small>(近 7 天)</small></span>
+          </div>
+          <div class="fd-sre-grid">
+            <div class="fd-sre-item">
+              <span class="fd-sre-value mono-font">{{ formatDuration(fdSREMetrics.mtta) }}</span>
+              <span class="fd-sre-label">MTTA</span>
+            </div>
+            <div class="fd-sre-item">
+              <span class="fd-sre-value mono-font">{{ formatDuration(fdSREMetrics.mttr) }}</span>
+              <span class="fd-sre-label">MTTR</span>
+            </div>
+            <div class="fd-sre-item">
+              <span class="fd-sre-value mono-font">{{ fdSREMetrics.noiseReductionPct.toFixed(1) }}%</span>
+              <span class="fd-sre-label">降噪率</span>
+            </div>
+            <div class="fd-sre-item">
+              <span class="fd-sre-value mono-font">{{ fdSREMetrics.ackPct.toFixed(1) }}%</span>
+              <span class="fd-sre-label">响应率</span>
+            </div>
+          </div>
         </div>
       </div>
     </div>
@@ -872,13 +1034,166 @@ onUnmounted(() => {
 }
 .form-tip { margin-top: 4px; font-size: 12px; color: var(--ao-text-secondary); }
 
+// ═══════════════════════════════════════════════════════════
+//  FlashDuty 告警中心
+// ═══════════════════════════════════════════════════════════
+.fd-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: var(--ao-spacing-md);
+}
+
+.fd-card {
+  background: var(--ao-bg-white);
+  border-radius: var(--ao-radius);
+  border: 1px solid var(--ao-border-lighter);
+  padding: 16px 20px;
+}
+
+.fd-card-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 14px;
+}
+
+.fd-card-title {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--ao-text-primary);
+
+  small {
+    font-weight: 400;
+    font-size: 12px;
+    color: var(--ao-text-secondary);
+  }
+}
+
+.fd-badge {
+  font-size: 12px;
+  padding: 2px 10px;
+  border-radius: 12px;
+  font-weight: 500;
+}
+.fd-badge--danger { background: #fef0f0; color: var(--ao-danger); }
+.fd-badge--success { background: #f0f9eb; color: var(--ao-success); }
+
+.fd-stats-row {
+  display: flex;
+  gap: 20px;
+}
+
+.fd-stat {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+}
+
+.fd-stat-value {
+  font-size: 24px;
+  font-weight: 700;
+  color: var(--ao-text-primary);
+}
+
+.fd-stat-label {
+  font-size: 12px;
+  color: var(--ao-text-secondary);
+}
+
+.fd-oncall-list {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.fd-oncall-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.fd-oncall-avatar {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, var(--ao-primary), #79bbff);
+  color: #fff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 14px;
+  font-weight: 600;
+  flex-shrink: 0;
+}
+
+.fd-oncall-info {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  overflow: hidden;
+}
+
+.fd-oncall-name {
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--ao-text-primary);
+}
+
+.fd-oncall-schedule {
+  font-size: 12px;
+  color: var(--ao-text-secondary);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.fd-oncall-empty {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 60px;
+  color: var(--ao-text-secondary);
+  font-size: 13px;
+}
+
+.fd-sre-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+}
+
+.fd-sre-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  padding: 8px;
+  background: var(--ao-fill);
+  border-radius: var(--ao-radius-sm);
+}
+
+.fd-sre-value {
+  font-size: 18px;
+  font-weight: 700;
+  color: var(--ao-primary);
+}
+
+.fd-sre-label {
+  font-size: 12px;
+  color: var(--ao-text-secondary);
+  font-weight: 500;
+}
+
 @media (max-width: 1400px) {
   .stats-cards { grid-template-columns: repeat(2, 1fr); }
   .charts-row, .bottom-row { grid-template-columns: 1fr; }
   .tools-grid { grid-template-columns: repeat(4, 1fr); }
+  .fd-grid { grid-template-columns: repeat(2, 1fr); }
 }
 @media (max-width: 768px) {
   .stats-cards { grid-template-columns: 1fr; }
   .tools-grid { grid-template-columns: repeat(3, 1fr); }
+  .fd-grid { grid-template-columns: 1fr; }
 }
 </style>

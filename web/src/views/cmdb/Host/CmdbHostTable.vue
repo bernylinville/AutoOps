@@ -242,6 +242,16 @@
                   @click="showMonitor(scope.row)"
                 />
               </el-tooltip>
+              <el-tooltip class="item" effect="light" content="告警历史" placement="top-end">
+                <el-button
+                  type="warning"
+                  icon="Bell"
+                  size="mini"
+                  circle
+                  plain
+                  @click="showAlertHistory(scope.row)"
+                />
+              </el-tooltip>
             </el-button-group>
           </div>
         </template>
@@ -268,6 +278,15 @@
       :host-id="currentTcpPortHostId"
       style="z-index: 2003"
     />
+
+    <host-alert-history
+      v-if="showAlertDialog"
+      :visible="showAlertDialog"
+      :host-ident="currentAlertIdent"
+      :host-name="currentAlertHostName"
+      @update:visible="showAlertDialog = $event"
+      @close="showAlertDialog = false"
+    />
   </div>
 </template>
 
@@ -275,13 +294,15 @@
 import MonitorDialog from './MonitorDialog.vue'
 import ProcessMonitorDialog from './ProcessMonitorDialog.vue'
 import TcpPortMonitorDialog from './TcpPortMonitorDialog.vue'
+import HostAlertHistory from './HostAlertHistory.vue'
 
 export default {
   name: 'CmdbHostTable',
   components: {
     MonitorDialog,
     ProcessMonitorDialog,
-    TcpPortMonitorDialog
+    TcpPortMonitorDialog,
+    HostAlertHistory
   },
   props: {
     hostList: {
@@ -304,6 +325,9 @@ export default {
       currentProcessHostId: '',
       showTcpPortDialog: false,
       currentTcpPortHostId: '',
+      showAlertDialog: false,
+      currentAlertIdent: '',
+      currentAlertHostName: '',
       isFirstOpen: true
     }
   },
@@ -406,6 +430,12 @@ export default {
     showTcpPortMonitor(host) {
       this.currentTcpPortHostId = host.id
       this.showTcpPortDialog = true
+    },
+    showAlertHistory(host) {
+      // 使用 IP 作为 ident 关联 FlashDuty
+      this.currentAlertIdent = host.privateIp || host.publicIp || host.sshIp || ''
+      this.currentAlertHostName = host.hostName || ''
+      this.showAlertDialog = true
     },
     
     // 显示复制图标

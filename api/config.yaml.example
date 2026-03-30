@@ -1,0 +1,51 @@
+# 项目启动端口
+server:
+  address: 0.0.0.0:8000
+  model: debug
+  enableSwagger: true
+
+# 数据库配置
+db:
+  dialects: mysql
+  host: 127.0.0.1
+  port: 3306
+  db: autoops
+  username: root
+  password: your_mysql_password
+  charset: utf8
+  maxIdle: 50
+  maxOpen: 150
+
+# redis配置
+redis:
+  address: 127.0.0.1:6379
+  password: "your_redis_password"
+
+# 图片地址
+imageSettings:
+  uploadDir: ./upload/
+
+# log日志配置
+log:
+  path: ./log
+  name: sys
+  model: console
+
+# 监控配置
+monitor:
+  prometheus:
+    url: "http://127.0.0.1:9090"
+  pushgateway:
+    url: "http://127.0.0.1:9091"
+  agent:
+    heartbeat_server_url: "http://127.0.0.1:8000/api/v1/monitor/agent/heartbeat"
+    heartbeat_token: "your_heartbeat_token"
+  webhook:
+    token: "your_webhook_token"
+
+# FlashDuty 告警中心配置
+# 获取 APP Key: FlashDuty 控制台 → 账户设置 → APP Key
+flashduty:
+  app_key: "your_flashduty_app_key"
+  base_url: "https://api.flashcat.cloud"
+  timeout: 30

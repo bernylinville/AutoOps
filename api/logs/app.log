@@ -10169,3 +10169,4 @@ ORDER BY
 [36mINFO[0m[2026/02/19 - 20:04:12] 停止任务队列系统...                                  
 [36mINFO[0m[2026/02/19 - 20:04:12] 任务队列系统已停止                                    
 [36mINFO[0m[2026/02/19 - 20:04:12] Server exiting                               
+[37mDEBU[0m[2026/03/30 - 10:07:56] Logger initialized with TextFormatter.       
