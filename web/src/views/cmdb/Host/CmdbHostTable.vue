@@ -6,7 +6,9 @@
         stripe
         style="width: 100%"
         class="host-table"
+        @selection-change="handleSelectionChange"
     >
+      <el-table-column type="selection" width="45" />
       <el-table-column label="ID" prop="id" v-if="false" />
       <el-table-column label="主机名称" width="180" show-overflow-tooltip>
         <template v-slot="scope">
@@ -140,9 +142,9 @@
           </div>
         </template>
       </el-table-column>
-      <el-table-column label="认证状态">
+      <el-table-column label="主机状态" width="120">
         <template v-slot="scope">
-          <el-tag :type="getStatusTagType(scope.row.status)">
+          <el-tag :type="getStatusTagType(scope.row.status)" size="small">
             {{ getStatusText(scope.row.status) }}
           </el-tag>
         </template>
@@ -252,13 +254,92 @@
                   @click="showAlertHistory(scope.row)"
                 />
               </el-tooltip>
+              <el-tooltip class="item" effect="light" content="生命周期变更" placement="top-end">
+                <el-button
+                  type="primary"
+                  icon="Promotion"
+                  size="mini"
+                  circle
+                  plain
+                  v-authority="['cmdb:ecs:edit']"
+                  @click="openLifecycleDialog(scope.row)"
+                />
+              </el-tooltip>
             </el-button-group>
           </div>
         </template>
       </el-table-column>
     </el-table>
 
-    <monitor-dialog 
+    <!-- 批量操作工具栏（选中时显示） -->
+    <div v-if="selectedHosts.length > 0" class="batch-action-bar">
+      <span style="font-size:13px;color:#606266;margin-right:12px">
+        已选择 <strong>{{ selectedHosts.length }}</strong> 台主机
+      </span>
+      <el-button type="warning" size="small" icon="Promotion" @click="openBatchLifecycleDialog">
+        批量生命周期变更
+      </el-button>
+      <el-button size="small" @click="clearSelection">取消选择</el-button>
+    </div>
+
+    <!-- 生命周期状态变更对话框 -->
+    <el-dialog v-model="lifecycleDialog.visible" title="变更主机生命周期状态" width="400px" :append-to-body="true">
+      <div v-if="lifecycleDialog.host">
+        <el-descriptions :column="1" border size="small" style="margin-bottom:16px">
+          <el-descriptions-item label="主机名称">{{ lifecycleDialog.host.hostName }}</el-descriptions-item>
+          <el-descriptions-item label="当前状态">
+            <el-tag :type="getStatusTagType(lifecycleDialog.host.status)" size="small">
+              {{ getStatusText(lifecycleDialog.host.status) }}
+            </el-tag>
+          </el-descriptions-item>
+        </el-descriptions>
+        <el-form label-width="80px">
+          <el-form-item label="目标状态" required>
+            <el-select v-model="lifecycleDialog.targetStatus" placeholder="请选择目标状态" style="width:100%">
+              <el-option
+                v-for="s in lifecycleDialog.allowedStatuses"
+                :key="s.value"
+                :label="s.label"
+                :value="s.value"
+              />
+            </el-select>
+          </el-form-item>
+        </el-form>
+        <div v-if="lifecycleDialog.allowedStatuses.length === 0" style="color:#909399;font-size:13px;text-align:center;padding:8px 0">
+          当前状态无可用转换目标（终态或由系统自动管理）
+        </div>
+      </div>
+      <template #footer>
+        <el-button @click="lifecycleDialog.visible = false">取消</el-button>
+        <el-button type="primary" :loading="lifecycleDialog.loading"
+          :disabled="!lifecycleDialog.targetStatus"
+          @click="submitLifecycle">确认变更</el-button>
+      </template>
+    </el-dialog>
+
+    <!-- 批量生命周期变更对话框 -->
+    <el-dialog v-model="batchLifecycleDialog.visible" title="批量变更主机生命周期状态" width="420px" :append-to-body="true">
+      <div>
+        <p style="color:#606266;font-size:13px;margin-bottom:12px">
+          已选择 <strong>{{ batchLifecycleDialog.count }}</strong> 台主机，请选择目标状态（不符合转换规则的主机将被跳过）：
+        </p>
+        <el-form label-width="80px">
+          <el-form-item label="目标状态" required>
+            <el-select v-model="batchLifecycleDialog.targetStatus" placeholder="请选择目标状态" style="width:100%">
+              <el-option v-for="s in batchStatusOptions" :key="s.value" :label="s.label" :value="s.value" />
+            </el-select>
+          </el-form-item>
+        </el-form>
+      </div>
+      <template #footer>
+        <el-button @click="batchLifecycleDialog.visible = false">取消</el-button>
+        <el-button type="primary" :loading="batchLifecycleDialog.loading"
+          :disabled="!batchLifecycleDialog.targetStatus"
+          @click="submitBatchLifecycle">确认变更</el-button>
+      </template>
+    </el-dialog>
+
+    <monitor-dialog
       v-if="showMonitorDialog"
       v-model="showMonitorDialog"
       :host-id="currentHostId"
@@ -328,7 +409,21 @@ export default {
       showAlertDialog: false,
       currentAlertIdent: '',
       currentAlertHostName: '',
-      isFirstOpen: true
+      isFirstOpen: true,
+      lifecycleDialog: {
+        visible: false,
+        host: null,
+        targetStatus: null,
+        allowedStatuses: [],
+        loading: false
+      },
+      selectedHosts: [],
+      batchLifecycleDialog: {
+        visible: false,
+        count: 0,
+        targetStatus: null,
+        loading: false
+      }
     }
   },
   watch: {
@@ -360,22 +455,43 @@ export default {
       })
       
       return result
+    },
+    batchStatusOptions() {
+      // 对批量操作，列出所有可能的手动转换目标状态
+      const statusNames = {
+        1: '在线', 6: '采购中', 7: '入库', 8: '待上线', 9: '退服申请', 10: '已报废'
+      }
+      return Object.keys(statusNames).map(v => ({ value: Number(v), label: statusNames[v] }))
     }
   },
   methods: {
     getStatusText(status) {
       const statusMap = {
-        1: '认证成功',
-        2: '未认证', 
-        3: '认证失败'
+        1: '在线',
+        2: '未认证',
+        3: '离线',
+        4: '失联',
+        5: '降级',
+        6: '采购中',
+        7: '入库',
+        8: '待上线',
+        9: '退服申请',
+        10: '已报废'
       }
-      return statusMap[status] || '未知状态'
+      return statusMap[status] || '未知'
     },
     getStatusTagType(status) {
       const typeMap = {
         1: 'success',
-        2: 'warning', 
-        3: 'danger'
+        2: 'warning',
+        3: 'danger',
+        4: 'danger',
+        5: 'warning',
+        6: 'info',
+        7: 'info',
+        8: 'warning',
+        9: 'danger',
+        10: 'info'
       }
       return typeMap[status] || 'info'
     },
@@ -454,6 +570,89 @@ export default {
       })
     },
     
+    // ——— 生命周期变更 ———
+    openLifecycleDialog(host) {
+      const allowedMap = {
+        0:  [{ value: 6, label: '采购中' }],
+        6:  [{ value: 7, label: '入库' }],
+        7:  [{ value: 8, label: '待上线' }],
+        8:  [{ value: 1, label: '在线' }],
+        1:  [{ value: 9, label: '退服申请' }, { value: 5, label: '降级' }],
+        3:  [{ value: 9, label: '退服申请' }],
+        4:  [{ value: 9, label: '退服申请' }],
+        5:  [{ value: 9, label: '退服申请' }, { value: 1, label: '在线' }],
+        9:  [{ value: 10, label: '已报废' }, { value: 1, label: '撤回在线' }],
+        10: []
+      }
+      this.lifecycleDialog.host = host
+      this.lifecycleDialog.targetStatus = null
+      this.lifecycleDialog.allowedStatuses = allowedMap[host.status] || []
+      this.lifecycleDialog.visible = true
+    },
+    async submitLifecycle() {
+      if (!this.lifecycleDialog.targetStatus) return
+      this.lifecycleDialog.loading = true
+      try {
+        const res = await this.$api.updateHostLifecycle(
+          this.lifecycleDialog.host.id,
+          this.lifecycleDialog.targetStatus
+        )
+        if (res.data.code === 200) {
+          this.$message.success('状态变更成功')
+          this.lifecycleDialog.visible = false
+          this.$emit('lifecycle-changed')
+        } else {
+          this.$message.error(res.data.msg || '变更失败')
+        }
+      } catch {
+        this.$message.error('请求失败')
+      } finally {
+        this.lifecycleDialog.loading = false
+      }
+    },
+
+    // ——— 批量生命周期变更 ———
+    handleSelectionChange(rows) {
+      this.selectedHosts = rows
+    },
+    clearSelection() {
+      this.selectedHosts = []
+    },
+    openBatchLifecycleDialog() {
+      if (this.selectedHosts.length === 0) {
+        this.$message.warning('请先选择主机')
+        return
+      }
+      this.batchLifecycleDialog.count = this.selectedHosts.length
+      this.batchLifecycleDialog.targetStatus = null
+      this.batchLifecycleDialog.visible = true
+    },
+    async submitBatchLifecycle() {
+      if (!this.batchLifecycleDialog.targetStatus) return
+      this.batchLifecycleDialog.loading = true
+      try {
+        const ids = this.selectedHosts.map(h => h.id)
+        const res = await this.$api.batchUpdateHostLifecycle(ids, this.batchLifecycleDialog.targetStatus)
+        if (res.data.code === 200) {
+          const data = res.data.data
+          if (data.failed && data.failed.length > 0) {
+            this.$message.warning(`成功 ${data.success} 台，跳过 ${data.failed.length} 台（规则不符）`)
+          } else {
+            this.$message.success(`批量变更成功，共 ${data.success} 台`)
+          }
+          this.batchLifecycleDialog.visible = false
+          this.selectedHosts = []
+          this.$emit('lifecycle-changed')
+        } else {
+          this.$message.error(res.data.msg || '变更失败')
+        }
+      } catch {
+        this.$message.error('请求失败')
+      } finally {
+        this.batchLifecycleDialog.loading = false
+      }
+    },
+
     // 复制到剪贴板
     async copyToClipboard(text, type, event) {
       try {
@@ -591,6 +790,17 @@ export default {
 /* 操作栏按钮组不换行 */
 .el-button-group {
   white-space: nowrap;
+}
+
+/* 批量操作工具栏 */
+.batch-action-bar {
+  display: flex;
+  align-items: center;
+  padding: 8px 12px;
+  background: #f0f9ff;
+  border: 1px solid #b3d8ff;
+  border-radius: 4px;
+  margin-top: 8px;
 }
 
 /* 🏷️ 标签样式优化 */

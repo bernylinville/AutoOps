@@ -122,6 +122,8 @@ export default {
         if (params.ip) queryParams.ip = params.ip
         if (params.status) queryParams.status = params.status
         if (params.groupId) queryParams.groupId = params.groupId
+        if (params.sourceType) queryParams.sourceType = params.sourceType
+        if (params.keyword) queryParams.keyword = params.keyword
 
         console.log('最终API查询参数:', JSON.stringify(queryParams, null, 2))
         return request({
@@ -414,6 +416,24 @@ export default {
             headers: {
                 'Content-Type': 'application/json'
             }
+        })
+    },
+
+    // 变更主机生命周期状态
+    updateHostLifecycle(id, status) {
+        return request({
+            url: 'cmdb/host/lifecycle',
+            method: 'put',
+            data: { id, status }
+        })
+    },
+
+    // 批量变更主机生命周期状态
+    batchUpdateHostLifecycle(ids, status) {
+        return request({
+            url: 'cmdb/host/lifecycle/batch',
+            method: 'put',
+            data: { ids, status }
         })
     },
 

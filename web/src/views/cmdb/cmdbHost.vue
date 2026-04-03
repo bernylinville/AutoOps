@@ -127,6 +127,7 @@
           @show-upload="showUploadDialog"
           @execute-command="executeCommand"
           @delete-host="handleHostDelete"
+          @lifecycle-changed="getHostList"
         />
 
         <!-- 分页 -->
@@ -393,9 +394,16 @@ export default {
       commandDialog: null, // 添加commandDialog初始化
       expandedKeys: [], // 用于跟踪展开的节点key
       statusList: [
+        { value: 1, label: '在线' },
         { value: 2, label: '未认证' },
-        { value: 1, label: '认证成功' },
-        { value: 3, label: '认证失败' }
+        { value: 3, label: '离线' },
+        { value: 4, label: '失联' },
+        { value: 5, label: '降级' },
+        { value: 6, label: '采购中' },
+        { value: 7, label: '入库' },
+        { value: 8, label: '待上线' },
+        { value: 9, label: '退服申请' },
+        { value: 10, label: '已报废' }
       ],
       loading: false,
       queryParams: {
