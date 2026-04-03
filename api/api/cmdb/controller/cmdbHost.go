@@ -220,6 +220,26 @@ func (c *CmdbHostController) UpdateCmdbHost(ctx *gin.Context) {
 	c.service.UpdateCmdbHost(ctx, dto.ID, &dto)
 }
 
+// UpdateHostLifecycle 手动变更主机生命周期状态
+func (c *CmdbHostController) UpdateHostLifecycle(ctx *gin.Context) {
+	var dto model.UpdateHostLifecycleDto
+	if err := ctx.ShouldBindJSON(&dto); err != nil {
+		result.Failed(ctx, constant.INVALID_PARAMS, "参数错误")
+		return
+	}
+	c.service.UpdateHostLifecycle(ctx, &dto)
+}
+
+// BatchUpdateHostLifecycle 批量变更主机生命周期状态
+func (c *CmdbHostController) BatchUpdateHostLifecycle(ctx *gin.Context) {
+	var dto model.BatchUpdateHostLifecycleDto
+	if err := ctx.ShouldBindJSON(&dto); err != nil {
+		result.Failed(ctx, constant.INVALID_PARAMS, "参数错误")
+		return
+	}
+	c.service.BatchUpdateHostLifecycle(ctx, &dto)
+}
+
 // 删除主机
 // @Summary 删除主机
 // @Description 删除主机

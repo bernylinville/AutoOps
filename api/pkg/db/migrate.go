@@ -17,35 +17,62 @@ import (
 
 // 注册所有需要自动建表的 model
 var models = []interface{}{
+	// System models
+	&systemmodel.SysAdmin{},
+	&systemmodel.SysRole{},
+	&systemmodel.SysMenu{},
+	&systemmodel.SysAdminRole{},
+	&systemmodel.SysRoleMenu{},
+	&systemmodel.SysDept{},
+	&systemmodel.SysPost{},
+	&systemmodel.SysLoginInfo{},
+	&systemmodel.SysOperationLog{},
+	&systemmodel.SysAuditLog{},
+	// CMDB models
 	&cmdbmodel.CmdbGroup{},
+	&cmdbmodel.CmdbHost{},
+	&cmdbmodel.CmdbSQL{},
+	&cmdbmodel.CmdbSQLRecord{},
+	// CI 动态模型
+	&cmdbmodel.CIType{},
+	&cmdbmodel.CITypeAttribute{},
+	&cmdbmodel.CIInstance{},
+	&cmdbmodel.CIRelation{},
+	// Project 项目维度模型
+	&cmdbmodel.Project{},
+	// 变更日志（Phase 4）
+	&cmdbmodel.CIChangeLog{},
+	// 网络设备巡检（Phase 5）
+	&cmdbmodel.NetworkInspection{},
+	// Config center models
 	&ccmodel.EcsAuth{},
 	&ccmodel.KeyManage{},
 	&ccmodel.SyncSchedule{},
-	&cmdbmodel.CmdbHost{},
-	&cmdbmodel.CmdbSQLRecord{},
-	&cmdbmodel.CmdbSQL{},
 	&ccmodel.AccountAuth{},
+	// Task models
 	&taskmodel.TaskTemplate{},
 	&taskmodel.Task{},
 	&taskmodel.TaskWork{},
 	&taskmodel.TaskAnsible{},
 	&taskmodel.TaskAnsibleWork{},
+	// Monitor models
 	&monitormodel.Agent{},
+	// K8s models
 	&k8smodel.KubeCluster{},
+	// App models
 	&appmodel.Application{},
 	&appmodel.JenkinsEnv{},
 	&appmodel.QuickDeployment{},
 	&appmodel.QuickDeploymentTask{},
-	&systemmodel.SysOperationLog{},
-	&systemmodel.SysAuditLog{},
+	// Tool models
 	&toolmodel.Tool{},
 	&toolmodel.ServiceDeploy{},
-	// M7: N9E 模型
+	// N9E models
 	&n9emodel.N9EConfig{},
 	&n9emodel.N9EBusiGroup{},
 	&n9emodel.N9EDataSource{},
 	&n9emodel.N9ESyncLog{},
-	// M8: 告警通知模型
+	// Alert models
 	&n9emodel.AlertRule{},
 	&n9emodel.AlertEvent{},
 	&n9emodel.NotifyChannel{},

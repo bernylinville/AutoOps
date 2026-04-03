@@ -5,9 +5,6 @@ import (
 	"dodevops-api/api/dashboard/model1"
 	"dodevops-api/common"
 	"math"
-	"net"
-	"sync"
-	"time"
 	"gorm.io/gorm"
 )
 
@@ -77,6 +74,8 @@ func (s *DashboardService) GetDashboardStats() (*model.DashboardStats, error) {
 }
 
 // getHostStats 获取主机统计
+// 直接使用 cmdb_host 表的 status 字段统计（该字段由 N9E 同步维护），
+// 避免通过 TCP 探测导致 N9E 主机被误判为离线。
 func (s *DashboardService) getHostStats() (*model.HostStats, error) {
 	var total int64
 
@@ -86,28 +85,18 @@ func (s *DashboardService) getHostStats() (*model.HostStats, error) {
 		return nil, err
 	}
 
-	// 获取所有主机信息，通过TCP检测在线状态 (与监控API保持一致)
-	var hosts []struct {
-		ID      uint   `gorm:"column:id"`
-		SSHIP   string `gorm:"column:ssh_ip"`
-		SSHPort int    `gorm:"column:ssh_port"`
-	}
-
-	err = s.db.Table("cmdb_host").
-		Select("id, ssh_ip, ssh_port").
-		Where("ssh_ip != '' AND ssh_port > 0").
-		Find(&hosts).Error
+	// 统计在线主机数 (status=1 表示在线，由 N9E sync / SSH认证维护)
+	var online int64
+	err = s.db.Table("cmdb_host").Where("status = ?", 1).Count(&online).Error
 	if err != nil {
 		return nil, err
 	}
 
-	// 并发检测主机在线状态 (与监控API逻辑一致)
-	online := s.checkHostsOnlineStatus(hosts)
-	offline := max(0, total-int64(online))
+	offline := max(0, total-online)
 
 	return &model.HostStats{
 		Total:   int(total),
-		Online:  online,
+		Online:  int(online),
 		Offline: int(offline),
 	}, nil
 }
@@ -255,57 +244,7 @@ func (s *DashboardService) getServiceStats() (*model.ServiceStats, error) {
 	}, nil
 }
 
-// checkHostsOnlineStatus 并发检测主机在线状态 (与监控API保持一致)
-func (s *DashboardService) checkHostsOnlineStatus(hosts []struct {
-	ID      uint   `gorm:"column:id"`
-	SSHIP   string `gorm:"column:ssh_ip"`
-	SSHPort int    `gorm:"column:ssh_port"`
-}) int {
-	if len(hosts) == 0 {
-		return 0
-	}
 
-	// 限制并发数量，防止过多并发连接
-	maxConcurrent := min(20, len(hosts))
-	semaphore := make(chan struct{}, maxConcurrent)
-
-	var wg sync.WaitGroup
-	var mu sync.Mutex
-	onlineCount := 0
-
-	// 并发检测每个主机的在线状态
-	for _, host := range hosts {
-		wg.Add(1)
-		go func(h struct {
-			ID      uint   `gorm:"column:id"`
-			SSHIP   string `gorm:"column:ssh_ip"`
-			SSHPort int    `gorm:"column:ssh_port"`
-		}) {
-			defer wg.Done()
-
-			// 获取信号量，限制并发数
-			semaphore <- struct{}{}
-			defer func() { <-semaphore }()
-
-			// TCP连接检测 (500ms超时，与监控API一致)
-			if h.SSHIP != "" && h.SSHPort > 0 {
-				conn, err := net.DialTimeout("tcp",
-					fmt.Sprintf("%s:%d", h.SSHIP, h.SSHPort),
-					500*time.Millisecond)
-				if err == nil {
-					conn.Close()
-					mu.Lock()
-					onlineCount++
-					mu.Unlock()
-				}
-			}
-		}(host)
-	}
-
-	// 等待所有检测完成
-	wg.Wait()
-	return onlineCount
-}
 
 // getDatabaseStats 获取数据库统计
 func (s *DashboardService) getDatabaseStats() (*model.DatabaseStats, error) {

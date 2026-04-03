@@ -30,6 +30,8 @@ func RegisterCmdbRoutes(router *gin.RouterGroup) {
 	router.POST("/cmdb/hostimport", controller.NewCmdbHostController().ImportHostsFromExcel)      // 从Excel导入主机
 	router.GET("/cmdb/hosttemplate", controller.NewCmdbHostController().DownloadHostTemplate)     // 下载主机导入模板
 	router.POST("/cmdb/hostsync", controller.NewCmdbHostController().SyncHostInfo)                // 同步主机基本信息
+	router.PUT("/cmdb/host/lifecycle", controller.NewCmdbHostController().UpdateHostLifecycle)             // 手动变更生命周期状态
+	router.PUT("/cmdb/host/lifecycle/batch", controller.NewCmdbHostController().BatchUpdateHostLifecycle) // 批量变更生命周期状态
 	// 云主机管理
 	router.POST("/cmdb/hostcloudcreatealiyun", controller.NewCmdbHostCloudController().CreateAliyunHost)                          // 创建阿里云主机
 	router.POST("/cmdb/hostcloudcreatetencent", controller.NewCmdbHostCloudController().CreateTencentHost)                        // 创建腾讯云主机
@@ -57,4 +59,67 @@ func RegisterCmdbRoutes(router *gin.RouterGroup) {
 	router.GET("/cmdb/databaselist", controller.NewCmdbSQLController().ListDatabases)         // 获取数据库列表
 	router.GET("/cmdb/database/byname", controller.NewCmdbSQLController().GetDatabasesByName) // 根据名称查询数据库
 	router.GET("/cmdb/database/bytype", controller.NewCmdbSQLController().GetDatabasesByType) // 根据类型查询数据库
+
+	// ========================================
+	// CI 配置管理（动态CI模型）
+	// ========================================
+	ciCtrl := controller.NewCITypeController()
+
+	// CI 类型管理
+	router.GET("/cmdb/ci/type/list", ciCtrl.GetCITypeList)           // 获取CI类型列表
+	router.GET("/cmdb/ci/type/detail", ciCtrl.GetCITypeDetail)       // 获取CI类型详情(含属性)
+	router.POST("/cmdb/ci/type", ciCtrl.CreateCIType)                // 创建CI类型
+	router.PUT("/cmdb/ci/type", ciCtrl.UpdateCIType)                 // 更新CI类型
+	router.DELETE("/cmdb/ci/type", ciCtrl.DeleteCIType)              // 删除CI类型
+
+	// CI 属性管理
+	router.GET("/cmdb/ci/attribute/list", ciCtrl.GetCITypeAttributes)      // 获取类型属性列表
+	router.POST("/cmdb/ci/attribute", ciCtrl.CreateCITypeAttribute)        // 创建属性
+	router.PUT("/cmdb/ci/attribute", ciCtrl.UpdateCITypeAttribute)         // 更新属性
+	router.DELETE("/cmdb/ci/attribute", ciCtrl.DeleteCITypeAttribute)      // 删除属性
+
+	// CI 实例管理
+	router.GET("/cmdb/ci/instance/list", ciCtrl.GetCIInstanceList)         // 获取CI实例列表(分页)
+	router.GET("/cmdb/ci/instance/detail", ciCtrl.GetCIInstanceDetail)     // 获取CI实例详情
+	router.POST("/cmdb/ci/instance", ciCtrl.CreateCIInstance)              // 创建CI实例
+	router.PUT("/cmdb/ci/instance", ciCtrl.UpdateCIInstance)               // 更新CI实例
+	router.DELETE("/cmdb/ci/instance", ciCtrl.DeleteCIInstance)            // 删除CI实例
+
+	// CI 关系管理
+	router.GET("/cmdb/ci/relation/list", ciCtrl.GetCIRelations)            // 获取CI关系列表
+	router.POST("/cmdb/ci/relation", ciCtrl.CreateCIRelation)              // 创建CI关系
+	router.DELETE("/cmdb/ci/relation", ciCtrl.DeleteCIRelation)            // 删除CI关系
+
+	// CI 拓扑图（Phase 3）
+	router.GET("/cmdb/ci/instance/all", ciCtrl.GetAllCIInstances)          // 全量CI实例（供拓扑图根节点搜索）
+	router.GET("/cmdb/ci/topology", ciCtrl.GetCITopology)                  // CI 拓扑图数据（WITH RECURSIVE）
+
+	// ========================================
+	// 变更日志（Phase 4: 资产生命周期）
+	// ========================================
+	changeLogCtrl := controller.NewChangeLogController()
+	router.GET("/cmdb/changelog/list", changeLogCtrl.GetChangeLogs)        // 分页查询变更日志
+
+	// ========================================
+	// 网络设备管理（Phase 5）
+	// ========================================
+	ndCtrl := controller.NewNetworkDeviceController()
+	router.GET("/cmdb/network/list", ndCtrl.GetNetworkDevices)             // 网络设备列表（含最新巡检结果）
+	router.POST("/cmdb/network/inspect", ndCtrl.InspectDevice)             // 发起 TCP 连通性巡检
+	router.GET("/cmdb/network/inspect/history", ndCtrl.GetInspectionHistory) // 巡检历史
+
+	// ========================================
+	// 项目管理（Phase 2: Project Dimension）
+	// ========================================
+	projectCtrl := controller.NewProjectController()
+
+	router.GET("/cmdb/project/list", projectCtrl.GetProjectList)           // 分页项目列表（含资产计数）
+	router.GET("/cmdb/project/detail", projectCtrl.GetProjectDetail)       // 项目详情
+	router.POST("/cmdb/project", projectCtrl.CreateProject)                // 创建项目
+	router.PUT("/cmdb/project", projectCtrl.UpdateProject)                 // 更新项目
+	router.DELETE("/cmdb/project", projectCtrl.DeleteProject)              // 删除项目（含关联检查）
+	router.GET("/cmdb/project/stats", projectCtrl.GetProjectStats)         // 项目资产统计
+	router.GET("/cmdb/project/hosts", projectCtrl.GetProjectHosts)         // 项目关联主机（分页）
+	router.GET("/cmdb/project/databases", projectCtrl.GetProjectDatabases) // 项目关联数据库（分页）
+	router.GET("/cmdb/project/apps", projectCtrl.GetProjectApps)           // 项目关联应用
 }

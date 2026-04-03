@@ -9,10 +9,11 @@ import (
 
 // Manager 调度器管理器
 type Manager struct {
-	syncScheduler    *SyncScheduler
-	n9eSyncScheduler *N9ESyncScheduler
-	mutex            sync.RWMutex
-	running          bool
+	syncScheduler       *SyncScheduler
+	n9eSyncScheduler    *N9ESyncScheduler
+	expireAlertScheduler *ExpireAlertScheduler
+	mutex               sync.RWMutex
+	running             bool
 }
 
 var (
@@ -24,9 +25,10 @@ var (
 func GetManager() *Manager {
 	once.Do(func() {
 		instance = &Manager{
-			syncScheduler:    NewSyncScheduler(),
-			n9eSyncScheduler: NewN9ESyncScheduler(),
-			running:          false,
+			syncScheduler:        NewSyncScheduler(),
+			n9eSyncScheduler:     NewN9ESyncScheduler(),
+			expireAlertScheduler: NewExpireAlertScheduler(),
+			running:              false,
 		}
 	})
 	return instance
@@ -54,6 +56,11 @@ func (m *Manager) Start() error {
 		log.Printf("N9E 同步调度器启动警告: %v", err)
 	}
 
+	// 启动主机到期预警调度器（Phase 4）
+	if err := m.expireAlertScheduler.Start(); err != nil {
+		log.Printf("到期预警调度器启动警告: %v", err)
+	}
+
 	m.running = true
 	log.Println("调度器管理器启动成功")
 	return nil
@@ -76,6 +83,9 @@ func (m *Manager) Stop() {
 
 	// 停止 N9E 同步调度器
 	m.n9eSyncScheduler.Stop()
+
+	// 停止到期预警调度器
+	m.expireAlertScheduler.Stop()
 
 	m.running = false
 	log.Println("调度器管理器已停止")

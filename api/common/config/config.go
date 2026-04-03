@@ -18,6 +18,7 @@ type config struct {
 	Log           log           `yaml:"log"`
 	Monitor       monitor       `yaml:"monitor"`
 	FlashDuty     flashduty     `yaml:"flashduty"`
+	Dingtalk      dingtalk      `yaml:"dingtalk"`
 }
 
 // 监控配置
@@ -38,6 +39,11 @@ type flashduty struct {
 	IntegrationKey string `yaml:"integration_key"`
 	BaseURL        string `yaml:"base_url"`
 	Timeout        int    `yaml:"timeout"` // 请求超时(秒),默认30
+}
+
+// 钉钉机器人配置
+type dingtalk struct {
+	WebhookURL string `yaml:"webhook_url"`
 }
 
 // Agent配置

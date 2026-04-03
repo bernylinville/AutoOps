@@ -50,3 +50,9 @@ flashduty:
   integration_key: "mock_integration_key_here"
   base_url: "https://api.flashcat.cloud"
   timeout: 30
+
+# 钉钉告警机器人配置
+# 获取 Webhook: 钉钉群 → 群设置 → 智能群助手 → 添加机器人 → 自定义
+# 留空则不推送钉钉通知
+dingtalk:
+  webhook_url: "https://oapi.dingtalk.com/robot/send?access_token=YOUR_TOKEN"

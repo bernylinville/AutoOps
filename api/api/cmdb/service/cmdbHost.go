@@ -5,6 +5,7 @@ import (
 	cmdbDao "dodevops-api/api/cmdb/dao"
 	"dodevops-api/api/cmdb/model"
 	configDao "dodevops-api/api/configcenter/dao"
+	systemmodel "dodevops-api/api/system/model"
 	"dodevops-api/common/constant"
 	"dodevops-api/common/result"
 	"dodevops-api/common/util"
@@ -27,11 +28,14 @@ type CmdbHostServiceInterface interface {
 	GetCmdbHostsByStatus(c *gin.Context, status int)                                                          // 根据状态查询
 	ImportHostsFromExcel(c *gin.Context, dto *model.ImportHostsFromExcelDto, hosts []model.ExcelHostTemplate) // 从Excel导入主机
 	SyncHostInfo(c *gin.Context, id uint)                                                                     // 同步主机基本信息
+	UpdateHostLifecycle(c *gin.Context, dto *model.UpdateHostLifecycleDto)                // 手动变更生命周期状态
+	BatchUpdateHostLifecycle(c *gin.Context, dto *model.BatchUpdateHostLifecycleDto)    // 批量变更生命周期状态
 }
 
 type CmdbHostServiceImpl struct {
-	dao      cmdbDao.CmdbHostDao
-	groupDao cmdbDao.CmdbGroupDao
+	dao       cmdbDao.CmdbHostDao
+	groupDao  cmdbDao.CmdbGroupDao
+	changeLog cmdbDao.ChangeLogDao
 }
 
 // 从Excel导入主机
@@ -327,7 +331,12 @@ func (s *CmdbHostServiceImpl) CreateCmdbHost(c *gin.Context, dto *model.CreateCm
 
 // 更新主机
 func (s *CmdbHostServiceImpl) UpdateCmdbHost(c *gin.Context, id uint, dto *model.UpdateCmdbHostDto) {
-	// 不再需要查询认证凭证信息，直接从dto获取SSHName和SSHPort
+	// 更新前取旧值（用于变更日志 diff）
+	oldHost, err := s.dao.GetCmdbHostById(id)
+	if err != nil {
+		result.FailedWithCode(c, constant.CMDB_HOST_NOT_FOUND, "主机不存在")
+		return
+	}
 
 	host := model.CmdbHost{
 		HostName: dto.HostName,
@@ -339,12 +348,76 @@ func (s *CmdbHostServiceImpl) UpdateCmdbHost(c *gin.Context, id uint, dto *model
 		Vendor:   dto.Vendor,
 		Remark:   dto.Remark,
 	}
-	err := s.dao.UpdateCmdbHost(id, &host)
-	if err != nil {
+	if err = s.dao.UpdateCmdbHost(id, &host); err != nil {
 		result.FailedWithCode(c, constant.CMDB_HOST_UPDATE_FAILED, err.Error())
 		return
 	}
+
+	// 记录字段级变更日志
+	s.recordHostChanges(c, oldHost, dto)
+
 	result.Success(c, true)
+}
+
+// recordHostChanges 对比 DTO 与旧主机数据，批量写入 ci_change_log
+func (s *CmdbHostServiceImpl) recordHostChanges(ctx *gin.Context, old model.CmdbHost, dto *model.UpdateCmdbHostDto) {
+	var operatorID uint
+	var operatorName string
+	if obj, ok := ctx.Get(constant.ContextKeyUserObj); ok {
+		if admin, ok2 := obj.(*systemmodel.JwtAdmin); ok2 {
+			operatorID = admin.ID
+			operatorName = admin.Username
+		}
+	}
+
+	entityName := old.HostName
+	if dto.HostName != "" {
+		entityName = dto.HostName
+	}
+	now := util.HTime{Time: time.Now()}
+
+	newLog := func(field, oldVal, newVal string) model.CIChangeLog {
+		return model.CIChangeLog{
+			EntityType: "cmdb_host",
+			EntityID:   dto.ID,
+			EntityName: entityName,
+			Field:      field,
+			OldValue:   oldVal,
+			NewValue:   newVal,
+			OperatorID: operatorID,
+			Operator:   operatorName,
+			CreateTime: now,
+		}
+	}
+
+	var logs []model.CIChangeLog
+
+	if dto.HostName != old.HostName {
+		logs = append(logs, newLog("host_name", old.HostName, dto.HostName))
+	}
+	if dto.GroupID != old.GroupID {
+		logs = append(logs, newLog("group_id", fmt.Sprintf("%d", old.GroupID), fmt.Sprintf("%d", dto.GroupID)))
+	}
+	if dto.SSHIP != old.SSHIP {
+		logs = append(logs, newLog("ssh_ip", old.SSHIP, dto.SSHIP))
+	}
+	if dto.SSHName != old.SSHName {
+		logs = append(logs, newLog("ssh_name", old.SSHName, dto.SSHName))
+	}
+	if dto.SSHKeyID != old.SSHKeyID {
+		logs = append(logs, newLog("ssh_key_id", fmt.Sprintf("%d", old.SSHKeyID), fmt.Sprintf("%d", dto.SSHKeyID)))
+	}
+	if dto.SSHPort != old.SSHPort {
+		logs = append(logs, newLog("ssh_port", fmt.Sprintf("%d", old.SSHPort), fmt.Sprintf("%d", dto.SSHPort)))
+	}
+	if dto.Vendor != old.Vendor {
+		logs = append(logs, newLog("vendor", fmt.Sprintf("%d", old.Vendor), fmt.Sprintf("%d", dto.Vendor)))
+	}
+	if dto.Remark != old.Remark {
+		logs = append(logs, newLog("remark", old.Remark, dto.Remark))
+	}
+
+	_ = s.changeLog.CreateLogs(logs)
 }
 
 // 根据ID获取主机
@@ -597,8 +670,9 @@ func (s *CmdbHostServiceImpl) GetCmdbHostsByStatus(c *gin.Context, status int) {
 
 func GetCmdbHostService() CmdbHostServiceInterface {
 	return &CmdbHostServiceImpl{
-		dao:      cmdbDao.NewCmdbHostDao(),
-		groupDao: cmdbDao.NewCmdbGroupDao(),
+		dao:       cmdbDao.NewCmdbHostDao(),
+		groupDao:  cmdbDao.NewCmdbGroupDao(),
+		changeLog: cmdbDao.NewChangeLogDao(),
 	}
 }
 
@@ -684,4 +758,131 @@ func (s *CmdbHostServiceImpl) SyncHostInfo(c *gin.Context, id uint) {
 
 		fmt.Printf("主机信息同步完成: ID=%d\n", host.ID)
 	}()
+}
+
+// UpdateHostLifecycle 手动变更主机生命周期状态（带转换规则校验）
+func (s *CmdbHostServiceImpl) UpdateHostLifecycle(c *gin.Context, dto *model.UpdateHostLifecycleDto) {
+	host, err := s.dao.GetCmdbHostById(dto.ID)
+	if err != nil {
+		result.FailedWithCode(c, constant.CMDB_HOST_NOT_FOUND, "主机不存在")
+		return
+	}
+
+	// 校验转换是否合法
+	allowed, ok := model.HostLifecycleAllowedTransitions[host.Status]
+	if !ok {
+		result.Failed(c, constant.INVALID_PARAMS, fmt.Sprintf("当前状态(%d)不支持手动转换", host.Status))
+		return
+	}
+	valid := false
+	for _, a := range allowed {
+		if a == dto.Status {
+			valid = true
+			break
+		}
+	}
+	if !valid {
+		result.Failed(c, constant.INVALID_PARAMS,
+			fmt.Sprintf("不允许从状态(%d)转换到状态(%d)", host.Status, dto.Status))
+		return
+	}
+
+	if err = s.dao.UpdateCmdbHost(dto.ID, &model.CmdbHost{Status: dto.Status}); err != nil {
+		result.FailedWithCode(c, constant.CMDB_HOST_UPDATE_FAILED, err.Error())
+		return
+	}
+
+	// 记录生命周期变更日志
+	var operatorID uint
+	var operatorName string
+	if obj, ok2 := c.Get(constant.ContextKeyUserObj); ok2 {
+		if admin, ok3 := obj.(*systemmodel.JwtAdmin); ok3 {
+			operatorID = admin.ID
+			operatorName = admin.Username
+		}
+	}
+	_ = s.changeLog.CreateLogs([]model.CIChangeLog{{
+		EntityType: "cmdb_host",
+		EntityID:   dto.ID,
+		EntityName: host.HostName,
+		Field:      "status",
+		OldValue:   fmt.Sprintf("%d", host.Status),
+		NewValue:   fmt.Sprintf("%d", dto.Status),
+		OperatorID: operatorID,
+		Operator:   operatorName,
+		CreateTime: util.HTime{Time: time.Now()},
+	}})
+
+	result.Success(c, true)
+}
+
+// BatchUpdateHostLifecycle 批量变更主机生命周期状态（逐条校验，全部成功后返回）
+func (s *CmdbHostServiceImpl) BatchUpdateHostLifecycle(c *gin.Context, dto *model.BatchUpdateHostLifecycleDto) {
+	if len(dto.IDs) == 0 {
+		result.Failed(c, constant.INVALID_PARAMS, "主机ID列表不能为空")
+		return
+	}
+
+	var operatorID uint
+	var operatorName string
+	if obj, ok := c.Get(constant.ContextKeyUserObj); ok {
+		if admin, ok2 := obj.(*systemmodel.JwtAdmin); ok2 {
+			operatorID = admin.ID
+			operatorName = admin.Username
+		}
+	}
+
+	now := util.HTime{Time: time.Now()}
+	var failed []string
+	var logs []model.CIChangeLog
+
+	for _, id := range dto.IDs {
+		host, err := s.dao.GetCmdbHostById(id)
+		if err != nil {
+			failed = append(failed, fmt.Sprintf("ID=%d:不存在", id))
+			continue
+		}
+		allowed, ok := model.HostLifecycleAllowedTransitions[host.Status]
+		if !ok {
+			failed = append(failed, fmt.Sprintf("ID=%d(%s):当前状态(%d)不支持手动转换", id, host.HostName, host.Status))
+			continue
+		}
+		valid := false
+		for _, a := range allowed {
+			if a == dto.Status {
+				valid = true
+				break
+			}
+		}
+		if !valid {
+			failed = append(failed, fmt.Sprintf("ID=%d(%s):不允许从状态(%d)→(%d)", id, host.HostName, host.Status, dto.Status))
+			continue
+		}
+		if err = s.dao.UpdateCmdbHost(id, &model.CmdbHost{Status: dto.Status}); err != nil {
+			failed = append(failed, fmt.Sprintf("ID=%d(%s):更新失败", id, host.HostName))
+			continue
+		}
+		logs = append(logs, model.CIChangeLog{
+			EntityType: "cmdb_host",
+			EntityID:   id,
+			EntityName: host.HostName,
+			Field:      "status",
+			OldValue:   fmt.Sprintf("%d", host.Status),
+			NewValue:   fmt.Sprintf("%d", dto.Status),
+			OperatorID: operatorID,
+			Operator:   operatorName,
+			CreateTime: now,
+		})
+	}
+
+	_ = s.changeLog.CreateLogs(logs)
+
+	if len(failed) > 0 {
+		result.Success(c, gin.H{
+			"success": len(dto.IDs) - len(failed),
+			"failed":  failed,
+		})
+		return
+	}
+	result.Success(c, gin.H{"success": len(dto.IDs)})
 }

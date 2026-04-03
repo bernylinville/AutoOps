@@ -10,6 +10,7 @@ import (
 	"dodevops-api/common"
 	"dodevops-api/common/config"
 	_ "dodevops-api/docs"
+	cmdbdao "dodevops-api/api/cmdb/dao"
 	"dodevops-api/api/cmdb/controller"
 	"dodevops-api/api/task/service"
 	"dodevops-api/pkg/db"
@@ -108,6 +109,22 @@ func initServices() error {
 	if err := db.SetupDBLink(); err != nil {
 		return err
 	}
+
+	// 初始化 CI 内置类型（首次启动时自动创建）
+	ciDao := cmdbdao.NewCITypeDao()
+	_ = ciDao.SeedBuiltinTypes()
+
+	// 初始化项目管理菜单（首次启动时自动创建）
+	projectDao := cmdbdao.NewProjectDao()
+	_ = projectDao.SeedProjectMenu()
+
+	// 初始化 CI 拓扑图 / 变更日志 / 网络设备管理菜单（首次启动时自动创建）
+	_ = ciDao.SeedTopologyMenu()
+	_ = ciDao.SeedSNMPCommunityAttr()
+	changeLogDao := cmdbdao.NewChangeLogDao()
+	_ = changeLogDao.SeedChangeLogMenu()
+	networkDao := cmdbdao.NewNetworkDeviceDao()
+	_ = networkDao.SeedNetworkMenu()
 
 	// 初始化Redis
 	if err := common.InitRedis(); err != nil {

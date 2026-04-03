@@ -114,6 +114,7 @@ type Application struct {
 	// 基本信息
 	BusinessGroupID uint   `gorm:"not null" json:"business_group_id"`          // 业务组ID(关联cmdb_group)
 	BusinessDeptID  uint   `gorm:"not null" json:"business_dept_id"`           // 业务部门ID(关联sys_dept)
+	ProjectID       *uint  `gorm:"default:null" json:"project_id"`             // 关联项目ID(关联cmdb_project，可选)
 	Description     string `gorm:"type:text" json:"description"`               // 应用介绍
 	RepoURL         string `gorm:"type:varchar(500)" json:"repo_url"`          // 仓库地址
 
@@ -134,7 +135,7 @@ type Application struct {
 	Databases   ResourceIDs    `gorm:"type:json" json:"databases"`   // 关联数据库(cmdb_sql表ID)
 	OtherRes    OtherResources `gorm:"type:json" json:"other_res"`   // 关联其他资源
 
-	Status      int            `gorm:"type:tinyint;default:1" json:"status"`     // 状态
+	Status      int            `gorm:"type:smallint;default:1" json:"status"`     // 状态
 	CreatedAt   time.Time      `json:"created_at"`
 	UpdatedAt   time.Time      `json:"updated_at"`
 
@@ -177,8 +178,9 @@ type CreateApplicationRequest struct {
 	Description string `json:"description"`                    // 应用介绍
 	RepoURL     string `json:"repo_url"`                       // 仓库地址
 
-	BusinessGroupID uint `json:"business_group_id" binding:"required"` // 业务组ID
-	BusinessDeptID  uint `json:"business_dept_id" binding:"required"`  // 业务部门ID
+	BusinessGroupID uint  `json:"business_group_id" binding:"required"` // 业务组ID
+	BusinessDeptID  uint  `json:"business_dept_id" binding:"required"`  // 业务部门ID
+	ProjectID       *uint `json:"project_id"`                           // 关联项目ID(可选)
 
 	// 负责人信息
 	DevOwners  []uint `json:"dev_owners"`  // 研发负责人ID数组
@@ -267,6 +269,7 @@ type UpdateApplicationRequest struct {
 
 	BusinessGroupID *uint `json:"business_group_id"` // 业务组ID
 	BusinessDeptID  *uint `json:"business_dept_id"`  // 业务部门ID
+	ProjectID       *uint `json:"project_id"`        // 关联项目ID(可选)
 
 	// 负责人信息
 	DevOwners  *[]uint `json:"dev_owners"`  // 研发负责人ID数组
@@ -297,6 +300,7 @@ type ApplicationListRequest struct {
 	Code            string `form:"code"`                     // 应用编码(模糊查询)
 	BusinessGroupID *uint  `form:"business_group_id"`        // 业务组ID
 	BusinessDeptID  *uint  `form:"business_dept_id"`         // 业务部门ID
+	ProjectID       *uint  `form:"project_id"`               // 项目ID筛选
 	ProgrammingLang string `form:"programming_lang"`         // 编程语言
 	Status          *int   `form:"status"`                   // 状态
 }
@@ -365,9 +369,9 @@ type QuickDeployment struct {
 	BusinessGroupID  uint                     `gorm:"not null" json:"business_group_id"`                       // 业务组ID
 	BusinessDeptID   uint                     `gorm:"not null" json:"business_dept_id"`                        // 业务部门ID
 	Description      string                   `gorm:"type:text" json:"description"`                            // 发布描述
-	Status           int                      `gorm:"type:tinyint;default:1" json:"status"`                    // 发布状态: 1=待发布 2=发布中 3=发布成功 4=发布失败 5=已取消
+	Status           int                      `gorm:"type:smallint;default:1" json:"status"`                    // 发布状态: 1=待发布 2=发布中 3=发布成功 4=发布失败 5=已取消
 	TaskCount        int                      `gorm:"not null;default:0" json:"task_count"`                    // 任务数量，记录用户提交的发布任务数量
-	ExecutionMode    int                      `gorm:"type:tinyint;default:1" json:"execution_mode"`            // 执行模式: 1=并行 2=串行
+	ExecutionMode    int                      `gorm:"type:smallint;default:1" json:"execution_mode"`            // 执行模式: 1=并行 2=串行
 	CreatorID        uint                     `gorm:"not null" json:"creator_id"`                              // 创建人ID
 	CreatorName      string                   `gorm:"type:varchar(100)" json:"creator_name"`                   // 创建人姓名
 	StartTime        *time.Time               `json:"start_time"`                                               // 开始发布时间
@@ -391,7 +395,7 @@ type QuickDeploymentTask struct {
 	JenkinsEnvID  uint       `gorm:"not null" json:"jenkins_env_id"`                              // Jenkins环境配置ID
 	JenkinsJobURL string     `gorm:"type:varchar(500)" json:"jenkins_job_url"`                    // Jenkins任务URL
 	BuildNumber   int        `json:"build_number"`                                                 // 构建编号
-	Status        int        `gorm:"type:tinyint;default:1" json:"status"`                        // 任务状态: 1=未部署 2=部署中 3=成功 4=异常
+	Status        int        `gorm:"type:smallint;default:1" json:"status"`                        // 任务状态: 1=未部署 2=部署中 3=成功 4=异常
 	ExecuteOrder  int        `gorm:"not null" json:"execute_order"`                               // 执行顺序
 	StartTime     *time.Time `json:"start_time"`                                                   // 任务开始时间
 	EndTime       *time.Time `json:"end_time"`                                                     // 任务结束时间

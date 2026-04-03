@@ -4,9 +4,12 @@ import (
 	"dodevops-api/api/cmdb/dao"
 	"dodevops-api/api/cmdb/model"
 	"dodevops-api/api/cmdb/service"
+	systemmodel "dodevops-api/api/system/model"
 	"dodevops-api/common"
+	"dodevops-api/common/constant"
 	"dodevops-api/common/result"
 	"dodevops-api/common/util"
+	"fmt"
 	"strconv"
 	"time"
 
@@ -14,12 +17,16 @@ import (
 )
 
 type CmdbSQLController struct {
-	service *service.CmdbSQLService
+	service   *service.CmdbSQLService
+	changeLog dao.ChangeLogDao
 }
 
 func NewCmdbSQLController() *CmdbSQLController {
 	sqlService := service.NewCmdbSQLService(dao.NewCmdbSQLDao(common.GetDB()))
-	return &CmdbSQLController{service: sqlService}
+	return &CmdbSQLController{
+		service:   sqlService,
+		changeLog: dao.NewChangeLogDao(),
+	}
 }
 
 // CreateDatabase godoc
@@ -83,6 +90,7 @@ func (c *CmdbSQLController) UpdateDatabase(ctx *gin.Context) {
 		return
 	}
 
+	c.recordSQLChanges(ctx, existing, &db)
 	result.Success(ctx, db)
 }
 
@@ -207,6 +215,68 @@ func (c *CmdbSQLController) GetDatabasesByName(ctx *gin.Context) {
 	}
 
 	result.Success(ctx, dbs)
+}
+
+// recordSQLChanges 对比新旧 CmdbSQL，逐字段写入变更日志
+func (c *CmdbSQLController) recordSQLChanges(ctx *gin.Context, old *model.CmdbSQL, newDB *model.CmdbSQL) {
+	var operatorID uint
+	var operatorName string
+	if u, ok := ctx.Get(constant.ContextKeyUserObj); ok {
+		if admin, ok := u.(*systemmodel.JwtAdmin); ok {
+			operatorID = admin.ID
+			operatorName = admin.Username
+		}
+	}
+
+	now := util.HTime{Time: time.Now()}
+	newLog := func(field, oldVal, newVal string) model.CIChangeLog {
+		return model.CIChangeLog{
+			EntityType: "cmdb_sql",
+			EntityID:   newDB.ID,
+			EntityName: newDB.Name,
+			Field:      field,
+			OldValue:   oldVal,
+			NewValue:   newVal,
+			OperatorID: operatorID,
+			Operator:   operatorName,
+			CreateTime: now,
+		}
+	}
+
+	var logs []model.CIChangeLog
+
+	if old.Name != newDB.Name {
+		logs = append(logs, newLog("name", old.Name, newDB.Name))
+	}
+	if old.Type != newDB.Type {
+		logs = append(logs, newLog("type", fmt.Sprintf("%d", old.Type), fmt.Sprintf("%d", newDB.Type)))
+	}
+	if old.AccountID != newDB.AccountID {
+		logs = append(logs, newLog("account_id", fmt.Sprintf("%d", old.AccountID), fmt.Sprintf("%d", newDB.AccountID)))
+	}
+	if old.GroupID != newDB.GroupID {
+		logs = append(logs, newLog("group_id", fmt.Sprintf("%d", old.GroupID), fmt.Sprintf("%d", newDB.GroupID)))
+	}
+	// ProjectID: nullable uint pointer
+	oldPID := ""
+	if old.ProjectID != nil {
+		oldPID = fmt.Sprintf("%d", *old.ProjectID)
+	}
+	newPID := ""
+	if newDB.ProjectID != nil {
+		newPID = fmt.Sprintf("%d", *newDB.ProjectID)
+	}
+	if oldPID != newPID {
+		logs = append(logs, newLog("project_id", oldPID, newPID))
+	}
+	if old.Tags != newDB.Tags {
+		logs = append(logs, newLog("tags", old.Tags, newDB.Tags))
+	}
+	if old.Description != newDB.Description {
+		logs = append(logs, newLog("description", old.Description, newDB.Description))
+	}
+
+	_ = c.changeLog.CreateLogs(logs)
 }
 
 // GetDatabasesByType godoc

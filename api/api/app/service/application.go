@@ -1810,7 +1810,7 @@ func (s *ApplicationService) GetBusinessGroupOptions(c *gin.Context) {
 		FROM app_application
 		WHERE deleted_at IS NULL
 		GROUP BY business_group_id
-		HAVING service_count > 0
+		HAVING COUNT(*) > 0
 		ORDER BY business_group_id
 	`
 
@@ -1837,7 +1837,7 @@ func (s *ApplicationService) GetBusinessGroupOptions(c *gin.Context) {
 			FROM app_application
 			WHERE deleted_at IS NULL AND business_group_id = ?
 			GROUP BY business_dept_id
-			HAVING service_count > 0
+			HAVING COUNT(*) > 0
 			ORDER BY business_dept_id
 		`
 

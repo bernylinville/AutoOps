@@ -10,6 +10,7 @@ type CmdbHost struct {
 	HostName    string     `gorm:"column:host_name;varchar(64);comment:'名称';NOT NULL" json:"hostName"`
 	GroupID     uint       `gorm:"column:group_id;comment:'分组ID';NOT NULL" json:"groupId"`
 	Group       CmdbGroup  `gorm:"foreignKey:GroupID" json:"group"`
+	ProjectID   *uint      `gorm:"column:project_id;comment:'关联项目ID'" json:"projectId"`
 	PrivateIP   string     `gorm:"column:private_ip;varchar(64);comment:'私网IP'" json:"privateIp"`
 	PublicIP    string     `gorm:"column:public_ip;varchar(64);comment:'公网IP'" json:"publicIp"`
 	SSHIP       string     `gorm:"column:ssh_ip;varchar(64);comment:'SSH连接IP';NOT NULL" json:"sshIp"`
@@ -22,7 +23,7 @@ type CmdbHost struct {
 	InstanceID  string     `gorm:"column:instance_id;varchar(128);comment:'实例ID'" json:"instanceId"`
 	Name        string     `gorm:"column:name;varchar(64);comment:'ecs主机名称';NOT NULL" json:"name"`
 	OS          string     `gorm:"column:os;varchar(128);comment:'操作系统'" json:"os"`
-	Status      int        `gorm:"column:status;comment:'状态:1->在线,2->未认证,3->离线,4->失联,5->降级'" json:"status"`
+	Status      int        `gorm:"column:status;comment:'状态:1->在线,2->未认证,3->离线,4->失联,5->降级,6->采购中,7->入库,8->待上线,9->退服申请,10->已报废'" json:"status"`
 	CPU         string     `gorm:"column:cpu;varchar(32);comment:'CPU信息'" json:"cpu"`
 	Memory      string     `gorm:"column:memory;varchar(32);comment:'内存信息'" json:"memory"`
 	Disk        string     `gorm:"column:disk;varchar(128);comment:'磁盘信息'" json:"disk"`
@@ -47,7 +48,8 @@ type CreateCmdbHostDto struct {
 	SSHIP     string `validate:"required" json:"sshIp"`         // SSH连接IP(公网或私网IP)
 	SSHPort   int    `json:"sshPort"`                          // SSH端口(默认22)
 	SSHKeyID  uint   `validate:"required" json:"sshKeyId"`     // SSH凭据ID(从ecsAuth表获取)
-	Remark    string `json:"remark"`                            // 备注信息(可选)
+	Remark    string `json:"remark"`                           // 备注信息(可选)
+	ProjectID *uint  `json:"projectId"`                        // 关联项目ID(可选)
 }
 
 // 更新主机DTO - 仅需提供必要连接信息
@@ -61,11 +63,40 @@ type UpdateCmdbHostDto struct {
 	SSHPort    int    `json:"sshPort"`                          // SSH端口(默认22)
 	Vendor     int    `json:"vendor"`                           // 厂商类型:1->自建,2->阿里云,3->腾讯云
 	Remark     string `json:"remark"`                           // 备注信息(可选)
+	ProjectID  *uint  `json:"projectId"`                        // 关联项目ID(可选)
 }
 
 // 主机ID DTO
 type CmdbHostIdDto struct {
 	ID uint `json:"id"`
+}
+
+// UpdateHostLifecycleDto 手动变更主机生命周期状态
+type UpdateHostLifecycleDto struct {
+	ID     uint `json:"id" validate:"required"`
+	Status int  `json:"status" validate:"required"`
+}
+
+// HostLifecycleAllowedTransitions 手动生命周期状态迁移规则
+// key=当前状态，value=允许转入的目标状态集合
+// 注：运行态(1-5)由 N9E 自动同步驱动，此处仅管控手动流转
+var HostLifecycleAllowedTransitions = map[int][]int{
+	0:  {6},           // 初始(未设置) → 采购中
+	6:  {7},           // 采购中 → 入库
+	7:  {8},           // 入库 → 待上线
+	8:  {1},           // 待上线 → 在线(由运维确认上线，后续由N9E接管1-5状态)
+	1:  {9, 5},        // 在线 → 退服申请 / 降级
+	3:  {9},           // 离线 → 退服申请
+	4:  {9},           // 失联 → 退服申请
+	5:  {9, 1},        // 降级 → 退服申请 / 在线
+	9:  {10, 1},       // 退服申请 → 已报废 / 撤回在线
+	10: {},            // 已报废(终态)
+}
+
+// BatchUpdateHostLifecycleDto 批量变更主机生命周期状态
+type BatchUpdateHostLifecycleDto struct {
+	IDs    []uint `json:"ids" validate:"required"`
+	Status int    `json:"status" validate:"required"`
 }
 
 // 创建云主机DTO
@@ -138,4 +169,6 @@ type CmdbHostVo struct {
 	SourceType  string     `json:"sourceType"`
 	N9EID       int64      `json:"n9eId"`
 	N9EIdent    string     `json:"n9eIdent"`
+	ProjectID   *uint      `json:"projectId"`
+	ProjectName string     `json:"projectName"`
 }
