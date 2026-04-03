@@ -57,7 +57,7 @@
           <el-tab-pane label="命令行参数 (CLI Args)" name="cliArgs">
              <template #label>
               <span class="custom-tab-label">
-                <el-icon><Terminal /></el-icon>
+                <el-icon><Monitor /></el-icon>
                 <span>命令行参数 (CLI Args)</span>
               </span>
             </template>
@@ -204,7 +204,7 @@ import {
   List,
   Operation,
   TopRight,
-  Terminal
+  Monitor
 } from '@element-plus/icons-vue'
 import {
   GetAnsibleConfigList,

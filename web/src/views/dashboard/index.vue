@@ -11,14 +11,14 @@ import { ElMessage, ElMessageBox } from 'element-plus'
 
 const router = useRouter()
 
-// ── 统一调色板（来自 .impeccable.md）──
+// ── 统一调色板（Phase 1 & 2 GeekBlue Theme）──
 const AUTOOPS_PALETTE = [
-  '#409EFF',   // Primary Blue
-  '#67C23A',   // Success Green
-  '#E6A23C',   // Warning Orange
-  '#F56C6C',   // Danger Red
-  '#909399',   // Info Gray
-  '#5470C6',   // Chart Blue (补充)
+  '#4F46E5',   // Indigo 600 (Primary)
+  '#10B981',   // Emerald 500 (Success)
+  '#F59E0B',   // Amber 500 (Warning)
+  '#EF4444',   // Red 500 (Danger)
+  '#6B7280',   // Gray 500 (Info)
+  '#6366F1',   // Indigo 500 (Chart Info)
 ]
 
 // 响应式数据
@@ -81,7 +81,6 @@ const fdSREMetrics = reactive({
   noiseReductionPct: 0,
   ackPct: 0,
   totalIncidents: 0,
-  totalIncidents: 0,
   totalAlerts: 0
 })
 
@@ -105,14 +104,14 @@ const getValueColorClass = (label, value) => {
   if (label.includes('离线') && value > 0) return 'val-danger'
   if (label.includes('健康度')) {
     let num = parseFloat(value)
-    if (isNaN(num)) return ''
+    if (isNaN(num) || num === 0) return '' // 初始或零值淡化处理
     if (num < 60) return 'val-danger'
     if (num < 80) return 'val-warning'
     return 'val-success'
   }
   if (label.includes('成功率')) {
     let num = parseFloat(value)
-    if (isNaN(num)) return ''
+    if (isNaN(num) || num === 0) return '' // 初始或零值淡化处理
     if (num < 90) return 'val-danger'
     if (num < 95) return 'val-warning'
     return 'val-success'
@@ -270,42 +269,45 @@ const updateTrendChart = () => {
     grid: { left: 48, right: 16, top: 40, bottom: 24, containLabel: true },
     tooltip: {
       trigger: 'axis',
-      backgroundColor: 'rgba(48, 49, 51, 0.92)',
-      borderWidth: 0,
-      textStyle: { color: '#fff', fontSize: 13 },
+      backgroundColor: 'rgba(31, 41, 55, 0.95)',
+      borderColor: 'rgba(255,255,255,0.1)',
+      borderWidth: 1,
+      padding: [8, 12],
+      boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1)',
+      textStyle: { color: '#F9FAFB', fontSize: 13 },
       formatter: (params) => {
-        let result = params[0].name + '<br/>'
-        params.forEach(item => { result += `${item.marker} ${item.seriesName}: ${item.value}次<br/>` })
+        let result = `<div style="margin-bottom:4px;color:#9CA3AF">${params[0].name}</div>`
+        params.forEach(item => { result += `<div>${item.marker} <span style="color:#D1D5DB">${item.seriesName}:</span> <span style="font-family:'JetBrains Mono';font-weight:600;margin-left:8px">${item.value}次</span></div>` })
         return result
       }
     },
-    legend: { data: ['生产环境', '测试环境'], top: 8, right: 16, itemWidth: 12, itemHeight: 8 },
+    legend: { data: ['生产环境', '测试环境'], top: 8, right: 16, itemWidth: 12, itemHeight: 8, textStyle: { color: '#6B7280' } },
     xAxis: {
       type: 'category', data: data.labels,
-      axisLine: { lineStyle: { color: '#E4E7ED' } },
+      axisLine: { lineStyle: { color: '#E5E7EB' } },
       axisTick: { show: false },
-      axisLabel: { color: '#909399', fontSize: 12 }
+      axisLabel: { color: '#6B7280', fontFamily: 'Inter, sans-serif' }
     },
     yAxis: {
       type: 'value', name: '发布次数',
-      nameTextStyle: { color: '#909399', fontSize: 12 },
-      splitLine: { lineStyle: { type: 'dashed', color: '#E4E7ED' } },
-      axisLabel: { color: '#909399', fontSize: 12 }
+      nameTextStyle: { color: '#6B7280', fontSize: 12 },
+      splitLine: { lineStyle: { type: 'dashed', color: '#F3F4F6' } },
+      axisLabel: { color: '#9CA3AF', fontFamily: 'JetBrains Mono, monospace' }
     },
     series: [
       {
         name: '生产环境', type: 'line', smooth: true, data: data.production,
-        areaStyle: { color: { type: 'linear', x: 0, y: 0, x2: 0, y2: 1, colorStops: [{ offset: 0, color: 'rgba(245, 108, 108, 0.25)' }, { offset: 1, color: 'rgba(245, 108, 108, 0.02)' }] } },
-        lineStyle: { color: AUTOOPS_PALETTE[3], width: 2 },
+        areaStyle: { color: { type: 'linear', x: 0, y: 0, x2: 0, y2: 1, colorStops: [{ offset: 0, color: 'rgba(239, 68, 68, 0.15)' }, { offset: 1, color: 'rgba(239, 68, 68, 0.02)' }] } },
+        lineStyle: { color: AUTOOPS_PALETTE[3], width: 3, shadowColor: 'rgba(239, 68, 68, 0.2)', shadowBlur: 8, shadowOffsetY: 3 },
         itemStyle: { color: AUTOOPS_PALETTE[3] },
-        symbol: 'circle', symbolSize: 4
+        symbol: 'circle', symbolSize: 6
       },
       {
         name: '测试环境', type: 'line', smooth: true, data: data.test,
-        areaStyle: { color: { type: 'linear', x: 0, y: 0, x2: 0, y2: 1, colorStops: [{ offset: 0, color: 'rgba(64, 158, 255, 0.20)' }, { offset: 1, color: 'rgba(64, 158, 255, 0.02)' }] } },
-        lineStyle: { color: AUTOOPS_PALETTE[0], width: 2 },
+        areaStyle: { color: { type: 'linear', x: 0, y: 0, x2: 0, y2: 1, colorStops: [{ offset: 0, color: 'rgba(79, 70, 229, 0.15)' }, { offset: 1, color: 'rgba(79, 70, 229, 0.02)' }] } },
+        lineStyle: { color: AUTOOPS_PALETTE[0], width: 3, shadowColor: 'rgba(79, 70, 229, 0.2)', shadowBlur: 8, shadowOffsetY: 3 },
         itemStyle: { color: AUTOOPS_PALETTE[0] },
-        symbol: 'circle', symbolSize: 4
+        symbol: 'circle', symbolSize: 6
       }
     ]
   }
@@ -319,6 +321,7 @@ const initPieChart = async () => {
   const chartDom = document.getElementById('pieChart')
   if (!chartDom) return
   pieChart = echarts.init(chartDom)
+  pieChart.showLoading({ text: '加载中...', color: '#4F46E5', maskColor: 'rgba(255, 255, 255, 0.4)' })
 
   let businessData = []
   try {
@@ -337,15 +340,16 @@ const initPieChart = async () => {
   }
 
   const option = {
-    tooltip: { trigger: 'item', backgroundColor: 'rgba(48, 49, 51, 0.92)', borderWidth: 0, textStyle: { color: '#fff' }, formatter: '{b}<br/>应用数: {c}<br/>占比: {d}%' },
-    legend: { orient: 'vertical', right: 20, top: 'center', itemWidth: 12, itemHeight: 12, textStyle: { fontSize: 12, color: '#606266' } },
+    tooltip: { trigger: 'item', backgroundColor: 'rgba(31, 41, 55, 0.95)', borderColor: 'rgba(255,255,255,0.1)', borderWidth: 1, padding: [8, 12], textStyle: { color: '#F9FAFB' }, formatter: (p) => `<div style="margin-bottom:4px;color:#9CA3AF">${p.name}</div>${p.marker} 应用数: <span style="font-family:'JetBrains Mono';font-weight:600;margin-left:8px">${p.value}</span><br/>${p.marker} 占比: <span style="font-family:'JetBrains Mono';font-weight:600;margin-left:8px">${p.percent}%</span>` },
+    legend: { orient: 'vertical', right: 16, top: 'center', itemWidth: 12, itemHeight: 12, itemGap: 14, textStyle: { fontSize: 12, color: '#6B7280' } },
     series: [{
-      type: 'pie', radius: ['50%', '70%'], center: ['35%', '50%'], avoidLabelOverlap: false,
+      type: 'pie', radius: ['40%', '60%'], center: ['35%', '50%'], avoidLabelOverlap: false,
       label: { show: false }, labelLine: { show: false },
       emphasis: { itemStyle: { shadowBlur: 8, shadowOffsetX: 0, shadowColor: 'rgba(0, 0, 0, 0.15)' } },
       data: businessData
     }]
   }
+  pieChart.hideLoading()
   pieChart.setOption(option)
 }
 
@@ -396,19 +400,19 @@ const updateResourceChart = () => {
     grid: { left: 90, right: 40, top: 40, bottom: 24 },
     tooltip: {
       trigger: 'axis', axisPointer: { type: 'shadow' },
-      backgroundColor: 'rgba(48, 49, 51, 0.92)', borderWidth: 0, textStyle: { color: '#fff' },
-      formatter: (params) => `${params[0].name}<br/>${params[0].marker} ${params[0].value}%`
+      backgroundColor: 'rgba(31, 41, 55, 0.95)', borderColor: 'rgba(255,255,255,0.1)', borderWidth: 1, padding: [8, 12], textStyle: { color: '#F9FAFB' },
+      formatter: (params) => `<div style="margin-bottom:4px;color:#9CA3AF">${params[0].name}</div>${params[0].marker} 占用率: <span style="font-family: 'JetBrains Mono';font-weight:600">${params[0].value}%</span>`
     },
     xAxis: {
       type: 'value', max: 100,
-      axisLabel: { formatter: '{value}%', color: '#909399', fontSize: 12 },
-      splitLine: { lineStyle: { type: 'dashed', color: '#E4E7ED' } }
+      axisLabel: { formatter: '{value}%', color: '#9CA3AF', fontSize: 12, fontFamily: 'JetBrains Mono, monospace' },
+      splitLine: { lineStyle: { type: 'dashed', color: '#F3F4F6' } }
     },
     yAxis: {
       type: 'category', data: data.map(item => item.name),
-      axisLine: { lineStyle: { color: '#E4E7ED' } },
+      axisLine: { lineStyle: { color: '#E5E7EB' } },
       axisTick: { show: false },
-      axisLabel: { color: '#606266', fontSize: 12 }
+      axisLabel: { color: '#6B7280', fontSize: 12 }
     },
     series: [{
       type: 'bar',
@@ -538,34 +542,38 @@ const initSreTrendChart = async () => {
         grid: { left: 50, right: 50, top: 40, bottom: 40 },
         tooltip: {
           trigger: 'axis',
-          backgroundColor: 'rgba(48, 49, 51, 0.92)',
-          borderWidth: 0, textStyle: { color: '#fff' }
+          backgroundColor: 'rgba(31, 41, 55, 0.95)', // 深色毛玻璃观感
+          borderColor: 'rgba(255,255,255,0.1)',
+          borderWidth: 1,
+          textStyle: { color: '#F9FAFB' },
+          padding: [8, 12],
+          boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1)'
         },
         legend: {
           data: ['MTTA (分钟)', 'MTTR (小时)', '触发故障数'],
           bottom: 4, icon: 'circle',
-          textStyle: { color: '#606266' }
+          textStyle: { color: '#6B7280' }
         },
         xAxis: {
           type: 'category', data: dates,
-          axisLine: { lineStyle: { color: '#E4E7ED' } },
+          axisLine: { lineStyle: { color: '#E5E7EB' } },
           axisTick: { show: false },
-          axisLabel: { color: '#606266' }
+          axisLabel: { color: '#6B7280', fontFamily: 'Inter, sans-serif' }
         },
         yAxis: [
           {
             type: 'value',
             name: '时长',
             position: 'left',
-            splitLine: { lineStyle: { type: 'dashed', color: '#E4E7ED' } },
-            axisLabel: { color: '#909399' }
+            splitLine: { lineStyle: { type: 'dashed', color: '#F3F4F6' } },
+            axisLabel: { color: '#9CA3AF', fontFamily: 'JetBrains Mono, monospace' }
           },
           {
             type: 'value',
             name: '笔数',
             position: 'right',
             splitLine: { show: false },
-            axisLabel: { color: '#909399' },
+            axisLabel: { color: '#9CA3AF', fontFamily: 'JetBrains Mono, monospace' },
             minInterval: 1 // 整数
           }
         ],
@@ -574,24 +582,24 @@ const initSreTrendChart = async () => {
             name: '触发故障数',
             type: 'bar',
             yAxisIndex: 1,
-            barWidth: '30%',
-            itemStyle: { color: 'rgba(103, 194, 58, 0.2)', borderRadius: [4, 4, 0, 0] },
+            barWidth: '24%',
+            itemStyle: { color: 'rgba(79, 70, 229, 0.15)', borderRadius: [4, 4, 0, 0] }, // Indigo 600 at 15%
             data: incidents
           },
           {
             name: 'MTTA (分钟)',
             type: 'line',
             symbol: 'circle', symbolSize: 6,
-            itemStyle: { color: AUTOOPS_PALETTE[0] }, // Primary
-            lineStyle: { width: 3, shadowColor: 'rgba(64,158,255, 0.3)', shadowBlur: 10, shadowOffsetY: 5 },
+            itemStyle: { color: AUTOOPS_PALETTE[1] }, // Emerald (Success represents speed/health)
+            lineStyle: { width: 3, shadowColor: 'rgba(16, 185, 129, 0.3)', shadowBlur: 10, shadowOffsetY: 3 },
             data: mtta
           },
           {
             name: 'MTTR (小时)',
             type: 'line',
             symbol: 'circle', symbolSize: 6,
-            itemStyle: { color: AUTOOPS_PALETTE[2] }, // Warning
-            lineStyle: { width: 3, shadowColor: 'rgba(230,162,60, 0.3)', shadowBlur: 10, shadowOffsetY: 5 },
+            itemStyle: { color: AUTOOPS_PALETTE[2] }, // Amber 
+            lineStyle: { width: 3, shadowColor: 'rgba(245, 158, 11, 0.3)', shadowBlur: 10, shadowOffsetY: 3 },
             data: mttr
           }
         ]
@@ -613,16 +621,23 @@ const handleResize = () => {
   sreTrendChart?.resize()
 }
 
-onMounted(async () => {
-  await loadData()
-  await loadTools()
-  loadFlashDutyData() // 不阻塞
-  setTimeout(async () => {
+onMounted(() => {
+  // 1. 无阻塞发起数据获取
+  loadData()
+  loadTools()
+  loadFlashDutyData().then(() => {
+    if (fdConfigured.value) {
+      setTimeout(() => initSreTrendChart(), 50)
+    }
+  })
+
+  // 2. 立即初始化图表以避免白板等待（提高刷新感官首屏时间）
+  setTimeout(() => {
     initTrendChart()
-    await initPieChart()
+    initPieChart()
     initHeatChart()
-    if (fdConfigured.value) initSreTrendChart()
-  }, 100)
+  }, 50)
+
   window.addEventListener('resize', handleResize)
 })
 
@@ -960,7 +975,7 @@ onUnmounted(() => {
 .item-value-box {
   display: flex;
   align-items: baseline;
-  gap: 2px;
+  position: relative;
 }
 
 .item-value {
@@ -970,8 +985,12 @@ onUnmounted(() => {
 }
 
 .item-unit {
+  position: absolute;
+  left: 100%;
+  margin-left: 4px;
   font-size: 12px;
-  color: var(--ao-text-secondary);
+  line-height: 1;
+  color: var(--ao-text-muted); // uses muted for less intrusion
 }
 
 // 动态颜色

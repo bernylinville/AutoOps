@@ -225,8 +225,6 @@
 
 
 <script>
-import Treeselect from 'vue3-treeselect'
-import 'vue3-treeselect/dist/vue3-treeselect.css'
 import {
   Search,
   Refresh,
@@ -236,7 +234,6 @@ import {
   Setting
 } from '@element-plus/icons-vue'
 export default {
-  components: { Treeselect },
   data() {
     return {
       statusList: [{

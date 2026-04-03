@@ -19,7 +19,7 @@ import {
   SuccessFilled,
   WarningFilled,
   Close,
-  Rocket
+  Promotion
 } from '@element-plus/icons-vue'
 import appApi from '@/api/app'
 import cmdbApi from '@/api/cmdb'
@@ -771,7 +771,7 @@ onMounted(() => {
               <el-button :icon="Refresh" size="small" @click="handleRefresh">
                 刷新
               </el-button>
-              <el-button type="success" :icon="Rocket" size="small" @click="handleQuickRelease">
+              <el-button type="success" :icon="Promotion" size="small" @click="handleQuickRelease">
                 快速发布
               </el-button>
             </el-form-item>

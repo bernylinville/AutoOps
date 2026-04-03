@@ -150,7 +150,7 @@
             <el-card class="info-card" shadow="hover">
               <template #header>
                 <div class="card-header">
-                  <el-icon><Network /></el-icon>
+                  <el-icon><Connection /></el-icon>
                   <span>网络配置</span>
                 </div>
               </template>
@@ -450,7 +450,7 @@ import {
   CpuFill,
   MemoryStick,
   InfoFilled,
-  Network,
+  Connection,
   FolderOpened,
   Setting,
   Grid,

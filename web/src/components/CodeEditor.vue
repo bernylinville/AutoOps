@@ -94,6 +94,7 @@ const emit = defineEmits(['update:modelValue'])
 
         // 查找该行中的所有匹配项
         let startIndex = 0
+        // eslint-disable-next-line no-constant-condition
         while (true) {
           const matchIndex = lowerLine.indexOf(searchText, startIndex)
           if (matchIndex === -1) break

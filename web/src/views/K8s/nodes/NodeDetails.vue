@@ -177,7 +177,7 @@
         <!-- 网络信息 -->
         <div class="info-card">
           <div class="card-header">
-            <el-icon><Network /></el-icon>
+            <el-icon><Connection /></el-icon>
             <h3>网络信息</h3>
           </div>
           <div class="card-content">

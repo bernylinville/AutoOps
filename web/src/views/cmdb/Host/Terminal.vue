@@ -49,8 +49,8 @@ export default {
     // 不再销毁终端实例，以便可以重用
     this.isConnected = false;
     this.isConnecting = false;
-    this._inputHandlerBound = false;
-    this._termInitialized = false;
+    this.inputHandlerBound = false;
+    this.termInitialized = false;
   },
   name: 'Terminal',
   props: {
@@ -68,14 +68,14 @@ export default {
       isConnecting: false,
       isConnected: false,
       drawerTitle: 'SSH终端',
-      _inputHandlerBound: false,
-      _termInitialized: false
+      inputHandlerBound: false,
+      termInitialized: false
     };
   },
   methods: {
     async initTerm() {
       try {
-        if (this._termInitialized) {
+        if (this.termInitialized) {
           return;
         }
 
@@ -90,7 +90,7 @@ export default {
           }
         }
 
-        this._termInitialized = true;
+        this.termInitialized = true;
 
         this.term = new Terminal({
           fontSize: 12,
@@ -116,19 +116,14 @@ export default {
           disableStdin: false,
           rightClickSelectsWord: true,
           drawBoldTextInBrightColors: true,
-          experimentalCharAtlas: 'dynamic',
           allowProposedApi: true,
           screenReaderMode: false,
           wordSeparator: ' ()[]{}\'"`',
           cursorStyle: 'underline',
-          cursorBlink: true,
           scrollSensitivity: 1,
           fastScrollModifier: 'alt',
           macOptionClickForcesSelection: true,
-          // 强制禁用全局设置覆盖
           overrideGlobalSettings: true,
-          // 确保正确处理ANSI颜色代码
-          allowProposedApi: true,
           experimentalCharAtlas: 'none'
         });
 
@@ -141,8 +136,8 @@ export default {
         this.term.open(terminalElement);
 
         // 绑定输入事件 - 确保只绑定一次
-        if (!this._inputHandlerBound) {
-          this._inputHandlerBound = true;
+        if (!this.inputHandlerBound) {
+          this.inputHandlerBound = true;
           let lastInputTime = 0;
           this.term.onData(data => {
             const now = Date.now();
@@ -159,9 +154,6 @@ export default {
             lastInputTime = now;
 
             if (this.socket && this.socket.readyState === WebSocket.OPEN) {
-              // 添加输入内容处理逻辑
-              if (hasNewline) {
-              }
               this.socket.send(data);
             }
           });
@@ -277,12 +269,6 @@ export default {
               // 不是JSON格式，保持原样处理
             }
             
-            // 添加输出内容处理逻辑
-            const hasNewline = data.includes('\n') || data.includes('\r');
-            
-            // 处理自动换行问题
-            if (hasNewline) {
-            }
             this.term.write(data);
           } catch (error) {
             console.error('Terminal write error:', error);
@@ -352,7 +338,7 @@ export default {
     },
     
     connect() {
-      if (!this._termInitialized) {
+      if (!this.termInitialized) {
         this.initTerm().then(() => {
           this.connectTerminal();
         });
@@ -376,7 +362,7 @@ export default {
         }
         this.isConnected = false;
         this.isConnecting = false;
-        this._termInitialized = false; // 允许重新初始化
+        this.termInitialized = false; // 允许重新初始化
         
         if (this.term) {
           this.term.clear();

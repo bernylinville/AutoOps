@@ -53,16 +53,29 @@
   "eslintConfig": {
     "root": true,
     "env": {
-      "node": true
+      "node": true,
+      "browser": true,
+      "vue/setup-compiler-macros": true
     },
     "extends": [
       "plugin:vue/vue3-essential",
       "eslint:recommended"
     ],
     "parserOptions": {
-      "parser": "@babel/eslint-parser"
+      "parser": "@babel/eslint-parser",
+      "requireConfigFile": false
     },
-    "rules": {}
+    "globals": {
+      "defineOptions": "readonly"
+    },
+    "rules": {
+      "no-unused-vars": "warn",
+      "vue/no-unused-vars": "warn",
+      "vue/multi-word-component-names": "off",
+      "vue/no-deprecated-slot-attribute": "warn",
+      "vue/no-deprecated-v-on-native-modifier": "warn",
+      "no-control-regex": "warn"
+    }
   },
   "browserslist": [
     "> 1%",

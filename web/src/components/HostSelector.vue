@@ -116,7 +116,7 @@
           >
             <template #default="{row}">
               <div class="host-cell" v-if="row.publicIp">
-                <el-icon class="public-ip-icon"><Globe /></el-icon>
+                <el-icon class="public-ip-icon"><Location /></el-icon>
                 <span>{{ row.publicIp }}</span>
               </div>
               <span v-else class="text-muted">-</span>
@@ -190,11 +190,11 @@
 import { ref, watch, onMounted, nextTick } from 'vue'
 import { ElMessage } from 'element-plus'
 import { 
-  FolderOpened, 
-  Folder, 
-  Monitor, 
-  Connection, 
-  Globe 
+  FolderOpened,
+  Folder,
+  Monitor,
+  Connection,
+  Location
 } from '@element-plus/icons-vue'
 import cmdbApi from '@/api/cmdb'
 

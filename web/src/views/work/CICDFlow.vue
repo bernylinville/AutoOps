@@ -1,5 +1,5 @@
 <script setup>
-import { ref } from 'vue'
+import { ref, nextTick } from 'vue'
 import { Panel, VueFlow, useVueFlow } from '@vue-flow/core'
 import { Background } from '@vue-flow/background'
 import ProcessNode from '../K8s/test/ProcessNode.vue'
@@ -212,4 +212,3 @@ function onNodeClick(node) {
   cursor: pointer;
 }
 </style>
-</template>

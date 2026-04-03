@@ -246,7 +246,7 @@ import { ref, reactive, onMounted, onUnmounted } from 'vue'
 import { getDeployList, deleteDeploy } from '@/api/tool'
 import { ElMessage } from 'element-plus'
 import {
-  DataBase,
+  Coin,
   Operation,
   Monitor,
   CircleCheck,
@@ -272,9 +272,9 @@ const queryParams = reactive({
 
 // 服务图标映射
 const serviceIconMap = {
-  'mysql': DataBase,
-  'redis': DataBase,
-  'postgresql': DataBase,
+  'mysql': Coin,
+  'redis': Coin,
+  'postgresql': Coin,
   'jenkins': Operation,
   'gitlab': Operation,
   'grafana': Monitor,

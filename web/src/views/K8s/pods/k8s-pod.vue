@@ -13,7 +13,7 @@ import {
   More,
   ArrowLeft,
   Delete,
-  Copy,
+  CopyDocument,
   ArrowUp,
   ArrowDown
 } from '@element-plus/icons-vue'
@@ -565,7 +565,9 @@ const getRelatedPods = async () => {
     const ownerRefs = podDetail.value.ownerReferences || podDetail.value.metadata?.ownerReferences || []
     console.log('🔍 [Pod详情页面] Pod的ownerReferences:', ownerRefs)
     let labelSelector = ''
-    
+    let replicaSetRef = null
+    let deploymentRef = null
+
     if (ownerRefs.length === 0) {
       console.log('⚠️ 当前Pod没有ownerReferences，尝试通过标签获取相关Pod')
       // 尝试通过app标签获取相关Pod
@@ -603,8 +605,8 @@ const getRelatedPods = async () => {
       }
     } else {
       // 查找ReplicaSet或直接的Deployment引用
-      const replicaSetRef = ownerRefs.find(ref => ref.kind === 'ReplicaSet')
-      const deploymentRef = ownerRefs.find(ref => ref.kind === 'Deployment')
+      replicaSetRef = ownerRefs.find(ref => ref.kind === 'ReplicaSet')
+      deploymentRef = ownerRefs.find(ref => ref.kind === 'Deployment')
 
       console.log('🔍 [Pod详情页面] 找到的owner引用:', {
         replicaSet: replicaSetRef?.name,
@@ -1817,7 +1819,7 @@ const handleSaveYaml = async () => {
       
       // 刷新页面数据
       console.log('⚡ 刷新页面数据...')
-      await loadPodDetail()
+      await handleQuery(true)
       await getRelatedPods()
       
       console.log('✅ YAML保存并刷新完成')
@@ -1949,6 +1951,7 @@ const searchYamlContent = () => {
     const lowerLine = line.toLowerCase()
     let startIndex = 0
     
+    // eslint-disable-next-line no-constant-condition
     while (true) {
       const matchIndex = lowerLine.indexOf(searchText, startIndex)
       if (matchIndex === -1) break
@@ -2042,6 +2045,7 @@ const searchLogsContent = () => {
     const lowerLine = line.toLowerCase()
     let startIndex = 0
     
+    // eslint-disable-next-line no-constant-condition
     while (true) {
       const matchIndex = lowerLine.indexOf(searchText, startIndex)
       if (matchIndex === -1) break
@@ -2613,7 +2617,7 @@ const handleGoBack = () => {
           <el-tab-pane label="yaml" name="yaml">
             <div v-loading="yamlTabLoading" style="padding: 20px;">
               <div style="margin-bottom: 10px; text-align: right;">
-                <el-button type="primary" size="small" :icon="Copy" @click="copyToClipboard(yamlTabContent, 'YAML已复制')">复制YAML</el-button>
+                <el-button type="primary" size="small" :icon="CopyDocument" @click="copyToClipboard(yamlTabContent, 'YAML已复制')">复制YAML</el-button>
               </div>
               <CodeEditor 
                 v-model="yamlTabContent" 

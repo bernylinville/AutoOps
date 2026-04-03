@@ -1,7 +1,4 @@
 import { createRouter, createWebHistory } from 'vue-router'
-import Login from '@/views/Login.vue'
-import Home from '@/views/Home.vue'
-import Dashboard from '@/views/dashboard/index.vue'
 import systemRoutes from './system'
 import cmdbRoutes from './cmdb'
 import k8sRoutes from './k8s'
@@ -13,15 +10,15 @@ import app from './app'
 // 路由集合
 const routes = [
     {path: '/',      redirect: '/login'},
-    {path: '/login', component: Login},
+    {path: '/login', component: () => import('@/views/Login.vue')},
     {
         path: '/home',
-        component: Home,
+        component: () => import('@/views/Home.vue'),
         redirect: '/dashboard',
         children: [
             {
                 path: '/dashboard',
-                component: Dashboard,
+                component: () => import('@/views/dashboard/index.vue'),
                 meta: {tTitle: '仪表盘'}
             },
             // 以下路由已注释，如需使用请先创建对应组件并导入

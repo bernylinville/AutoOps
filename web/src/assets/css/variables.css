@@ -4,24 +4,24 @@
    ============================================================ */
 
 :root {
-  /* ── 主色 ── */
-  --ao-primary: #409EFF;
-  --ao-primary-light: #ECF5FF;
-  --ao-primary-light-3: #79BBFF;
-  --ao-primary-light-5: #A0CFFF;
-  --ao-primary-light-7: #C6E2FF;
-  --ao-primary-light-9: #D9ECFF;
-  --ao-primary-dark: #337ECC;
+  /* ── 主色 (Indigo 系 - 展现科技与深邃) ── */
+  --ao-primary: #4F46E5;
+  --ao-primary-light: #EEF2FF;
+  --ao-primary-light-3: #818CF8;
+  --ao-primary-light-5: #A5B4FC;
+  --ao-primary-light-7: #C7D2FE;
+  --ao-primary-light-9: #E0E7FF;
+  --ao-primary-dark: #4338CA;
 
-  /* ── 语义色 ── */
-  --ao-success: #67C23A;
-  --ao-success-light: #E1F3D8;
-  --ao-warning: #E6A23C;
-  --ao-warning-light: #FAECD8;
-  --ao-danger: #F56C6C;
-  --ao-danger-light: #FDE2E2;
-  --ao-info: #909399;
-  --ao-info-light: #E9E9EB;
+  /* ── 语义色 (Emerald / Amber / Red 平缓饱度) ── */
+  --ao-success: #10B981;
+  --ao-success-light: #D1FAE5;
+  --ao-warning: #F59E0B;
+  --ao-warning-light: #FEF3C7;
+  --ao-danger: #EF4444;
+  --ao-danger-light: #FEE2E2;
+  --ao-info: #6B7280;
+  --ao-info-light: #F3F4F6;
 
   /* ── 中性色 / 文字 ── */
   --ao-text-primary: #303133;
@@ -35,8 +35,8 @@
   --ao-border-lighter: #EBEEF5;
 
   /* ── 填充 / 背景 ── */
-  --ao-fill: #F5F7FA;
-  --ao-bg: #FAFBFC;
+  --ao-fill: #F3F4F6;
+  --ao-bg: #F9FAFB;
   --ao-bg-page: #F0F2F5;
   --ao-bg-white: #FFFFFF;
 
@@ -65,16 +65,16 @@
   --ao-page-padding: 20px;
 
   /* ── 圆角 ── */
-  --ao-radius-sm: 2px;
-  --ao-radius: 4px;
-  --ao-radius-md: 6px;
-  --ao-radius-lg: 8px;
+  --ao-radius-sm: 4px;
+  --ao-radius: 6px;
+  --ao-radius-md: 8px;
+  --ao-radius-lg: 12px;
 
   /* ── 阴影 ── */
-  --ao-shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.06);
-  --ao-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
-  --ao-shadow-md: 0 4px 12px rgba(0, 0, 0, 0.10);
-  --ao-shadow-lg: 0 8px 24px rgba(0, 0, 0, 0.12);
+  --ao-shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+  --ao-shadow: 0 2px 6px -1px rgba(0, 0, 0, 0.05); /* 卡片更柔和 */
+  --ao-shadow-md: 0 10px 15px -3px rgba(0, 0, 0, 0.05);
+  --ao-shadow-lg: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 8px 10px -6px rgba(0, 0, 0, 0.1);
 
   /* ── 过渡 ── */
   --ao-transition-fast: 0.15s ease;
@@ -82,7 +82,7 @@
   --ao-transition-slow: 0.3s ease;
 
   /* ── 字体 ── */
-  --ao-font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", sans-serif;
+  --ao-font-family: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", sans-serif;
   --ao-font-family-mono: "JetBrains Mono", "Fira Code", "SF Mono", "Menlo", monospace;
 
   /* ── 字号 ── */

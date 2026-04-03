@@ -1,34 +1,28 @@
-import Template from '@/views/task/TaskTemplate.vue'
-import Job from '@/views/task/TaskJob.vue'
-import Ansible from '@/views/task/TaskAnsible.vue'
-import AnsibleHistory from '@/views/task/AnsibleTaskHistory.vue'
-import AnsibleConfig from '@/views/task/TaskConfig.vue'
-
 const routes = [
     {
         path: '/task/template',
-        component: Template,
+        component: () => import('@/views/task/TaskTemplate.vue'),
         meta: { sTitle: '任务中心', tTitle: '任务模版' }
     },
     {
         path: '/task/job',
-        component: Job,
+        component: () => import('@/views/task/TaskJob.vue'),
         meta: { sTitle: '任务中心', tTitle: '任务作业' }
     },
     {
         path: '/task/ansible',
-        component: Ansible,
+        component: () => import('@/views/task/TaskAnsible.vue'),
         meta: { sTitle: '任务中心', tTitle: 'Ansible任务' }
     },
     {
         path: '/task/config',
-        component: AnsibleConfig,
+        component: () => import('@/views/task/TaskConfig.vue'),
         meta: { sTitle: '任务中心', tTitle: '配置管理' }
     },
     {
         path: '/task/ansible/history',
         name: 'AnsibleTaskHistory',
-        component: AnsibleHistory,
+        component: () => import('@/views/task/AnsibleTaskHistory.vue'),
         meta: { sTitle: '任务中心', tTitle: '执行历史', hidden: true }
     }
 ]

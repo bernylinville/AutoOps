@@ -31,6 +31,9 @@ const queryParams = reactive({
   namespace: 'default'
 })
 
+// 命名空间列表
+const namespaceList = ref([])
+
 // 存储资源数据状态
 const pvcList = ref([])
 const pvList = ref([])

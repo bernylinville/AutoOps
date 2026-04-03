@@ -29,7 +29,7 @@
               DryRun预览
             </el-button>
             <el-button 
-              :icon="Copy" 
+              :icon="CopyDocument"
               @click="copyToClipboard(createForm.yamlContent, 'YAML已复制')"
             >
               复制YAML
@@ -135,7 +135,7 @@
 <script setup>
 import { ref, reactive, watch, nextTick } from 'vue'
 import { ElMessage } from 'element-plus'
-import { View, Search, Copy } from '@element-plus/icons-vue'
+import { View, Search, CopyDocument } from '@element-plus/icons-vue'
 import k8sApi from '@/api/k8s'
 import CodeEditor from '@/components/CodeEditor.vue'
 

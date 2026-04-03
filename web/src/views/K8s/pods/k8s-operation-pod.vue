@@ -381,7 +381,7 @@ const deletePod = async (pod) => {
     if (responseData.code === 200 || responseData.success) {
       ElMessage.success(`Pod ${pod.name} 删除成功`)
       // 重新获取Pod列表
-      await viewPodList()
+      emit('refresh')
     } else {
       ElMessage.error(responseData.message || '删除Pod失败')
     }
@@ -514,9 +514,7 @@ const originalDeleteWorkload = async () => {
 }
 
 // 暴露方法给父组件
-defineExpose({
-  viewPodList
-})
+defineExpose({})
 </script>
 
 <style scoped>
