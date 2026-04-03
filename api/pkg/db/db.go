@@ -8,7 +8,7 @@ import (
 	"log"
 	"os"
 	"time"
-	"gorm.io/driver/mysql"
+	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
 	"gorm.io/gorm/logger"
 )
@@ -45,14 +45,13 @@ func NewGormLogger() logger.Interface {
 func SetupDBLink() error {
 	var err error
 	var dbConfig = config.Config.Db
-	url := fmt.Sprintf("%s:%s@tcp(%s:%d)/%s?charset=%s&parseTime=True&loc=Local&sql_mode=''",
-		dbConfig.Username,
-		dbConfig.Password,
+	dsn := fmt.Sprintf("host=%s port=%d user=%s password=%s dbname=%s sslmode=disable TimeZone=Asia/Shanghai",
 		dbConfig.Host,
 		dbConfig.Port,
-		dbConfig.Db,
-		dbConfig.Charset)
-	Db, err = gorm.Open(mysql.Open(url), &gorm.Config{
+		dbConfig.Username,
+		dbConfig.Password,
+		dbConfig.Db)
+	Db, err = gorm.Open(postgres.Open(dsn), &gorm.Config{
 		Logger:                                   NewGormLogger(),
 		DisableForeignKeyConstraintWhenMigrating: true,
 	})
@@ -73,3 +72,4 @@ func SetupDBLink() error {
 	sqlDB.SetMaxOpenConns(dbConfig.MaxOpen)
 	return nil
 }
+

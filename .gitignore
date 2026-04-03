@@ -3,11 +3,17 @@ api/devops
 # Docker runtime data
 docker/mysql/data/
 docker/redis/data/
+docker/postgres/data/
+docker/valkey/data/
 docker/prometheus/data/
 docker/pushgateway/data/
 
 # SSH keys (sensitive)
 docker/api/ssh_keys/
+
+# Runtime logs
+api/api/task/controller/logs/
+docker/api/logs/
 
 # Environment config (use .env.example as template)
 docker/.env
@@ -16,15 +22,23 @@ docker/.env
 api/config.yaml
 docker/api/config.yaml
 
-# Development tools
+# AI tools config
 .agents/
 .claude/
+.codex
+.rtk/
+CLAUDE.md
 .impeccable.md
 skills-lock.json
+
+# Internal development docs
 DEVELOPMENT.md
+handoff_context.md
+progress.md
 
 # Build artifacts
 web/dist/
+web/node_modules/
 
 # IDE
 .idea/
