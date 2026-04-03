@@ -16,7 +16,7 @@
 |------|------|
 | **后端** | Go 1.25 · Gin · GORM · JWT · RBAC · Cron |
 | **前端** | Vue 3.5 · Element Plus 2.10 · ECharts · xterm.js |
-| **数据库** | MySQL 8.0 · Redis 7.2 |
+| **数据库** | PostgreSQL 17.4 (JSONB/GIN/Recursive CTE) · Valkey 9.0 (BSD) |
 | **监控** | Prometheus · Pushgateway · N9E 夜莺 |
 | **部署** | Docker Compose · Alpine 3.23 · Nginx 1.28 |
 | **安全** | bcrypt 密码 · AES 加密 · RBAC 中间件 · 非 root 容器 |
@@ -31,12 +31,25 @@
 |------|------|------|
 | 主机管理 | ✅ | 支持阿里/腾讯/百度/华为/跳板机，827+ 主机 |
 | 主机终端 (WebTerminal) | ✅ | 基于 xterm.js + WebSocket，实时 SSH |
-| 网络设备管理 (SNMP) | ✅ | 交换机配置采集与监控 |
 | 数据库管理 | ✅ | MySQL / PostgreSQL / Redis / ES / MongoDB 五类 |
 | SQL 在线执行 | ✅ | SELECT/UPDATE 在线执行 + SQL 类型白名单校验 |
 | 数据来源筛选 | ✅ | N9E 同步 / 手动录入 / 云厂商 三种来源标签 |
 | 文件上传/下载 | ✅ | SCP 文件传输到远程主机 |
 | 批量操作 | ✅ | 批量命令执行 / 文件分发 |
+
+### 🔷 动态 CI 模型系统 (CMDB 2.0)
+
+| 功能 | 状态 | 说明 |
+|------|------|------|
+| 动态 CI 类型管理 | ✅ | 自定义 CI 类型 + 动态 JSONB 属性，表单自动渲染 |
+| 内置 CI 模板 | ✅ | 6 种预置类型（服务器/数据库/网络设备/中间件/存储/负载均衡），共 33 个属性 |
+| CI 实例管理 | ✅ | CRUD + JSONB 动态查询 + 批量导入导出 |
+| CI 关系拓扑 | ✅ | PostgreSQL `WITH RECURSIVE` CTE + ECharts Force-Graph 可视化 |
+| 项目维度管理 | ✅ | 项目 → 主机/数据库/应用 三维度资产关联 + 资产统计仪表盘 |
+| 资产变更日志 | ✅ | 字段级变更审计（变更前值 / 变更后值 / 操作人 / 时间） |
+| 主机生命周期 | ✅ | 10 状态机（采购→入库→待上线→上线→…→报废）+ 批量变更 |
+| 网络设备管理 | ✅ | SNMP v2c 巡检 + TCP 三端口探测 + 连续失败告警 |
+| 到期预警通知 | ✅ | 每日 09:00 扫描 30 天内到期主机 + 钉钉 Webhook 推送 |
 
 ### ☸ Kubernetes 集群管理
 
@@ -109,6 +122,7 @@
 | 登录日志审计 | ✅ | 登录记录 + 批量清理 |
 | 数据库操作审计 | ✅ | SQL 执行日志 + 类型白名单 |
 | 会话录制 | ✅ | 终端操作录像回放 |
+| CI 变更审计 | ✅ | 字段级变更追踪（主机/数据库/CI实例） |
 
 ### 🏠 系统管理
 
@@ -134,6 +148,7 @@
 - ✅ API 容器以非 root 用户运行
 - ✅ `/healthz` + `/readyz` 无鉴权健康检查端点
 - ✅ Webhook token 校验
+- ✅ CI 变更审计日志（不可篡改）
 
 ---
 
@@ -146,13 +161,21 @@
 git clone https://github.com/bernylinville/AutoOps.git
 cd AutoOps/docker
 
-# 2. 启动所有服务
+# 2. 配置环境变量（可选，修改端口/密码等）
+cp .env.example .env
+vi .env
+
+# 3. 配置 API（可选，修改钉钉 Webhook 等）
+cp api/config.yaml.example api/config.yaml
+vi api/config.yaml
+
+# 4. 启动所有服务
 docker compose up -d
 
-# 3. 查看服务状态
+# 5. 查看服务状态
 docker compose ps
 
-# 4. 访问系统
+# 6. 访问系统
 # Web 前端: http://localhost:18088
 # API 后端: http://localhost:18000
 # 默认账号: admin / 123456
@@ -164,14 +187,60 @@ docker compose ps
 |------|------|------|
 | devops-web | 18088 → 80 | Nginx 前端 |
 | devops-api | 18000 → 8000 | Go API |
-| devops-mysql | 127.0.0.1:13306 → 3306 | MySQL 8.0 |
-| devops-redis | 127.0.0.1:16379 → 6379 | Redis 7.2 |
+| devops-postgres | 127.0.0.1:15432 → 5432 | PostgreSQL 17.4 |
+| devops-valkey | 127.0.0.1:16379 → 6379 | Valkey 9.0 (Redis 兼容) |
 | devops-prometheus | 127.0.0.1:19090 → 9090 | Prometheus |
 | devops-pushgateway | 127.0.0.1:19091 → 9091 | Pushgateway |
 
-> 💡 MySQL/Redis/Prometheus 端口绑定 `127.0.0.1`，仅本机访问，生产环境安全。
+> 💡 PostgreSQL/Valkey/Prometheus 端口绑定 `127.0.0.1`，仅本机访问，生产环境安全。
 
 详细部署文档: [docker/README.md](docker/README.md)
+
+---
+
+## 本地开发环境
+
+### 前置条件
+
+| 工具 | 版本 | 说明 |
+|------|------|------|
+| [mise](https://mise.jdx.dev/) | latest | 多版本运行时管理 (替代 asdf/nvm/gvm) |
+| Go | 1.24+ | `mise install go@1.24` |
+| Node.js | 22+ | `mise install node@22` |
+| Docker / Docker Compose | 27+ | 容器运行环境 |
+
+### 首次启动
+
+```bash
+# 1. 安装运行时
+mise install
+
+# 2. 启动数据库和基础服务（不构建镜像）
+cd docker && docker compose up -d postgres valkey prometheus pushgateway
+
+# 3. 启动后端
+cd api
+cp config.yaml.example config.yaml
+go mod download
+go run .
+
+# 4. 启动前端
+cd web
+npm install
+npm run dev
+
+# 5. 访问 http://localhost:5173（Vite 开发服务器）
+```
+
+### 数据库备份与恢复
+
+```bash
+# 备份 PostgreSQL
+docker compose exec postgres pg_dump -U devops autoops > backup.sql
+
+# 恢复 PostgreSQL
+docker compose exec -T postgres psql -U devops autoops < backup.sql
+```
 
 ---
 
@@ -191,32 +260,37 @@ docker compose ps
 
 ```
 AutoOps/
-├── api/                    # Go 后端
-│   ├── api/                # 业务逻辑 (controller/dao/model/service)
-│   │   ├── cmdb/           # CMDB 资产管理
-│   │   ├── k8s/            # Kubernetes 管理
-│   │   ├── n9e/            # N9E 监控 + 告警通知
-│   │   ├── configcenter/   # 配置中心
-│   │   ├── task/           # 任务中心
-│   │   ├── monitor/        # 监控 Agent
-│   │   ├── tool/           # 运维工具
-│   │   ├── app/            # 服务管理
-│   │   └── system/         # 系统管理
-│   ├── middleware/          # JWT / RBAC / 日志中间件
-│   ├── router/             # 路由注册
-│   ├── scheduler/          # 定时同步调度器
-│   ├── pkg/                # 公共包 (JWT/DB/Migration)
-│   └── config.yaml         # 配置文件
-├── web/                    # Vue 3 前端
+├── api/                        # Go 后端
+│   ├── api/                    # 业务逻辑 (controller/dao/model/service)
+│   │   ├── cmdb/               # CMDB 资产管理 + 动态 CI + 项目 + 拓扑 + 网络设备
+│   │   ├── k8s/                # Kubernetes 管理
+│   │   ├── n9e/                # N9E 监控 + 告警通知
+│   │   ├── configcenter/       # 配置中心
+│   │   ├── task/               # 任务中心
+│   │   ├── monitor/            # 监控 Agent
+│   │   ├── tool/               # 运维工具
+│   │   ├── app/                # 服务管理 + 应用管理
+│   │   ├── dashboard/          # 业务大盘
+│   │   ├── flashduty/          # FlashDuty 告警集成
+│   │   └── system/             # 系统管理
+│   ├── middleware/              # JWT / RBAC / 日志中间件
+│   ├── router/                 # 路由注册
+│   ├── scheduler/              # 定时同步调度器 + 到期预警
+│   ├── pkg/                    # 公共包 (JWT/DB/Migration)
+│   └── config.yaml             # 配置文件
+├── web/                        # Vue 3 前端
 │   └── src/
-│       ├── views/          # 页面组件
-│       ├── api/            # API 请求封装
-│       ├── router/         # 前端路由
-│       └── utils/          # 工具函数
-└── docker/                 # Docker 部署
-    ├── docker-compose.yml
-    ├── api/Dockerfile      # Go 多阶段构建 + 非 root
-    └── web/Dockerfile      # Node 构建 + Nginx 
+│       ├── views/              # 页面组件 (含 CI/拓扑/变更日志/网络设备/项目)
+│       ├── api/                # API 请求封装
+│       ├── router/             # 前端路由
+│       └── utils/              # 工具函数
+└── docker/                     # Docker 部署
+    ├── docker-compose.yml      # 6 服务编排
+    ├── .env                    # 环境变量（端口/密码等）
+    ├── api/Dockerfile          # Go 多阶段构建 + 非 root
+    ├── web/Dockerfile          # Node 构建 + Nginx
+    ├── postgres/               # PG 数据 + 初始化脚本
+    └── valkey/                 # Valkey 缓存数据
 ```
 
 ---
@@ -231,6 +305,7 @@ AutoOps/
 ✅ **开箱即用** — 内置 CMDB、任务调度、SQL 审计等企业级功能  
 ✅ **安全合规** — RBAC 200+ 权限码 + 操作审计 + 非 root 容器  
 ✅ **监控集成** — N9E 夜莺深度集成 + 告警通知 (微信/钉钉/邮件)  
+✅ **动态 CI** — 自定义资产模型 + JSONB 动态属性 + 关系拓扑图  
 ✅ **二次开发友好** — Go 语言，代码结构清晰，易于定制  
 ✅ **成本低** — 无商业授权费用，适合中小企业  
 
@@ -240,16 +315,34 @@ AutoOps/
 传统运维平台痛点：
 ├─ 🔴 工具碎片化 → 多系统切换，数据孤岛
 ├─ 🔴 流程不闭环 → 发布、审批、审计分离
+├─ 🔴 资产模型固定 → 难以适配异构设备
 ├─ 🔴 云原生支持弱 → 难以适配容器化架构
 └─ 🔴 安全审计缺失 → 缺乏 RBAC 和操作追溯
 
 AutoOps 优势：
 ├─ 🟢 一体化设计 → 统一平台，数据打通
+├─ 🟢 动态 CI 模型 → 自定义资产类型 + JSONB 属性
 ├─ 🟢 云原生支持 → K8s 全要素深度集成
 ├─ 🟢 安全合规 → RBAC + 审计 + 非 root 部署
 ├─ 🟢 告警通知 → Webhook + 微信/钉钉/邮件
-└─ 🟢 N9E 集成 → 夜莺监控数据自动同步
+├─ 🟢 N9E 集成 → 夜莺监控数据自动同步
+└─ 🟢 资产生命周期 → 10 状态机 + 变更审计 + 到期预警
 ```
+
+### 业界对比
+
+| 功能领域 | AutoOps | 蓝鲸 CMDB | VeOps | NetBox | iTop |
+|----------|:---:|:---:|:---:|:---:|:---:|
+| 动态 CI 模型 | ✅ | ✅ | ✅ | ✅ | ✅ |
+| 项目维度管理 | ✅ | ✅ | ❌ | ❌ | ❌ |
+| CI 关系拓扑 | ✅ | ✅ | ✅ | ✅ | ✅ |
+| 资产生命周期 | ✅ | ✅ | ❌ | ❌ | ✅ |
+| 变更审计日志 | ✅ | ✅ | ❌ | ✅ | ✅ |
+| 网络设备巡检 | ✅ | ❌ | ❌ | ✅ | ❌ |
+| K8s 深度管理 | ✅ | ✅ | ❌ | ❌ | ❌ |
+| SSH 终端 | ✅ | ✅ | ❌ | ❌ | ❌ |
+| SQL 执行+审计 | ✅ | ❌ | ❌ | ❌ | ❌ |
+| 监控集成 | ✅ | ✅ | ❌ | ❌ | ❌ |
 
 ### 适用场景
 
@@ -266,15 +359,19 @@ AutoOps 优势：
 
 ## 后续规划
 
-| 功能 | 状态 |
-|------|------|
-| N9E 实际环境联调 (PromQL 查询) | 🚧 开发中 |
-| Windows 主机管理 + 远程桌面 | 📋 规划中 |
-| K8s HPA 自动扩缩容 | 📋 规划中 |
-| SQL 工单系统 | 📋 规划中 |
-| 运维工单系统 | 📋 规划中 |
-| 运维知识库 (Markdown) | 📋 规划中 |
-| AI 大模型分析 (AIOps) | 📋 规划中 |
+| 功能 | 优先级 | 状态 |
+|------|:---:|------|
+| 巡检系统集成 (inspection-tool 评估引擎) | P1 | 📋 规划中 |
+| ITSM 工单 (变更管理 + 钉钉企业内部应用) | P1 | 📋 规划中 |
+| 虚拟化集成 (VMware vCenter / PVE) | P1 | 📋 规划中 |
+| 多云覆盖 (火山云/天翼云/华为云) | P1 | 📋 规划中 |
+| IPAM 地址管理 (网段/IP/VLAN + 冲突检测) | P2 | 📋 规划中 |
+| 机柜可视化 (U 位立面图 + 拖拽放置) | P2 | 📋 规划中 |
+| 资产统计报表 (多维 Dashboard + 导出) | P2 | 📋 规划中 |
+| 运维知识库 (Markdown + PG 全文搜索) | P2 | 📋 规划中 |
+| Windows 主机管理 + 远程桌面 | P2 | 📋 规划中 |
+| Open API (API Key 鉴权 + Webhook 推送) | P3 | 📋 规划中 |
+| AIOps (CI 拓扑告警收敛 + pgvector) | P3 | 📋 规划中 |
 
 ---
 
