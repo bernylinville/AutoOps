@@ -88,6 +88,28 @@ func TestBuildAccessInfoServiceDisabledOmitsServiceFields(t *testing.T) {
 	}
 }
 
+func TestBuildAccessInfoServiceEnabledAppliesDefaults(t *testing.T) {
+	req := &deploymodel.DeployRequest{
+		Image:          "registry.example.com/app:v1",
+		Namespace:      "ao-direct-app",
+		ReleaseName:    "app",
+		ServiceEnabled: true,
+		ServiceType:    "",
+		ServicePort:    0,
+		TargetPort:     0,
+	}
+	info := buildAccessInfo(req)
+	if info.ServiceType != "ClusterIP" {
+		t.Errorf("ServiceType: got %q, want \"ClusterIP\"", info.ServiceType)
+	}
+	if info.ServicePort != 80 {
+		t.Errorf("ServicePort: got %d, want 80", info.ServicePort)
+	}
+	if info.TargetPort != 80 {
+		t.Errorf("TargetPort: got %d, want 80 (= ServicePort default)", info.TargetPort)
+	}
+}
+
 func TestExecErrorMessageNilRecord(t *testing.T) {
 	if got := execErrorMessage(nil); got != "" {
 		t.Errorf("expected empty string for nil record, got %q", got)

@@ -736,12 +736,14 @@ func (s *DeployService) GetAgentStatusByRequestNo(c *gin.Context, requestNo stri
 		return
 	}
 
-	// Fetch the latest execution record so we can surface the error message.
+	// Only surface an error message when the request is currently in a failed state
+	// to avoid returning stale errors from a previous attempt that is being retried.
 	var errMsg string
-	records, listErr := s.dao.ListExecutionRecordsByRequestID(req.ID)
-	if listErr == nil && len(records) > 0 {
-		// ListExecutionRecordsByRequestID returns DESC by id, so [0] is latest.
-		errMsg = execErrorMessage(&records[0])
+	if req.ExecutionStatus == model.ExecutionStatusFailed {
+		records, listErr := s.dao.ListExecutionRecordsByRequestID(req.ID)
+		if listErr == nil && len(records) > 0 {
+			errMsg = execErrorMessage(&records[0])
+		}
 	}
 
 	var accessInfo *AccessInfo
@@ -1456,8 +1458,17 @@ func buildAccessInfo(req *model.DeployRequest) *AccessInfo {
 	}
 	if req.ServiceEnabled {
 		info.ServiceType = req.ServiceType
+		if info.ServiceType == "" {
+			info.ServiceType = "ClusterIP"
+		}
 		info.ServicePort = req.ServicePort
+		if info.ServicePort <= 0 {
+			info.ServicePort = 80
+		}
 		info.TargetPort = req.TargetPort
+		if info.TargetPort <= 0 {
+			info.TargetPort = info.ServicePort
+		}
 	}
 	return info
 }
