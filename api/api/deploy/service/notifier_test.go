@@ -84,6 +84,12 @@ func TestBuildMarkdown_IncludesAccessInfo(t *testing.T) {
 	if !strings.Contains(text, "nginx:1.27.4-alpine") {
 		t.Fatalf("expected image value in markdown, got:\n%s", text)
 	}
+	if !strings.Contains(text, "NodePort") {
+		t.Fatalf("expected service type in markdown, got:\n%s", text)
+	}
+	if !strings.Contains(text, "80") {
+		t.Fatalf("expected service port in markdown, got:\n%s", text)
+	}
 }
 
 type fakeDeployNotificationStore struct {

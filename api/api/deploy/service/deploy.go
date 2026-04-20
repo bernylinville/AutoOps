@@ -744,6 +744,11 @@ func (s *DeployService) GetAgentStatusByRequestNo(c *gin.Context, requestNo stri
 		errMsg = execErrorMessage(&records[0])
 	}
 
+	var accessInfo *AccessInfo
+	if req.ExecutionStatus == model.ExecutionStatusSucceeded {
+		accessInfo = buildAccessInfo(req)
+	}
+
 	result.Success(c, map[string]interface{}{
 		"requestNo":        req.RequestNo,
 		"requestStatus":    req.RequestStatus,
@@ -751,7 +756,7 @@ func (s *DeployService) GetAgentStatusByRequestNo(c *gin.Context, requestNo stri
 		"executionStatus":  req.ExecutionStatus,
 		"finishedAt":       req.FinishedAt,
 		"executionSummary": buildExecutionSummary(req),
-		"accessInfo":       buildAccessInfo(req),
+		"accessInfo":       accessInfo,
 		"errorMessage":     errMsg,
 	})
 }
