@@ -9,11 +9,14 @@ import (
 
 // Manager 调度器管理器
 type Manager struct {
-	syncScheduler       *SyncScheduler
-	n9eSyncScheduler    *N9ESyncScheduler
-	expireAlertScheduler *ExpireAlertScheduler
-	mutex               sync.RWMutex
-	running             bool
+	syncScheduler               *SyncScheduler
+	n9eSyncScheduler            *N9ESyncScheduler
+	expireAlertScheduler        *ExpireAlertScheduler
+	deployApprovalSyncScheduler *DeployApprovalSyncScheduler
+	deployTTLReaper             *DeployTTLReaper
+	pipelineScheduler           *PipelineScheduler
+	mutex                       sync.RWMutex
+	running                     bool
 }
 
 var (
@@ -25,10 +28,13 @@ var (
 func GetManager() *Manager {
 	once.Do(func() {
 		instance = &Manager{
-			syncScheduler:        NewSyncScheduler(),
-			n9eSyncScheduler:     NewN9ESyncScheduler(),
-			expireAlertScheduler: NewExpireAlertScheduler(),
-			running:              false,
+			syncScheduler:               NewSyncScheduler(),
+			n9eSyncScheduler:            NewN9ESyncScheduler(),
+			expireAlertScheduler:        NewExpireAlertScheduler(),
+			deployApprovalSyncScheduler: NewDeployApprovalSyncScheduler(),
+			deployTTLReaper:             NewDeployTTLReaper(),
+			pipelineScheduler:           NewPipelineScheduler(),
+			running:                     false,
 		}
 	})
 	return instance
@@ -61,6 +67,18 @@ func (m *Manager) Start() error {
 		log.Printf("到期预警调度器启动警告: %v", err)
 	}
 
+	if err := m.deployApprovalSyncScheduler.Start(); err != nil {
+		log.Printf("部署审批同步调度器启动警告: %v", err)
+	}
+
+	if err := m.deployTTLReaper.Start(); err != nil {
+		log.Printf("部署 TTL 清理调度器启动警告: %v", err)
+	}
+
+	if err := m.pipelineScheduler.Start(); err != nil {
+		log.Printf("流水线调度器启动警告: %v", err)
+	}
+
 	m.running = true
 	log.Println("调度器管理器启动成功")
 	return nil
@@ -86,6 +104,10 @@ func (m *Manager) Stop() {
 
 	// 停止到期预警调度器
 	m.expireAlertScheduler.Stop()
+
+	m.deployApprovalSyncScheduler.Stop()
+	m.deployTTLReaper.Stop()
+	m.pipelineScheduler.Stop()
 
 	m.running = false
 	log.Println("调度器管理器已停止")

@@ -56,3 +56,37 @@ flashduty:
 # 留空则不推送钉钉通知
 dingtalk:
   webhook_url: "https://oapi.dingtalk.com/robot/send?access_token=YOUR_TOKEN"
+
+# 钉钉审批卡片配置
+# 与告警机器人分离，供 AutoOps 发起钉钉原生审批实例
+dingtalkApproval:
+  client_id: "your_dingtalk_approval_app_key"
+  client_secret: "your_dingtalk_approval_app_secret"
+  process_code: ""
+  originator_dept_id: 0
+  microapp_agent_id: 0
+  redirect_url: ""
+  poll_interval_seconds: 30
+  field_mappings:
+    request_no: ""
+    release_name: ""
+    cluster_target: ""
+    deploy_mode: ""
+    resource_type: ""
+    image: ""
+    namespace: ""
+    ttl_hours: ""
+    reason: ""
+
+# Agent 集成配置
+# 供 Hermes custom tool 或其他 agent 通过机器入口调用 AutoOps API
+integrations:
+  agent:
+    bearer_token: "change-me-agent-token"
+  gitops:
+    local_checkout_path: "/home/kchou/Code/pukka-gitops"
+  deploy_bot:
+    provider: dingtalk
+    enabled: false
+    webhook_url: "https://oapi.dingtalk.com/robot/send?access_token=YOUR_TOKEN"
+    secret: ""

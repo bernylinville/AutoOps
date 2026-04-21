@@ -5,6 +5,7 @@ import ()
 // Jenkins账号类型常量 (对应AccountAuth.Type字段)
 const (
 	JenkinsAccountType = 4 // Jenkins账号类型
+	HarborAccountType  = 5 // Harbor账号类型
 )
 
 // JenkinsJob Jenkins任务信息

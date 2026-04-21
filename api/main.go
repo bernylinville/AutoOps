@@ -5,22 +5,25 @@ package main
 
 import (
 	"context"
-	"flag"
-	"fmt"
+	"dodevops-api/api/cmdb/controller"
+	cmdbdao "dodevops-api/api/cmdb/dao"
+	deploydao "dodevops-api/api/deploy/dao"
+	deployservice "dodevops-api/api/deploy/service"
+	"dodevops-api/api/task/service"
 	"dodevops-api/common"
 	"dodevops-api/common/config"
 	_ "dodevops-api/docs"
-	cmdbdao "dodevops-api/api/cmdb/dao"
-	"dodevops-api/api/cmdb/controller"
-	"dodevops-api/api/task/service"
 	"dodevops-api/pkg/db"
 	"dodevops-api/pkg/log"
 	"dodevops-api/pkg/redis"
 	"dodevops-api/router"
 	"dodevops-api/scheduler"
+	"flag"
+	"fmt"
 	"net/http"
 	"os"
 	"os/signal"
+	"strings"
 	"time"
 
 	"github.com/gin-gonic/gin"
@@ -35,7 +38,9 @@ import (
 func main() {
 	// 解析命令行参数
 	var configPath string
+	var reconcileGitOps bool
 	flag.StringVar(&configPath, "c", "", "配置文件路径 (默认: ./config.yaml)")
+	flag.BoolVar(&reconcileGitOps, "reconcile-gitops", false, "输出 GitOps release 与 deploy_request 的对账报告")
 	flag.Parse()
 
 	// 加载配置文件
@@ -46,6 +51,26 @@ func main() {
 	// 初始化其他服务
 	if err := initServices(); err != nil {
 		panic("Failed to initialize services: " + err.Error())
+	}
+
+	if reconcileGitOps {
+		report, err := deployservice.ReconcileGitOpsWorkingTree(common.GetDB())
+		if err != nil {
+			panic("Failed to reconcile gitops working tree: " + err.Error())
+		}
+		fmt.Printf("GitOps repo: %s\n", report.RepoPath)
+		fmt.Printf("%-24s %-24s %-16s %-16s %-12s %s\n", "RELEASE", "REQUEST_NO", "REQUEST_STATUS", "EXECUTION_STATUS", "OWNER", "STATE")
+		for _, item := range report.Items {
+			fmt.Printf("%-24s %-24s %-16s %-16s %-12s %s\n",
+				item.ReleaseName,
+				defaultPrint(item.RequestNo),
+				defaultPrint(item.RequestStatus),
+				defaultPrint(item.ExecutionStatus),
+				defaultPrint(item.OwnerSystem),
+				item.State,
+			)
+		}
+		return
 	}
 
 	// 启动调度器管理器
@@ -125,6 +150,8 @@ func initServices() error {
 	_ = changeLogDao.SeedChangeLogMenu()
 	networkDao := cmdbdao.NewNetworkDeviceDao()
 	_ = networkDao.SeedNetworkMenu()
+	deployMenuDao := deploydao.NewMenuSeedDao(common.GetDB())
+	_ = deployMenuDao.SeedDeployMenu()
 
 	// 初始化Redis
 	if err := common.InitRedis(); err != nil {
@@ -170,4 +197,11 @@ func stopTaskQueue() {
 	service.StopTaskQueue()
 
 	log.Log().Info("任务队列系统已停止")
+}
+
+func defaultPrint(value string) string {
+	if strings.TrimSpace(value) == "" {
+		return "-"
+	}
+	return value
 }

@@ -11,6 +11,7 @@ import (
 	"strings"
 	"time"
 
+	appmodel "dodevops-api/api/app/model"
 	"dodevops-api/api/deploy/dao"
 	"dodevops-api/api/deploy/model"
 	k8smodel "dodevops-api/api/k8s/model"
@@ -109,6 +110,8 @@ func (s *DeployService) CreateClusterTarget(c *gin.Context, req *model.CreateClu
 		EnvType:                defaultString(req.EnvType, "test"),
 		GitOpsEnabled:          defaultBool(req.GitOpsEnabled, true),
 		DirectEnabled:          defaultBool(req.DirectEnabled, true),
+		HarborServerID:         req.HarborServerID,
+		JenkinsServerID:        req.JenkinsServerID,
 		GitOpsRepo:             req.GitOpsRepo,
 		GitOpsBranch:           req.GitOpsBranch,
 		GitOpsReleaseDir:       req.GitOpsReleaseDir,
@@ -169,6 +172,12 @@ func (s *DeployService) UpdateClusterTarget(c *gin.Context, id uint, req *model.
 	if req.DirectKubeconfigRef != nil {
 		updates["direct_kubeconfig_ref"] = *req.DirectKubeconfigRef
 	}
+	if req.HarborServerID != nil {
+		updates["harbor_server_id"] = *req.HarborServerID
+	}
+	if req.JenkinsServerID != nil {
+		updates["jenkins_server_id"] = *req.JenkinsServerID
+	}
 	if req.DefaultApproverAdminID != nil {
 		if _, err := s.getApproverByID(*req.DefaultApproverAdminID); err != nil {
 			result.Failed(c, 400, "默认审批人不存在")
@@ -214,8 +223,10 @@ func (s *DeployService) CreateDeployRequest(c *gin.Context, req *model.CreateDep
 		RequesterExternalID:   "",
 		Request: &model.CreateDeployRequest{
 			Mode:            req.Mode,
+			WorkflowKind:    req.WorkflowKind,
 			ResourceType:    req.ResourceType,
 			ClusterTargetID: req.ClusterTargetID,
+			ApplicationID:   req.ApplicationID,
 			ReleaseName:     req.ReleaseName,
 			Namespace:       req.Namespace,
 			Image:           req.Image,
@@ -252,23 +263,30 @@ func (s *DeployService) CreateAgentDeployRequest(c *gin.Context, req *model.Crea
 		RequesterExternalType: strings.TrimSpace(req.RequesterExternalType),
 		RequesterExternalID:   strings.TrimSpace(req.RequesterExternalID),
 		Request: &model.CreateDeployRequest{
-			Mode:            req.Mode,
-			ResourceType:    req.ResourceType,
-			ClusterTargetID: req.ClusterTargetID,
-			ReleaseName:     req.ReleaseName,
-			Namespace:       req.Namespace,
-			Image:           req.Image,
-			Replicas:        req.Replicas,
-			ServiceEnabled:  req.ServiceEnabled,
-			ServiceType:     req.ServiceType,
-			ServicePort:     req.ServicePort,
-			TargetPort:      req.TargetPort,
-			Env:             req.Env,
-			Resources:       req.Resources,
-			TTLHours:        req.TTLHours,
-			ApproverAdminID: req.ApproverAdminID,
-			Reason:          req.Reason,
-			ChatContext:     req.ChatContext,
+			Mode:             req.Mode,
+			WorkflowKind:     req.WorkflowKind,
+			ResourceType:     req.ResourceType,
+			ClusterTargetID:  req.ClusterTargetID,
+			ApplicationID:    req.ApplicationID,
+			ReleaseName:      req.ReleaseName,
+			Namespace:        req.Namespace,
+			Image:            req.Image,
+			Replicas:         req.Replicas,
+			ServiceEnabled:   req.ServiceEnabled,
+			ServiceType:      req.ServiceType,
+			ServicePort:      req.ServicePort,
+			TargetPort:       req.TargetPort,
+			Env:              req.Env,
+			Resources:        req.Resources,
+			TTLHours:         req.TTLHours,
+			ApproverAdminID:  req.ApproverAdminID,
+			Reason:           req.Reason,
+			ChatContext:      req.ChatContext,
+			GitRef:           req.GitRef,
+			BuildParams:      req.BuildParams,
+			HarborProject:    req.HarborProject,
+			HarborRepository: req.HarborRepository,
+			ArtifactTag:      req.ArtifactTag,
 		},
 	})
 }
@@ -333,14 +351,44 @@ func (s *DeployService) createDeployRequestWithIdentity(c *gin.Context, identity
 	}
 
 	requestNo := s.generateRequestNo()
+	workflowKind := strings.TrimSpace(req.WorkflowKind)
+	if workflowKind == "" {
+		workflowKind = model.WorkflowKindDeployOnly
+	}
+
+	if workflowKind == model.WorkflowKindBuildDeploy {
+		if req.ApplicationID == nil || *req.ApplicationID == 0 {
+			result.Failed(c, 400, "build_deploy 工作流需要指定应用ID")
+			return
+		}
+		if strings.TrimSpace(req.GitRef) == "" {
+			result.Failed(c, 400, "build_deploy 工作流需要指定 Git 引用")
+			return
+		}
+		if target.JenkinsServerID == nil || *target.JenkinsServerID == 0 {
+			result.Failed(c, 400, "build_deploy 工作流需要部署目标配置 Jenkins 服务器")
+			return
+		}
+		if target.HarborServerID == nil || *target.HarborServerID == 0 {
+			result.Failed(c, 400, "build_deploy 工作流需要部署目标配置 Harbor 服务器")
+			return
+		}
+		if strings.TrimSpace(req.HarborProject) == "" || strings.TrimSpace(req.HarborRepository) == "" {
+			result.Failed(c, 400, "build_deploy 工作流需要指定 Harbor 项目和仓库")
+			return
+		}
+	}
+
 	deployRequest := &model.DeployRequest{
 		RequestNo:                      requestNo,
 		Source:                         identity.Source,
 		RequesterExternalType:          identity.RequesterExternalType,
 		RequesterExternalID:            identity.RequesterExternalID,
 		Mode:                           req.Mode,
+		WorkflowKind:                   workflowKind,
 		ResourceType:                   req.ResourceType,
 		ClusterTargetID:                req.ClusterTargetID,
+		ApplicationID:                  req.ApplicationID,
 		ReleaseName:                    releaseName,
 		Namespace:                      namespace,
 		Image:                          req.Image,
@@ -356,6 +404,7 @@ func (s *DeployService) createDeployRequestWithIdentity(c *gin.Context, identity
 		RequestStatus:                  model.DeployRequestStatusPendingApproval,
 		ApprovalStatus:                 model.ApprovalStatusPending,
 		ExecutionStatus:                model.ExecutionStatusPending,
+		PipelineStatus:                 model.PipelineStatusPending,
 		RequestedBy:                    identity.RequestedBy,
 		RequesterDisplayName:           identity.RequesterDisplayName,
 		ApproverAdminID:                approverID,
@@ -372,8 +421,62 @@ func (s *DeployService) createDeployRequestWithIdentity(c *gin.Context, identity
 		return
 	}
 
+	if deployRequest.WorkflowKind == model.WorkflowKindBuildDeploy {
+		if err := s.createPipelineRunForRequest(deployRequest, req); err != nil {
+			log.Printf("[DeployService] 创建流水线运行失败 requestNo=%s err=%v", deployRequest.RequestNo, err)
+			_ = s.dao.UpdateDeployRequest(deployRequest.ID, map[string]interface{}{
+				"request_status":   model.DeployRequestStatusFailed,
+				"execution_status": model.ExecutionStatusFailed,
+				"pipeline_status":  model.PipelineStatusFailed,
+				"updated_at":       time.Now(),
+			})
+			result.Failed(c, 500, "创建流水线运行失败: "+err.Error())
+			return
+		}
+	}
+
 	deployRequest = s.tryDispatchApproval(deployRequest)
 	result.Success(c, deployRequest)
+}
+
+func (s *DeployService) createPipelineRunForRequest(req *model.DeployRequest, buildReq *model.CreateDeployRequest) error {
+	target, err := s.dao.GetClusterTargetByID(req.ClusterTargetID)
+	if err != nil {
+		return fmt.Errorf("读取部署目标失败: %v", err)
+	}
+
+	pipelineSvc := NewPipelineService(s.db)
+	createReq := &model.CreatePipelineRunRequest{
+		RequestID:        req.ID,
+		ApplicationID:    defaultUint(req.ApplicationID),
+		JenkinsServerID:  defaultUint(target.JenkinsServerID),
+		HarborServerID:   defaultUint(target.HarborServerID),
+		GitRef:           strings.TrimSpace(buildReq.GitRef),
+		BuildParams:      buildReq.BuildParams,
+		HarborProject:    strings.TrimSpace(buildReq.HarborProject),
+		HarborRepository: strings.TrimSpace(buildReq.HarborRepository),
+		ArtifactTag:      strings.TrimSpace(buildReq.ArtifactTag),
+	}
+	if req.ApplicationID != nil && *req.ApplicationID > 0 {
+		createReq.ApplicationID = *req.ApplicationID
+		jobName := s.getJenkinsJobNameForApp(*req.ApplicationID, target.EnvType)
+		if jobName != "" {
+			createReq.JenkinsJobNameSnapshot = jobName
+		}
+	}
+	_, err = pipelineSvc.CreatePipelineRun(createReq)
+	return err
+}
+
+func (s *DeployService) getJenkinsJobNameForApp(appID uint, envType string) string {
+	if appID == 0 {
+		return ""
+	}
+	var jenkinsEnv appmodel.JenkinsEnv
+	if err := s.db.Where("app_id = ? AND env_name = ?", appID, envType).First(&jenkinsEnv).Error; err != nil {
+		return ""
+	}
+	return strings.TrimSpace(jenkinsEnv.JobName)
 }
 
 func (s *DeployService) ListDeployRequests(c *gin.Context, query *model.DeployRequestListQuery) {
@@ -520,7 +623,11 @@ func (s *DeployService) ExecuteDeployRequest(c *gin.Context, id uint, req *model
 		result.Failed(c, 404, "部署申请不存在")
 		return
 	}
-	updated, record, err := s.executeDeployRequestInternal(deployRequest, req.Comment)
+	if deployRequest.WorkflowKind == model.WorkflowKindBuildDeploy {
+		result.Failed(c, 400, "build_deploy 工作流必须通过流水线执行，禁止直接部署")
+		return
+	}
+	updated, record, err := s.executeDeployRequestInternal(deployRequest, req.Comment, false)
 	if err != nil {
 		result.Failed(c, 400, err.Error())
 		return
@@ -537,10 +644,13 @@ func AutoExecuteApprovedDeployRequest(db *gorm.DB, requestID uint, comment strin
 	if err != nil {
 		return nil, nil, err
 	}
-	return service.executeDeployRequestInternal(deployRequest, comment)
+	if deployRequest.WorkflowKind == model.WorkflowKindBuildDeploy {
+		return nil, nil, fmt.Errorf("build_deploy 工作流必须通过流水线执行")
+	}
+	return service.executeDeployRequestInternal(deployRequest, comment, false)
 }
 
-func (s *DeployService) executeDeployRequestInternal(deployRequest *model.DeployRequest, comment string) (*model.DeployRequest, *model.ExecutionRecord, error) {
+func (s *DeployService) executeDeployRequestInternal(deployRequest *model.DeployRequest, comment string, skipNotification bool) (*model.DeployRequest, *model.ExecutionRecord, error) {
 	if deployRequest == nil {
 		return nil, nil, fmt.Errorf("部署申请不存在")
 	}
@@ -687,7 +797,7 @@ func (s *DeployService) executeDeployRequestInternal(deployRequest *model.Deploy
 	if err != nil {
 		return nil, nil, fmt.Errorf("获取更新后的部署申请失败")
 	}
-	if s.notifier != nil {
+	if !skipNotification && s.notifier != nil {
 		if notifyErr := s.notifier.NotifyExecutionResult(updated, record); notifyErr != nil {
 			log.Printf("[DeployNotifier] requestNo=%s notify failed: %v", updated.RequestNo, notifyErr)
 		}
@@ -740,9 +850,9 @@ func (s *DeployService) GetAgentStatusByRequestNo(c *gin.Context, requestNo stri
 	// to avoid returning stale errors from a previous attempt that is being retried.
 	var errMsg string
 	if req.ExecutionStatus == model.ExecutionStatusFailed {
-		records, listErr := s.dao.ListExecutionRecordsByRequestID(req.ID)
-		if listErr == nil && len(records) > 0 {
-			errMsg = execErrorMessage(&records[0])
+		record, recordErr := s.dao.GetLatestExecutionRecordByRequestID(req.ID)
+		if recordErr == nil {
+			errMsg = execErrorMessage(record)
 		}
 	}
 
@@ -1022,11 +1132,15 @@ func (s *DeployService) syncApprovalStatusInternal(c *gin.Context, deployRequest
 	}
 	var execution *model.ExecutionRecord
 	if updated.ApprovalStatus == model.ApprovalStatusApproved && updated.ExecutionStatus == model.ExecutionStatusPending {
-		executionComment := "auto execute after dingtalk approval sync"
-		updated, execution, err = s.executeDeployRequestInternal(updated, executionComment)
-		if err != nil {
-			result.Failed(c, 500, "审批已通过但自动执行失败: "+err.Error())
-			return
+		if updated.WorkflowKind == model.WorkflowKindBuildDeploy {
+			log.Printf("[DeployService] build_deploy 工作流审批通过，交由流水线调度器执行 requestNo=%s", updated.RequestNo)
+		} else {
+			executionComment := "auto execute after dingtalk approval sync"
+			updated, execution, err = s.executeDeployRequestInternal(updated, executionComment, false)
+			if err != nil {
+				result.Failed(c, 500, "审批已通过但自动执行失败: "+err.Error())
+				return
+			}
 		}
 	}
 	result.Success(c, map[string]interface{}{
@@ -1262,6 +1376,13 @@ func defaultString(value, fallback string) string {
 		return fallback
 	}
 	return value
+}
+
+func defaultUint(value *uint) uint {
+	if value == nil {
+		return 0
+	}
+	return *value
 }
 
 func executionDetailJSON(comment string) string {

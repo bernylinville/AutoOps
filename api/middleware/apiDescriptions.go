@@ -65,9 +65,9 @@ func getDescriptionMap() map[string]string {
 		"/api/v1/sysOperationLog/batchDelete": "批量删除操作日志",
 		"/api/v1/sysOperationLog/clean":       "清空操作日志",
 
-		"/api/v1/auditLog/delete":      "删除审计日志",
+		"/api/v1/auditLog/delete":       "删除审计日志",
 		"/api/v1/auditLog/batch/delete": "批量删除审计日志",
-		"/api/v1/auditLog/clean":       "清空审计日志",
+		"/api/v1/auditLog/clean":        "清空审计日志",
 
 		// ========== 配置中心 ==========
 		"/api/v1/config/ecsauthadd":    "新增ECS认证",
@@ -84,11 +84,11 @@ func getDescriptionMap() map[string]string {
 		"/api/v1/cmdb/groupupdate": "修改资产分组",
 		"/api/v1/cmdb/groupdelete": "删除资产分组",
 
-		"/api/v1/cmdb/hostcreate":  "创建主机",
-		"/api/v1/cmdb/hostupdate":  "修改主机",
-		"/api/v1/cmdb/hostdelete":  "删除主机",
-		"/api/v1/cmdb/hostimport":  "导入主机",
-		"/api/v1/cmdb/hostsync":    "同步主机信息",
+		"/api/v1/cmdb/hostcreate": "创建主机",
+		"/api/v1/cmdb/hostupdate": "修改主机",
+		"/api/v1/cmdb/hostdelete": "删除主机",
+		"/api/v1/cmdb/hostimport": "导入主机",
+		"/api/v1/cmdb/hostsync":   "同步主机信息",
 
 		"/api/v1/cmdb/hostcloudcreatealiyun":  "创建阿里云主机",
 		"/api/v1/cmdb/hostcloudcreatetencent": "创建腾讯云主机",
@@ -122,11 +122,14 @@ func getDescriptionMap() map[string]string {
 		"/api/v1/monitor/agent/uninstall": "卸载Agent",
 
 		// ========== 应用管理 ==========
-		"/api/v1/apps":                          "创建应用",
-		"/api/v1/apps/deployment/quick":         "创建快速发布",
-		"/api/v1/apps/deployment/execute":       "执行快速发布",
-		"/api/v1/apps/jenkins-job/validate":     "验证Jenkins任务",
-		"/api/v1/jenkins/test-connection":       "测试Jenkins连接",
+		"/api/v1/apps":                                "创建应用",
+		"/api/v1/apps/deployment/quick":               "创建快速发布",
+		"/api/v1/apps/deployment/execute":             "执行快速发布",
+		"/api/v1/apps/jenkins-job/validate":           "验证Jenkins任务",
+		"/api/v1/jenkins/test-connection":             "测试Jenkins连接",
+		"/api/v1/deploy/cluster-targets":              "获取部署目标列表",
+		"/api/v1/deploy/gitops/validate-working-tree": "校验GitOps本地工作树",
+		"/api/v1/integrations/agent/deploy-requests":  "Agent创建部署申请",
 
 		// ========== N9E / VM 监控 ==========
 		"/api/v1/n9e/config":      "N9E 配置管理",
@@ -135,12 +138,12 @@ func getDescriptionMap() map[string]string {
 		"/api/v1/n9e/vm/overview": "VM 集群监控总览",
 
 		// ========== FlashDuty 告警中心 ==========
-		"/api/v1/flashduty/test-connection":   "FlashDuty 连接测试",
-		"/api/v1/flashduty/alerts/summary":    "FlashDuty 告警概况",
-		"/api/v1/flashduty/incidents/active":  "FlashDuty 故障列表",
-		"/api/v1/flashduty/oncall/today":      "FlashDuty 今日值班",
-		"/api/v1/flashduty/insight/metrics":   "FlashDuty SRE指标",
-		"/api/v1/flashduty/insight/trend":     "FlashDuty 趋势数据",
+		"/api/v1/flashduty/test-connection":  "FlashDuty 连接测试",
+		"/api/v1/flashduty/alerts/summary":   "FlashDuty 告警概况",
+		"/api/v1/flashduty/incidents/active": "FlashDuty 故障列表",
+		"/api/v1/flashduty/oncall/today":     "FlashDuty 今日值班",
+		"/api/v1/flashduty/insight/metrics":  "FlashDuty SRE指标",
+		"/api/v1/flashduty/insight/trend":    "FlashDuty 趋势数据",
 	}
 
 	return descriptions
@@ -170,14 +173,18 @@ func getMethodBasedDescriptionMap() map[string]string {
 		"delete:/api/v1/cmdb/database": "删除数据库",
 
 		// SQL执行（RESTful 风格）
-		"post:/api/v1/cmdb/sql":   "执行SQL插入",
-		"put:/api/v1/cmdb/sql":    "执行SQL更新",
-		"delete:/api/v1/cmdb/sql": "执行SQL删除",
+		"post:/api/v1/cmdb/sql":         "执行SQL插入",
+		"put:/api/v1/cmdb/sql":          "执行SQL更新",
+		"delete:/api/v1/cmdb/sql":       "执行SQL删除",
 		"post:/api/v1/cmdb/sql/select":  "执行SQL查询",
 		"post:/api/v1/cmdb/sql/execute": "执行原生SQL",
 
 		// K8s集群管理（RESTful 风格）
 		"post:/api/v1/k8s/cluster": "创建K8s集群",
+		// Deploy 部署中心（RESTful 风格）
+		"post:/api/v1/deploy/cluster-targets": "创建部署目标",
+		"post:/api/v1/deploy/requests":        "创建部署申请",
+		"get:/api/v1/deploy/requests":         "获取部署申请列表",
 	}
 }
 
@@ -209,6 +216,20 @@ func matchDynamicRoute(url string) string {
 		{regexp.MustCompile(`^/api/v1/apps/\d+/jenkins-envs$`), "添加Jenkins环境配置"},
 		{regexp.MustCompile(`^/api/v1/apps/\d+/jenkins-envs/\d+$`), "操作Jenkins环境配置"},
 		{regexp.MustCompile(`^/api/v1/apps/deployment/\d+$`), "操作快速发布"},
+		{regexp.MustCompile(`^/api/v1/deploy/cluster-targets/\d+$`), "操作部署目标"},
+		{regexp.MustCompile(`^/api/v1/deploy/cluster-targets/\d+/validate-direct-credential$`), "校验部署目标直连凭据"},
+		{regexp.MustCompile(`^/api/v1/deploy/cluster-targets/\d+/validate-gitops-repo$`), "校验部署目标GitOps仓库"},
+		{regexp.MustCompile(`^/api/v1/deploy/requests/\d+$`), "查看部署申请"},
+		{regexp.MustCompile(`^/api/v1/deploy/requests/\d+/executions$`), "查看部署执行记录"},
+		{regexp.MustCompile(`^/api/v1/deploy/requests/\d+/dispatch-approval$`), "重发部署审批投递"},
+		{regexp.MustCompile(`^/api/v1/deploy/requests/\d+/sync-approval$`), "同步部署审批状态"},
+		{regexp.MustCompile(`^/api/v1/deploy/requests/\d+/approve$`), "审批通过部署申请"},
+		{regexp.MustCompile(`^/api/v1/deploy/requests/\d+/reject$`), "审批拒绝部署申请"},
+		{regexp.MustCompile(`^/api/v1/deploy/requests/\d+/execute$`), "执行部署申请"},
+		{regexp.MustCompile(`^/api/v1/deploy/requests/\d+/cleanup$`), "清理Direct部署资源"},
+		{regexp.MustCompile(`^/api/v1/integrations/agent/deploy-requests/[^/]+$`), "Agent查询部署申请"},
+		{regexp.MustCompile(`^/api/v1/integrations/agent/deploy-requests/[^/]+/dispatch-approval$`), "Agent重发部署审批投递"},
+		{regexp.MustCompile(`^/api/v1/integrations/agent/deploy-requests/[^/]+/sync-approval$`), "Agent同步部署审批状态"},
 
 		// Jenkins相关
 		{regexp.MustCompile(`^/api/v1/jenkins/\d+/jobs/[^/]+/start$`), "启动Jenkins任务"},

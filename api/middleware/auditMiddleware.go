@@ -31,7 +31,11 @@ func (r *responseCapture) WriteHeader(code int) {
 }
 
 // AuditMiddleware 审计日志中间件
-func AuditMiddleware() gin.HandlerFunc {
+func AuditMiddleware(sources ...string) gin.HandlerFunc {
+	source := "ui"
+	if len(sources) > 0 && strings.TrimSpace(sources[0]) != "" {
+		source = strings.TrimSpace(sources[0])
+	}
 	return func(c *gin.Context) {
 		method := strings.ToUpper(c.Request.Method)
 
@@ -70,9 +74,13 @@ func AuditMiddleware() gin.HandlerFunc {
 
 		duration := time.Since(startTime).Milliseconds()
 
-		// 仅在认证成功时记录
+		username := source
+		adminID := uint(0)
 		sysAdmin, err := jwt.GetAdmin(c)
-		if err != nil || sysAdmin == nil {
+		if err == nil && sysAdmin != nil {
+			adminID = sysAdmin.ID
+			username = sysAdmin.Username
+		} else if source != "agent" {
 			return
 		}
 
@@ -82,8 +90,8 @@ func AuditMiddleware() gin.HandlerFunc {
 		description := GetAPIDescription(url, strings.ToLower(method))
 
 		auditLog := model.SysAuditLog{
-			AdminId:     sysAdmin.ID,
-			Username:    sysAdmin.Username,
+			AdminId:     adminID,
+			Username:    username,
 			Module:      module,
 			OperType:    operType,
 			Method:      method,
@@ -116,28 +124,31 @@ func inferModule(url string) string {
 	}
 
 	first := strings.ToLower(parts[0])
+	if first == "deploy" || strings.HasPrefix(url, "/api/v1/integrations/agent/deploy") {
+		return "deploy"
+	}
 	moduleMap := map[string]string{
-		"admin":          "system",
-		"role":           "system",
-		"menu":           "system",
-		"dept":           "system",
-		"post":           "system",
+		"admin":           "system",
+		"role":            "system",
+		"menu":            "system",
+		"dept":            "system",
+		"post":            "system",
 		"sysoperationlog": "system",
-		"auditlog":       "system",
-		"syslogininfo":   "system",
-		"cmdb":           "cmdb",
-		"config":         "config",
-		"monitor":        "monitor",
-		"n9e":            "n9e",
-		"k8s":            "k8s",
-		"task":           "task",
-		"template":       "task",
-		"taskjob":        "task",
-		"tool":           "tool",
-		"apps":           "app",
-		"jenkins":        "app",
-		"dashboard":      "dashboard",
-		"flashduty":      "monitor",
+		"auditlog":        "system",
+		"syslogininfo":    "system",
+		"cmdb":            "cmdb",
+		"config":          "config",
+		"monitor":         "monitor",
+		"n9e":             "n9e",
+		"k8s":             "k8s",
+		"task":            "task",
+		"template":        "task",
+		"taskjob":         "task",
+		"tool":            "tool",
+		"apps":            "app",
+		"jenkins":         "app",
+		"dashboard":       "dashboard",
+		"flashduty":       "monitor",
 	}
 
 	if module, ok := moduleMap[first]; ok {

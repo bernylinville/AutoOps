@@ -2,15 +2,16 @@
 package db
 
 import (
+	appmodel "dodevops-api/api/app/model"
 	cmdbmodel "dodevops-api/api/cmdb/model"
 	ccmodel "dodevops-api/api/configcenter/model"
-	monitormodel "dodevops-api/api/monitor/model"
-	taskmodel "dodevops-api/api/task/model"
+	deploymodel "dodevops-api/api/deploy/model"
 	k8smodel "dodevops-api/api/k8s/model"
-	appmodel "dodevops-api/api/app/model"
-	systemmodel "dodevops-api/api/system/model"
-	toolmodel "dodevops-api/api/tool/model"
+	monitormodel "dodevops-api/api/monitor/model"
 	n9emodel "dodevops-api/api/n9e/model"
+	systemmodel "dodevops-api/api/system/model"
+	taskmodel "dodevops-api/api/task/model"
+	toolmodel "dodevops-api/api/tool/model"
 
 	"gorm.io/gorm"
 )
@@ -59,6 +60,15 @@ var models = []interface{}{
 	&monitormodel.Agent{},
 	// K8s models
 	&k8smodel.KubeCluster{},
+	// Deploy models
+	&deploymodel.ClusterTarget{},
+	&deploymodel.DeployRequest{},
+	&deploymodel.ApprovalRecord{},
+	&deploymodel.ExecutionRecord{},
+	&deploymodel.ResourceOwner{},
+	&deploymodel.DeployNotification{},
+	&deploymodel.PipelineRun{},
+	&deploymodel.PipelineStageRecord{},
 	// App models
 	&appmodel.Application{},
 	&appmodel.JenkinsEnv{},

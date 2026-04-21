@@ -11,14 +11,16 @@ import (
 
 // 总配文件
 type config struct {
-	Server        server        `yaml:"server"`
-	Db            db            `yaml:"db"`
-	Redis         redis         `yaml:"redis"`
-	ImageSettings imageSettings `yaml:"imageSettings"`
-	Log           log           `yaml:"log"`
-	Monitor       monitor       `yaml:"monitor"`
-	FlashDuty     flashduty     `yaml:"flashduty"`
-	Dingtalk      dingtalk      `yaml:"dingtalk"`
+	Server           server           `yaml:"server"`
+	Db               db               `yaml:"db"`
+	Redis            redis            `yaml:"redis"`
+	ImageSettings    imageSettings    `yaml:"imageSettings"`
+	Log              log              `yaml:"log"`
+	Monitor          monitor          `yaml:"monitor"`
+	FlashDuty        flashduty        `yaml:"flashduty"`
+	Dingtalk         dingtalk         `yaml:"dingtalk"`
+	DingtalkApproval dingtalkApproval `yaml:"dingtalkApproval"`
+	Integrations     integrations     `yaml:"integrations"`
 }
 
 // 监控配置
@@ -44,6 +46,51 @@ type flashduty struct {
 // 钉钉机器人配置
 type dingtalk struct {
 	WebhookURL string `yaml:"webhook_url"`
+}
+
+// 钉钉审批卡片配置
+type dingtalkApproval struct {
+	ClientID            string                        `yaml:"client_id"`
+	ClientSecret        string                        `yaml:"client_secret"`
+	ProcessCode         string                        `yaml:"process_code"`
+	OriginatorDeptID    int64                         `yaml:"originator_dept_id"`
+	MicroappAgentID     int64                         `yaml:"microapp_agent_id"`
+	RedirectURL         string                        `yaml:"redirect_url"`
+	PollIntervalSeconds int                           `yaml:"poll_interval_seconds"`
+	FieldMappings       dingtalkApprovalFieldMappings `yaml:"field_mappings"`
+}
+
+type dingtalkApprovalFieldMappings struct {
+	RequestNo     string `yaml:"request_no"`
+	ReleaseName   string `yaml:"release_name"`
+	ClusterTarget string `yaml:"cluster_target"`
+	DeployMode    string `yaml:"deploy_mode"`
+	ResourceType  string `yaml:"resource_type"`
+	Image         string `yaml:"image"`
+	Namespace     string `yaml:"namespace"`
+	TTLHours      string `yaml:"ttl_hours"`
+	Reason        string `yaml:"reason"`
+}
+
+type integrations struct {
+	Agent     agentIntegration     `yaml:"agent"`
+	GitOps    gitOpsIntegration    `yaml:"gitops"`
+	DeployBot deployBotIntegration `yaml:"deploy_bot"`
+}
+
+type agentIntegration struct {
+	BearerToken string `yaml:"bearer_token"`
+}
+
+type gitOpsIntegration struct {
+	LocalCheckoutPath string `yaml:"local_checkout_path"`
+}
+
+type deployBotIntegration struct {
+	Provider   string `yaml:"provider"`
+	Enabled    bool   `yaml:"enabled"`
+	WebhookURL string `yaml:"webhook_url"`
+	Secret     string `yaml:"secret"`
 }
 
 // Agent配置

@@ -45,12 +45,18 @@ func NewGormLogger() logger.Interface {
 func SetupDBLink() error {
 	var err error
 	var dbConfig = config.Config.Db
-	dsn := fmt.Sprintf("host=%s port=%d user=%s password=%s dbname=%s sslmode=disable TimeZone=Asia/Shanghai",
+	sslMode := os.Getenv("DB_SSL_MODE")
+	if sslMode == "" {
+		sslMode = "require"
+	}
+
+	dsn := fmt.Sprintf("host=%s port=%d user=%s password=%s dbname=%s sslmode=%s TimeZone=Asia/Shanghai",
 		dbConfig.Host,
 		dbConfig.Port,
 		dbConfig.Username,
 		dbConfig.Password,
-		dbConfig.Db)
+		dbConfig.Db,
+		sslMode)
 	Db, err = gorm.Open(postgres.Open(dsn), &gorm.Config{
 		Logger:                                   NewGormLogger(),
 		DisableForeignKeyConstraintWhenMigrating: true,

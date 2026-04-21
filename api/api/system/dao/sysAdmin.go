@@ -53,16 +53,17 @@ func CreateSysAdmin(dto model.AddSysAdminDto) bool {
 		return false
 	}
 	sysAdmin := model.SysAdmin{
-		PostId:     dto.PostId,
-		DeptId:     dto.DeptId,
-		Username:   dto.Username,
-		Nickname:   dto.Nickname,
-		Password:   hashPasswordOrPanic(dto.Password),
-		Phone:      dto.Phone,
-		Email:      dto.Email,
-		Note:       dto.Note,
-		Status:     dto.Status,
-		CreateTime: util.HTime{Time: time.Now()},
+		PostId:         dto.PostId,
+		DeptId:         dto.DeptId,
+		Username:       dto.Username,
+		Nickname:       dto.Nickname,
+		Password:       hashPasswordOrPanic(dto.Password),
+		Phone:          dto.Phone,
+		Email:          dto.Email,
+		DingtalkUserID: dto.DingtalkUserID,
+		Note:           dto.Note,
+		Status:         dto.Status,
+		CreateTime:     util.HTime{Time: time.Now()},
 	}
 
 	err := Db.Transaction(func(tx *gorm.DB) error {
@@ -106,6 +107,9 @@ func UpdateSysAdmin(dto model.UpdateSysAdminDto) (sysAdmin model.SysAdmin) {
 	}
 	if dto.Email != "" {
 		sysAdmin.Email = dto.Email
+	}
+	if dto.DingtalkUserID != "" {
+		sysAdmin.DingtalkUserID = dto.DingtalkUserID
 	}
 	if dto.Note != "" {
 		sysAdmin.Note = dto.Note
@@ -182,6 +186,9 @@ func UpdatePersonal(dto model.UpdatePersonalDto) (sysAdmin model.SysAdmin) {
 	}
 	if dto.Email != "" {
 		sysAdmin.Email = dto.Email
+	}
+	if dto.DingtalkUserID != "" {
+		sysAdmin.DingtalkUserID = dto.DingtalkUserID
 	}
 	Db.Save(&sysAdmin)
 	return sysAdmin

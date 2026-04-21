@@ -1,0 +1,24 @@
+[37mDEBU[0m[2026/04/21 - 18:30:17] Logger initialized with TextFormatter.       
+[31mERRO[0m[2026/04/21 - 18:30:17] Harbor request failed: method=GET endpoint=/projects/library/repositories/nginx%2Fdemo/artifacts/v1.0.0?with_scan_overview=true&with_tag=true err=Get "http://127.0.0.1:39599/api/v2.0/projects/library/repositories/nginx%2Fdemo/artifacts/v1.0.0?with_scan_overview=true&with_tag=true": EOF 
+[36mINFO[0m[2026/04/21 - 18:30:17] triggered Harbor scan: server=1 project=library repository=nginx/demo digest=sha256:poll 
+[37mDEBU[0m[2026/04/21 - 18:30:17] Logger initialized with TextFormatter.       
+[31mERRO[0m[2026/04/21 - 18:30:17] Harbor request failed: method=GET endpoint=/projects/library/repositories/nginx%2Fdemo/artifacts/v1.0.0?with_scan_overview=true&with_tag=true err=Get "http://127.0.0.1:40119/api/v2.0/projects/library/repositories/nginx%2Fdemo/artifacts/v1.0.0?with_scan_overview=true&with_tag=true": EOF 
+[36mINFO[0m[2026/04/21 - 18:30:17] triggered Harbor scan: server=1 project=library repository=nginx/demo digest=sha256:poll 
+[37mDEBU[0m[2026/04/21 - 18:30:42] Logger initialized with TextFormatter.       
+[36mINFO[0m[2026/04/21 - 18:30:42] triggered Harbor scan: server=1 project=library repository=nginx/demo digest=sha256:poll 
+[37mDEBU[0m[2026/04/21 - 18:30:42] Logger initialized with TextFormatter.       
+[36mINFO[0m[2026/04/21 - 18:30:42] triggered Harbor scan: server=1 project=library repository=nginx/demo digest=sha256:poll 
+[37mDEBU[0m[2026/04/21 - 18:31:20] Logger initialized with TextFormatter.       
+[37mDEBU[0m[2026/04/21 - 18:31:20] Logger initialized with TextFormatter.       
+[37mDEBU[0m[2026/04/21 - 18:31:37] Logger initialized with TextFormatter.       
+[36mINFO[0m[2026/04/21 - 18:31:37] triggered Harbor scan: server=1 project=library repository=nginx/demo digest=sha256:poll 
+[37mDEBU[0m[2026/04/21 - 18:31:37] Logger initialized with TextFormatter.       
+[37mDEBU[0m[2026/04/21 - 18:32:03] Logger initialized with TextFormatter.       
+[36mINFO[0m[2026/04/21 - 18:32:03] triggered Harbor scan: server=1 project=library repository=nginx/demo digest=sha256:poll 
+[37mDEBU[0m[2026/04/21 - 18:32:03] Logger initialized with TextFormatter.       
+[37mDEBU[0m[2026/04/21 - 18:32:40] Logger initialized with TextFormatter.       
+[36mINFO[0m[2026/04/21 - 18:32:40] triggered Harbor scan: server=1 project=library repository=nginx/demo digest=sha256:poll 
+[37mDEBU[0m[2026/04/21 - 18:32:40] Logger initialized with TextFormatter.       
+[37mDEBU[0m[2026/04/21 - 18:33:19] Logger initialized with TextFormatter.       
+[37mDEBU[0m[2026/04/21 - 18:46:53] Logger initialized with TextFormatter.       
+[36mINFO[0m[2026/04/21 - 18:46:53] triggered Harbor scan: server=1 project=library repository=nginx/demo digest=sha256:poll 

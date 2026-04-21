@@ -2,6 +2,7 @@ package service
 
 import (
 	"bytes"
+	"dodevops-api/pkg/dingtalkbot"
 	"encoding/json"
 	"fmt"
 	"io"
@@ -115,15 +116,12 @@ func (n *Notifier) SendDingtalk(configJSON string, msg AlertMessage) error {
 		text += fmt.Sprintf("- **描述**: %s\n", desc)
 	}
 
-	payload := map[string]interface{}{
-		"msgtype": "markdown",
-		"markdown": map[string]interface{}{
-			"title": title,
-			"text":  text,
-		},
-	}
-
-	return n.postJSON(config.WebhookURL, payload)
+	client := dingtalkbot.NewClient(dingtalkbot.Config{
+		WebhookURL: config.WebhookURL,
+		Secret:     config.Secret,
+		Timeout:    10 * time.Second,
+	})
+	return client.SendMarkdown(title, text, nil, nil)
 }
 
 // SendEmail 发送邮件通知

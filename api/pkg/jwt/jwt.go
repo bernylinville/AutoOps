@@ -2,13 +2,13 @@
 package jwt
 
 import (
-	"errors"
-	"fmt"
-	"os"
 	"dodevops-api/api/system/model"
 	"dodevops-api/common/constant"
+	"errors"
+	"fmt"
 	"github.com/dgrijalva/jwt-go"
 	"github.com/gin-gonic/gin"
+	"os"
 	"time"
 )
 
@@ -41,13 +41,14 @@ var (
 // 根据用户信息生成token
 func GenerateTokenByAdmin(admin model.SysAdmin) (string, error) {
 	var jwtAdmin = model.JwtAdmin{
-		ID:       admin.ID,
-		Username: admin.Username,
-		Nickname: admin.Nickname,
-		Icon:     admin.Icon,
-		Email:    admin.Email,
-		Phone:    admin.Phone,
-		Note:     admin.Note,
+		ID:             admin.ID,
+		Username:       admin.Username,
+		Nickname:       admin.Nickname,
+		Icon:           admin.Icon,
+		Email:          admin.Email,
+		Phone:          admin.Phone,
+		DingtalkUserID: admin.DingtalkUserID,
+		Note:           admin.Note,
 	}
 	c := userStdClaims{
 		jwtAdmin,
