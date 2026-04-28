@@ -6,12 +6,12 @@ server:
 
 # 数据库配置
 db:
-  dialects: mysql
+  dialects: postgres
   host: 127.0.0.1
-  port: 3306
+  port: 5432
   db: autoops
-  username: root
-  password: your_mysql_password
+  username: devops
+  password: your_postgres_password
   charset: utf8
   maxIdle: 50
   maxOpen: 150
@@ -19,11 +19,12 @@ db:
 # redis配置
 redis:
   address: 127.0.0.1:6379
-  password: "your_redis_password"
+  password: "your_valkey_password"
 
 # 图片地址
 imageSettings:
   uploadDir: ./upload/
+  imageHost: ""
 
 # log日志配置
 log:
@@ -32,36 +33,28 @@ log:
   model: console
 
 # 监控配置
+# AutoOps 不再维护内置 Prometheus / Pushgateway。
+# 基础主机指标来自已接入的 N9E / VictoriaMetrics，告警通知来自现有 FlashDuty。
 monitor:
-  prometheus:
-    url: "http://127.0.0.1:9090"
-  pushgateway:
-    url: "http://127.0.0.1:9091"
   agent:
     heartbeat_server_url: "http://127.0.0.1:8000/api/v1/monitor/agent/heartbeat"
     heartbeat_token: "your_heartbeat_token"
-  webhook:
-    token: "your_webhook_token"
 
 # FlashDuty 告警中心配置
-# 获取 APP Key: FlashDuty 控制台 → 账户设置 → APP Key
 flashduty:
-  app_key: "c253b27163f9da8d19760086fb6c48de27"
-  integration_key: "mock_integration_key_here"
+  app_key: ""
+  integration_key: ""
   base_url: "https://api.flashcat.cloud"
   timeout: 30
 
 # 钉钉告警机器人配置
-# 获取 Webhook: 钉钉群 → 群设置 → 智能群助手 → 添加机器人 → 自定义
-# 留空则不推送钉钉通知
 dingtalk:
-  webhook_url: "https://oapi.dingtalk.com/robot/send?access_token=YOUR_TOKEN"
+  webhook_url: ""
 
 # 钉钉审批卡片配置
-# 与告警机器人分离，供 AutoOps 发起钉钉原生审批实例
 dingtalkApproval:
-  client_id: "your_dingtalk_approval_app_key"
-  client_secret: "your_dingtalk_approval_app_secret"
+  client_id: ""
+  client_secret: ""
   process_code: ""
   originator_dept_id: 0
   microapp_agent_id: 0
@@ -78,8 +71,6 @@ dingtalkApproval:
     ttl_hours: ""
     reason: ""
 
-# Agent 集成配置
-# 供 Hermes custom tool 或其他 agent 通过机器入口调用 AutoOps API
 integrations:
   agent:
     bearer_token: "change-me-agent-token"
@@ -88,5 +79,8 @@ integrations:
   deploy_bot:
     provider: dingtalk
     enabled: false
-    webhook_url: "https://oapi.dingtalk.com/robot/send?access_token=YOUR_TOKEN"
+    webhook_url: ""
     secret: ""
+  dingtalk:
+    inbound:
+      enabled: false # v1 feature-flag skeleton (default OFF); set true to enable AutoOps-side inbound parsing (v2 follow-up)
