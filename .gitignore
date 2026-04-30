@@ -23,7 +23,8 @@ api/config.yaml
 docker/api/config.yaml
 
 # AI tools config
-.agents/
+.agents/*
+!.agents/skills/
 .claude/
 .codex
 .rtk/
