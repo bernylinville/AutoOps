@@ -1,0 +1,23 @@
+secret:
+  mode: existing
+  existingSecret:
+    name: autoops-runtime-secrets
+
+postgres:
+  persistence:
+    useDefaultStorageClass: true
+
+valkey:
+  persistence:
+    useDefaultStorageClass: true
+
+upload:
+  persistence:
+    useDefaultStorageClass: true
+
+gitopsWorkingTree:
+  bootstrapMode: disabled
+  sshSecretName: autoops-gitops-ssh
+  persistence:
+    enabled: true
+    existingClaim: autoops-gitops-working-tree

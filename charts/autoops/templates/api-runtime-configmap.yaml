@@ -1,0 +1,134 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ include "autoops.fullname" . }}-api-runtime
+  labels:
+    {{- include "autoops.labels" . | nindent 4 }}
+data:
+  entrypoint.sh: |
+    #!/bin/sh
+    set -eu
+
+    template=/app/config.template.yaml
+    output=/app/config.yaml
+
+    mkdir -p /app/log /app/upload /app/upload/xlsl /home/devops/.ssh
+
+    escape_sed_replacement() {
+      printf '%s' "$1" | sed 's/[&|\\]/\\&/g'
+    }
+
+    db_host=$(escape_sed_replacement "${DB_HOST}")
+    db_port=$(escape_sed_replacement "${DB_PORT}")
+    db_name=$(escape_sed_replacement "${DB_NAME}")
+    db_user=$(escape_sed_replacement "${DB_USER}")
+    db_password=$(escape_sed_replacement "${DB_PASSWORD}")
+    redis_addr=$(escape_sed_replacement "${REDIS_ADDR}")
+    redis_password=$(escape_sed_replacement "${REDIS_PASSWORD}")
+    image_host=$(escape_sed_replacement "${IMAGE_HOST}")
+    gitops_repo_path=$(escape_sed_replacement "${GITOPS_REPO_PATH}")
+    heartbeat_server_url=$(escape_sed_replacement "${HEARTBEAT_SERVER_URL}")
+    heartbeat_token=$(escape_sed_replacement "${HEARTBEAT_TOKEN}")
+    flashduty_app_key=$(escape_sed_replacement "${FLASHDUTY_APP_KEY}")
+    flashduty_integration_key=$(escape_sed_replacement "${FLASHDUTY_INTEGRATION_KEY}")
+    dingtalk_webhook_url=$(escape_sed_replacement "${DINGTALK_WEBHOOK_URL}")
+    agent_bearer_token=$(escape_sed_replacement "${AGENT_BEARER_TOKEN}")
+    dingtalk_approval_client_secret=$(escape_sed_replacement "${DINGTALK_APPROVAL_CLIENT_SECRET}")
+    deploy_bot_webhook_url=$(escape_sed_replacement "${DEPLOY_BOT_WEBHOOK_URL}")
+    deploy_bot_secret=$(escape_sed_replacement "${DEPLOY_BOT_SECRET}")
+
+    sed \
+      -e "s|__DB_HOST__|$db_host|g" \
+      -e "s|__DB_PORT__|$db_port|g" \
+      -e "s|__DB_NAME__|$db_name|g" \
+      -e "s|__DB_USER__|$db_user|g" \
+      -e "s|__DB_PASSWORD__|$db_password|g" \
+      -e "s|__REDIS_ADDR__|$redis_addr|g" \
+      -e "s|__REDIS_PASSWORD__|$redis_password|g" \
+      -e "s|__IMAGE_HOST__|$image_host|g" \
+      -e "s|__GITOPS_REPO_PATH__|$gitops_repo_path|g" \
+      -e "s|__HEARTBEAT_SERVER_URL__|$heartbeat_server_url|g" \
+      -e "s|__HEARTBEAT_TOKEN__|$heartbeat_token|g" \
+      -e "s|__FLASHDUTY_APP_KEY__|$flashduty_app_key|g" \
+      -e "s|__FLASHDUTY_INTEGRATION_KEY__|$flashduty_integration_key|g" \
+      -e "s|__DINGTALK_WEBHOOK_URL__|$dingtalk_webhook_url|g" \
+      -e "s|__AGENT_BEARER_TOKEN__|$agent_bearer_token|g" \
+      -e "s|__DINGTALK_APPROVAL_CLIENT_SECRET__|$dingtalk_approval_client_secret|g" \
+      -e "s|__DEPLOY_BOT_WEBHOOK_URL__|$deploy_bot_webhook_url|g" \
+      -e "s|__DEPLOY_BOT_SECRET__|$deploy_bot_secret|g" \
+      "$template" > "$output"
+
+    exec /app/devops -c "$output"
+  config.template.yaml: |
+    server:
+      address: 0.0.0.0:8000
+      model: debug
+      enableSwagger: true
+
+    db:
+      dialects: postgres
+      host: __DB_HOST__
+      port: __DB_PORT__
+      db: __DB_NAME__
+      username: __DB_USER__
+      password: __DB_PASSWORD__
+      charset: utf8
+      maxIdle: 50
+      maxOpen: 150
+
+    redis:
+      address: __REDIS_ADDR__
+      password: "__REDIS_PASSWORD__"
+
+    imageSettings:
+      uploadDir: ./upload/
+      imageHost: "__IMAGE_HOST__"
+
+    log:
+      path: ./log
+      name: sys
+      model: {{ .Values.api.logMode | quote }}
+
+    monitor:
+      agent:
+        heartbeat_server_url: "__HEARTBEAT_SERVER_URL__"
+        heartbeat_token: "__HEARTBEAT_TOKEN__"
+
+    flashduty:
+      app_key: "__FLASHDUTY_APP_KEY__"
+      integration_key: "__FLASHDUTY_INTEGRATION_KEY__"
+      base_url: {{ .Values.flashduty.baseURL | quote }}
+      timeout: {{ .Values.flashduty.timeout }}
+
+    dingtalk:
+      webhook_url: "__DINGTALK_WEBHOOK_URL__"
+
+    dingtalkApproval:
+      client_id: {{ .Values.dingtalkApproval.clientID | quote }}
+      client_secret: "__DINGTALK_APPROVAL_CLIENT_SECRET__"
+      process_code: {{ .Values.dingtalkApproval.processCode | quote }}
+      originator_dept_id: {{ .Values.dingtalkApproval.originatorDeptID }}
+      microapp_agent_id: {{ .Values.dingtalkApproval.microappAgentID }}
+      redirect_url: {{ .Values.dingtalkApproval.redirectURL | quote }}
+      poll_interval_seconds: {{ .Values.dingtalkApproval.pollIntervalSeconds }}
+      field_mappings:
+        request_no: {{ .Values.dingtalkApproval.fieldMappings.requestNo | quote }}
+        release_name: {{ .Values.dingtalkApproval.fieldMappings.releaseName | quote }}
+        cluster_target: {{ .Values.dingtalkApproval.fieldMappings.clusterTarget | quote }}
+        deploy_mode: {{ .Values.dingtalkApproval.fieldMappings.deployMode | quote }}
+        resource_type: {{ .Values.dingtalkApproval.fieldMappings.resourceType | quote }}
+        image: {{ .Values.dingtalkApproval.fieldMappings.image | quote }}
+        namespace: {{ .Values.dingtalkApproval.fieldMappings.namespace | quote }}
+        ttl_hours: {{ .Values.dingtalkApproval.fieldMappings.ttlHours | quote }}
+        reason: {{ .Values.dingtalkApproval.fieldMappings.reason | quote }}
+
+    integrations:
+      agent:
+        bearer_token: "__AGENT_BEARER_TOKEN__"
+      gitops:
+        local_checkout_path: "__GITOPS_REPO_PATH__"
+      deploy_bot:
+        provider: {{ .Values.integrations.deployBot.provider | quote }}
+        enabled: {{ .Values.integrations.deployBot.enabled }}
+        webhook_url: "__DEPLOY_BOT_WEBHOOK_URL__"
+        secret: "__DEPLOY_BOT_SECRET__"

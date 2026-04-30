@@ -1,0 +1,6 @@
+apiVersion: v2
+name: autoops
+description: AutoOps platform chart for ArgoCD / Kubernetes deployment
+type: application
+version: 0.1.0
+appVersion: "2026.04.24"

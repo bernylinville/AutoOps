@@ -1,0 +1,50 @@
+{{- if .Values.clusterAccess.enabled }}
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: {{ .Values.clusterAccess.serviceAccountName | quote }}
+  namespace: {{ .Release.Namespace }}
+  labels:
+    {{- include "autoops.labels" . | nindent 4 }}
+    app.kubernetes.io/component: cluster-access
+---
+{{- if .Values.clusterAccess.createTokenSecret }}
+apiVersion: v1
+kind: Secret
+metadata:
+  name: {{ .Values.clusterAccess.tokenSecretName | quote }}
+  namespace: {{ .Release.Namespace }}
+  labels:
+    {{- include "autoops.labels" . | nindent 4 }}
+    app.kubernetes.io/component: cluster-access
+  annotations:
+    kubernetes.io/service-account.name: {{ .Values.clusterAccess.serviceAccountName | quote }}
+type: kubernetes.io/service-account-token
+---
+{{- end }}
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: {{ .Values.clusterAccess.serviceAccountName | quote }}
+  labels:
+    {{- include "autoops.labels" . | nindent 4 }}
+    app.kubernetes.io/component: cluster-access
+rules:
+  {{- toYaml .Values.clusterAccess.rules | nindent 2 }}
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: {{ .Values.clusterAccess.serviceAccountName | quote }}
+  labels:
+    {{- include "autoops.labels" . | nindent 4 }}
+    app.kubernetes.io/component: cluster-access
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: {{ .Values.clusterAccess.serviceAccountName | quote }}
+subjects:
+  - kind: ServiceAccount
+    name: {{ .Values.clusterAccess.serviceAccountName | quote }}
+    namespace: {{ .Release.Namespace }}
+{{- end }}

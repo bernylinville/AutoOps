@@ -1,0 +1,79 @@
+{{- if and .Values.upload.persistence.enabled (not .Values.upload.persistence.existingClaim) }}
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: {{ include "autoops.uploadClaimName" . }}
+  labels:
+    {{- include "autoops.labels" . | nindent 4 }}
+  {{- with .Values.upload.persistence.annotations }}
+  annotations:
+    {{- toYaml . | nindent 4 }}
+  {{- end }}
+spec:
+  accessModes:
+    {{- toYaml .Values.upload.persistence.accessModes | nindent 4 }}
+  {{- include "autoops.storageClassField" .Values.upload.persistence | nindent 2 }}
+  resources:
+    requests:
+      storage: {{ .Values.upload.persistence.size }}
+---
+{{- end }}
+{{- if and .Values.gitopsWorkingTree.enabled .Values.gitopsWorkingTree.persistence.enabled (not .Values.gitopsWorkingTree.persistence.existingClaim) }}
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: {{ include "autoops.gitopsClaimName" . }}
+  labels:
+    {{- include "autoops.labels" . | nindent 4 }}
+  {{- with .Values.gitopsWorkingTree.persistence.annotations }}
+  annotations:
+    {{- toYaml . | nindent 4 }}
+  {{- end }}
+spec:
+  accessModes:
+    {{- toYaml .Values.gitopsWorkingTree.persistence.accessModes | nindent 4 }}
+  {{- include "autoops.storageClassField" .Values.gitopsWorkingTree.persistence | nindent 2 }}
+  resources:
+    requests:
+      storage: {{ .Values.gitopsWorkingTree.persistence.size }}
+---
+{{- end }}
+{{- if and .Values.postgres.enabled .Values.postgres.persistence.enabled (not .Values.postgres.persistence.existingClaim) }}
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: {{ include "autoops.postgresClaimName" . }}
+  labels:
+    {{- include "autoops.labels" . | nindent 4 }}
+  {{- with .Values.postgres.persistence.annotations }}
+  annotations:
+    {{- toYaml . | nindent 4 }}
+  {{- end }}
+spec:
+  accessModes:
+    {{- toYaml .Values.postgres.persistence.accessModes | nindent 4 }}
+  {{- include "autoops.storageClassField" .Values.postgres.persistence | nindent 2 }}
+  resources:
+    requests:
+      storage: {{ .Values.postgres.persistence.size }}
+---
+{{- end }}
+{{- if and .Values.valkey.enabled .Values.valkey.persistence.enabled (not .Values.valkey.persistence.existingClaim) }}
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: {{ include "autoops.valkeyClaimName" . }}
+  labels:
+    {{- include "autoops.labels" . | nindent 4 }}
+  {{- with .Values.valkey.persistence.annotations }}
+  annotations:
+    {{- toYaml . | nindent 4 }}
+  {{- end }}
+spec:
+  accessModes:
+    {{- toYaml .Values.valkey.persistence.accessModes | nindent 4 }}
+  {{- include "autoops.storageClassField" .Values.valkey.persistence | nindent 2 }}
+  resources:
+    requests:
+      storage: {{ .Values.valkey.persistence.size }}
+{{- end }}

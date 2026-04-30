@@ -1,0 +1,67 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ include "autoops.apiServiceName" . }}
+  labels:
+    {{- include "autoops.labels" . | nindent 4 }}
+spec:
+  type: ClusterIP
+  selector:
+    {{- include "autoops.selectorLabels" . | nindent 4 }}
+    app.kubernetes.io/component: api
+  ports:
+    - name: http
+      port: {{ .Values.service.api.port }}
+      targetPort: http
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ include "autoops.webServiceName" . }}
+  labels:
+    {{- include "autoops.labels" . | nindent 4 }}
+spec:
+  type: ClusterIP
+  selector:
+    {{- include "autoops.selectorLabels" . | nindent 4 }}
+    app.kubernetes.io/component: web
+  ports:
+    - name: http
+      port: {{ .Values.service.web.port }}
+      targetPort: http
+{{- if .Values.postgres.enabled }}
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ include "autoops.postgresServiceName" . }}
+  labels:
+    {{- include "autoops.labels" . | nindent 4 }}
+spec:
+  type: ClusterIP
+  selector:
+    {{- include "autoops.selectorLabels" . | nindent 4 }}
+    app.kubernetes.io/component: postgres
+  ports:
+    - name: postgres
+      port: {{ .Values.service.postgres.port }}
+      targetPort: postgres
+{{- end }}
+{{- if .Values.valkey.enabled }}
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ include "autoops.valkeyServiceName" . }}
+  labels:
+    {{- include "autoops.labels" . | nindent 4 }}
+spec:
+  type: ClusterIP
+  selector:
+    {{- include "autoops.selectorLabels" . | nindent 4 }}
+    app.kubernetes.io/component: valkey
+  ports:
+    - name: valkey
+      port: {{ .Values.service.valkey.port }}
+      targetPort: valkey
+{{- end }}

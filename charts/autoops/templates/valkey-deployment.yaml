@@ -1,0 +1,71 @@
+{{- if .Values.valkey.enabled }}
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "autoops.fullname" . }}-valkey
+  labels:
+    {{- include "autoops.labels" . | nindent 4 }}
+spec:
+  replicas: 1
+  strategy:
+    type: Recreate
+  selector:
+    matchLabels:
+      {{- include "autoops.selectorLabels" . | nindent 6 }}
+      app.kubernetes.io/component: valkey
+  template:
+    metadata:
+      labels:
+        {{- include "autoops.selectorLabels" . | nindent 8 }}
+        app.kubernetes.io/component: valkey
+    spec:
+      {{- if .Values.imagePullSecrets }}
+      imagePullSecrets:
+        {{- toYaml .Values.imagePullSecrets | nindent 8 }}
+      {{- end }}
+      containers:
+        - name: valkey
+          image: {{ .Values.images.valkey.repository }}:{{ .Values.images.valkey.tag }}
+          imagePullPolicy: {{ .Values.images.valkey.pullPolicy }}
+          command: ["valkey-server", "--requirepass", "$(REDIS_PASSWORD)", "--appendonly", "yes"]
+          env:
+            - name: REDIS_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: {{ include "autoops.secretName" . }}
+                  key: {{ include "autoops.secretKey" (dict "root" . "key" "redisPassword") | quote }}
+            - name: TZ
+              value: {{ .Values.api.timezone | quote }}
+          ports:
+            - name: valkey
+              containerPort: 6379
+          readinessProbe:
+            exec:
+              command:
+                - /bin/sh
+                - -c
+                - 'valkey-cli -a "$REDIS_PASSWORD" ping'
+            initialDelaySeconds: 10
+            periodSeconds: 10
+          livenessProbe:
+            exec:
+              command:
+                - /bin/sh
+                - -c
+                - 'valkey-cli -a "$REDIS_PASSWORD" ping'
+            initialDelaySeconds: 30
+            periodSeconds: 15
+          resources:
+            {{- toYaml .Values.valkey.resources | nindent 12 }}
+          volumeMounts:
+            - name: valkey-data
+              mountPath: /data
+      volumes:
+        - name: valkey-data
+          {{- if .Values.valkey.persistence.enabled }}
+          persistentVolumeClaim:
+            claimName: {{ include "autoops.valkeyClaimName" . }}
+          {{- else }}
+          emptyDir: {}
+          {{- end }}
+{{- end }}

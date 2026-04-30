@@ -1,0 +1,19 @@
+api:
+  jwtSecret: dev-jwt-secret
+
+postgres:
+  password: dev-postgres-password
+
+valkey:
+  password: dev-valkey-password
+  cacheOnly: true
+  persistence:
+    enabled: false
+
+monitor:
+  agent:
+    heartbeatToken: dev-heartbeat-token
+
+integrations:
+  agent:
+    bearerToken: dev-agent-bearer-token

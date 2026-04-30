@@ -1,0 +1,22 @@
+secret:
+  mode: existing
+  existingSecret:
+    name: autoops-runtime-secrets
+
+postgres:
+  persistence:
+    existingClaim: autoops-postgres-existing
+
+valkey:
+  persistence:
+    existingClaim: autoops-valkey-existing
+
+upload:
+  persistence:
+    existingClaim: autoops-upload-existing
+
+gitopsWorkingTree:
+  bootstrapMode: disabled
+  sshSecretName: autoops-gitops-ssh
+  persistence:
+    existingClaim: autoops-gitops-working-tree

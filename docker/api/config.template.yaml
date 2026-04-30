@@ -1,0 +1,90 @@
+# Docker 开发环境配置模板（Arch Linux / Docker Compose）
+server:
+  address: 0.0.0.0:8000
+  model: debug
+  enableSwagger: true
+
+db:
+  dialects: postgres
+  host: __DB_HOST__
+  port: __DB_PORT__
+  db: __DB_NAME__
+  username: __DB_USER__
+  password: __DB_PASSWORD__
+  charset: utf8
+  maxIdle: 50
+  maxOpen: 150
+
+redis:
+  address: __REDIS_ADDR__
+  password: "__REDIS_PASSWORD__"
+
+imageSettings:
+  uploadDir: ./upload/
+  imageHost: "__IMAGE_HOST__"
+
+log:
+  path: ./log
+  name: sys
+  model: console
+
+monitor:
+  agent:
+    heartbeat_server_url: "http://localhost:18000/api/v1/monitor/agent/heartbeat"
+    heartbeat_token: "agent-heartbeat-token-dev"
+
+flashduty:
+  app_key: ""
+  integration_key: ""
+  base_url: "https://api.flashcat.cloud"
+  timeout: 30
+
+dingtalk:
+  webhook_url: ""
+
+dingtalkApproval:
+  client_id: ""
+  client_secret: ""
+  process_code: ""
+  originator_dept_id: 0
+  microapp_agent_id: 0
+  redirect_url: ""
+  poll_interval_seconds: 30
+  field_mappings:
+    request_no: "申请单号"
+    release_name: "发布名称"
+    cluster_target: "部署目标"
+    deploy_mode: "部署模式"
+    resource_type: "资源类型"
+    image: "镜像"
+    namespace: "命名空间"
+    ttl_hours: "TTL小时"
+    reason: "申请原因"
+
+integrations:
+  agent:
+    bearer_token: "dev-bearer-token"
+    project_onboarding:
+      enabled: false
+      allowed_git_hosts:
+        - "__GITLAB_HOST__"
+      shared_jenkins_job_name: "autoops-springboot-build"
+      default_business_group_id: 0
+      default_business_dept_id: 0
+      default_jenkins_server_id: 0
+      default_harbor_server_id: 0
+      default_harbor_project: "library"
+      default_approver_admin_id: 0
+      dev_cluster_target_id: 0
+      test_cluster_target_id: 0
+      namespace_prefix: "ao-direct"
+      default_service_port: 80
+      default_target_port: 8080
+      nodeport_access_host: ""
+  gitops:
+    local_checkout_path: "__GITOPS_REPO_PATH__"
+  deploy_bot:
+    provider: dingtalk
+    enabled: false
+    webhook_url: ""
+    secret: ""

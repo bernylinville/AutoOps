@@ -1,0 +1,230 @@
+nameOverride: autoops
+fullnameOverride: autoops
+
+imagePullSecrets:
+  - name: volces-registry
+
+images:
+  api:
+    repository: pukka-all-images-cn-shanghai.cr.volces.com/proxy/autoops-api
+    tag: latest
+    pullPolicy: IfNotPresent
+  web:
+    repository: pukka-all-images-cn-shanghai.cr.volces.com/proxy/autoops-web
+    tag: latest
+    pullPolicy: IfNotPresent
+  postgres:
+    repository: pukka-all-images-cn-shanghai.cr.volces.com/proxy/postgres
+    tag: 17.4-alpine
+    pullPolicy: IfNotPresent
+  valkey:
+    repository: pukka-all-images-cn-shanghai.cr.volces.com/proxy/valkey
+    tag: 9.0.3-alpine
+    pullPolicy: IfNotPresent
+
+service:
+  api:
+    port: 8000
+  web:
+    port: 80
+  postgres:
+    port: 5432
+  valkey:
+    port: 6379
+
+api:
+  replicaCount: 1
+  timezone: Asia/Shanghai
+  imageHost: http://10.0.17.206
+  dbSslMode: disable
+  jwtSecret: ""
+  logMode: console
+  resources:
+    requests:
+      cpu: 200m
+      memory: 512Mi
+    limits:
+      cpu: 1000m
+      memory: 1Gi
+  podSecurityContext:
+    runAsNonRoot: true
+    runAsUser: 100
+    runAsGroup: 100
+    fsGroup: 100
+  securityContext: {}
+
+secret:
+  mode: generated
+  existingSecret:
+    name: ""
+    keys:
+      dbPassword: DB_PASSWORD
+      redisPassword: REDIS_PASSWORD
+      jwtSecret: JWT_SECRET
+      agentBearerToken: AGENT_BEARER_TOKEN
+      heartbeatToken: HEARTBEAT_TOKEN
+      flashdutyAppKey: FLASHDUTY_APP_KEY
+      flashdutyIntegrationKey: FLASHDUTY_INTEGRATION_KEY
+      dingtalkWebhookURL: DINGTALK_WEBHOOK_URL
+      dingtalkApprovalClientSecret: DINGTALK_APPROVAL_CLIENT_SECRET
+      deployBotWebhookURL: DEPLOY_BOT_WEBHOOK_URL
+      deployBotSecret: DEPLOY_BOT_SECRET
+
+clusterAccess:
+  # Grants AutoOps a dedicated read-only ServiceAccount for importing the
+  # Kubernetes cluster where AutoOps itself runs. The credential is still
+  # registered in AutoOps DB/UI explicitly; this only keeps RBAC durable.
+  enabled: false
+  serviceAccountName: autoops-cluster-reader
+  tokenSecretName: autoops-cluster-reader-token
+  createTokenSecret: true
+  rules:
+    - apiGroups: [""]
+      resources: ["nodes", "nodes/status", "namespaces", "pods", "pods/log", "services", "endpoints", "events", "persistentvolumes", "persistentvolumeclaims", "configmaps"]
+      verbs: ["get", "list", "watch"]
+    - apiGroups: ["apps"]
+      resources: ["deployments", "replicasets", "statefulsets", "daemonsets"]
+      verbs: ["get", "list", "watch"]
+    - apiGroups: ["batch"]
+      resources: ["jobs", "cronjobs"]
+      verbs: ["get", "list", "watch"]
+    - apiGroups: ["networking.k8s.io"]
+      resources: ["ingresses", "networkpolicies"]
+      verbs: ["get", "list", "watch"]
+    - apiGroups: ["storage.k8s.io"]
+      resources: ["storageclasses"]
+      verbs: ["get", "list", "watch"]
+    - apiGroups: ["metrics.k8s.io"]
+      resources: ["nodes", "pods"]
+      verbs: ["get", "list"]
+
+web:
+  replicaCount: 1
+  resources:
+    requests:
+      cpu: 50m
+      memory: 64Mi
+    limits:
+      cpu: 200m
+      memory: 256Mi
+
+postgres:
+  enabled: true
+  database: autoops
+  username: devops
+  password: ""
+  persistence:
+    enabled: true
+    useDefaultStorageClass: false
+    storageClassName: ""
+    accessModes:
+      - ReadWriteOnce
+    size: 20Gi
+    existingClaim: ""
+    annotations: {}
+  resources:
+    requests:
+      cpu: 200m
+      memory: 512Mi
+    limits:
+      cpu: 1000m
+      memory: 1Gi
+
+valkey:
+  enabled: true
+  password: ""
+  cacheOnly: false
+  persistence:
+    enabled: true
+    useDefaultStorageClass: false
+    storageClassName: ""
+    accessModes:
+      - ReadWriteOnce
+    size: 5Gi
+    existingClaim: ""
+    annotations: {}
+  resources:
+    requests:
+      cpu: 50m
+      memory: 64Mi
+    limits:
+      cpu: 300m
+      memory: 256Mi
+
+upload:
+  mountPath: /app/upload
+  persistence:
+    enabled: true
+    useDefaultStorageClass: false
+    storageClassName: ""
+    accessModes:
+      - ReadWriteOnce
+    size: 10Gi
+    existingClaim: ""
+    annotations: {}
+
+gitopsWorkingTree:
+  enabled: true
+  mountPath: /workspace/pukka-gitops
+  repoURL: http://gayhub.seeingtv.com/ipaas/pukka-gitops.git
+  branch: main
+  bootstrapMode: clone
+  sshSecretName: ""
+  persistence:
+    enabled: true
+    useDefaultStorageClass: false
+    storageClassName: ""
+    accessModes:
+      - ReadWriteOnce
+    size: 2Gi
+    existingClaim: ""
+    annotations: {}
+
+monitor:
+  agent:
+    heartbeatServerURL: http://autoops-api:8000/api/v1/monitor/agent/heartbeat
+    heartbeatToken: ""
+
+flashduty:
+  appKey: ""
+  integrationKey: ""
+  baseURL: https://api.flashcat.cloud
+  timeout: 30
+
+dingtalk:
+  webhookURL: ""
+
+dingtalkApproval:
+  clientID: ""
+  clientSecret: ""
+  processCode: ""
+  originatorDeptID: 0
+  microappAgentID: 0
+  redirectURL: ""
+  pollIntervalSeconds: 30
+  fieldMappings:
+    requestNo: 申请单号
+    releaseName: 发布名称
+    clusterTarget: 部署目标
+    deployMode: 部署模式
+    resourceType: 资源类型
+    image: 镜像
+    namespace: 命名空间
+    ttlHours: TTL小时
+    reason: 申请原因
+
+integrations:
+  agent:
+    bearerToken: ""
+  deployBot:
+    provider: dingtalk
+    enabled: false
+    webhookURL: ""
+    secret: ""
+
+gateway:
+  enabled: true
+  className: eg
+  loadBalancerIP: 10.0.17.206
+  listenerPort: 80
+  hostnames: []
