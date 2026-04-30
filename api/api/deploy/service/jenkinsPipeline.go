@@ -351,7 +351,7 @@ func (a *JenkinsPipelineAdapter) doRequest(ctx context.Context, client *appservi
 		}
 	}
 
-	resp, message, err := a.doRequestOnce(ctx, client, method, endpoint, bodyBytes, "", "", expectedStatus...)
+	resp, message, err := a.doRequestOnce(ctx, client, method, endpoint, bodyBytes, "", "", nil, expectedStatus...)
 	if err != nil {
 		return nil, err
 	}
@@ -361,11 +361,11 @@ func (a *JenkinsPipelineAdapter) doRequest(ctx context.Context, client *appservi
 	resp.Body.Close()
 
 	if shouldRetryJenkinsRequestWithCrumb(method, resp.StatusCode, message) {
-		field, crumb, crumbErr := a.fetchJenkinsCrumb(ctx, client)
+		field, crumb, cookies, crumbErr := a.fetchJenkinsCrumb(ctx, client)
 		if crumbErr != nil {
 			return nil, fmt.Errorf("Jenkins 响应错误: %d %s；获取 Jenkins crumb 失败: %v", resp.StatusCode, message, crumbErr)
 		}
-		resp, message, err = a.doRequestOnce(ctx, client, method, endpoint, bodyBytes, field, crumb, expectedStatus...)
+		resp, message, err = a.doRequestOnce(ctx, client, method, endpoint, bodyBytes, field, crumb, cookies, expectedStatus...)
 		if err != nil {
 			return nil, err
 		}
@@ -379,7 +379,7 @@ func (a *JenkinsPipelineAdapter) doRequest(ctx context.Context, client *appservi
 	return nil, fmt.Errorf("Jenkins 响应错误: %d %s", resp.StatusCode, message)
 }
 
-func (a *JenkinsPipelineAdapter) doRequestOnce(ctx context.Context, client *appservice.JenkinsClient, method, endpoint string, bodyBytes []byte, crumbField, crumb string, expectedStatus ...int) (*http.Response, string, error) {
+func (a *JenkinsPipelineAdapter) doRequestOnce(ctx context.Context, client *appservice.JenkinsClient, method, endpoint string, bodyBytes []byte, crumbField, crumb string, cookies []*http.Cookie, expectedStatus ...int) (*http.Response, string, error) {
 	requestURL := client.BaseURL + endpoint
 	req, err := http.NewRequestWithContext(ctx, method, requestURL, bytes.NewReader(bodyBytes))
 	if err != nil {
@@ -389,6 +389,9 @@ func (a *JenkinsPipelineAdapter) doRequestOnce(ctx context.Context, client *apps
 	req.Header.Set("Content-Type", "application/json")
 	if crumbField != "" && crumb != "" {
 		req.Header.Set(crumbField, crumb)
+	}
+	for _, cookie := range cookies {
+		req.AddCookie(cookie)
 	}
 
 	resp, err := client.HTTPClient.Do(req)
@@ -408,16 +411,16 @@ func (a *JenkinsPipelineAdapter) doRequestOnce(ctx context.Context, client *apps
 	return resp, "", nil
 }
 
-func (a *JenkinsPipelineAdapter) fetchJenkinsCrumb(ctx context.Context, client *appservice.JenkinsClient) (string, string, error) {
+func (a *JenkinsPipelineAdapter) fetchJenkinsCrumb(ctx context.Context, client *appservice.JenkinsClient) (string, string, []*http.Cookie, error) {
 	req, err := http.NewRequestWithContext(ctx, http.MethodGet, client.BaseURL+"/crumbIssuer/api/json", nil)
 	if err != nil {
-		return "", "", err
+		return "", "", nil, err
 	}
 	req.SetBasicAuth(client.Username, client.Password)
 
 	resp, err := client.HTTPClient.Do(req)
 	if err != nil {
-		return "", "", err
+		return "", "", nil, err
 	}
 	defer resp.Body.Close()
 
@@ -427,7 +430,7 @@ func (a *JenkinsPipelineAdapter) fetchJenkinsCrumb(ctx context.Context, client *
 		if message == "" {
 			message = http.StatusText(resp.StatusCode)
 		}
-		return "", "", fmt.Errorf("Jenkins crumbIssuer 响应错误: %d %s", resp.StatusCode, message)
+		return "", "", nil, fmt.Errorf("Jenkins crumbIssuer 响应错误: %d %s", resp.StatusCode, message)
 	}
 
 	var payload struct {
@@ -435,14 +438,14 @@ func (a *JenkinsPipelineAdapter) fetchJenkinsCrumb(ctx context.Context, client *
 		Crumb             string `json:"crumb"`
 	}
 	if err := json.NewDecoder(resp.Body).Decode(&payload); err != nil {
-		return "", "", fmt.Errorf("解析 Jenkins crumb 响应失败: %v", err)
+		return "", "", nil, fmt.Errorf("解析 Jenkins crumb 响应失败: %v", err)
 	}
 	field := strings.TrimSpace(payload.CrumbRequestField)
 	crumb := strings.TrimSpace(payload.Crumb)
 	if field == "" || crumb == "" {
-		return "", "", fmt.Errorf("Jenkins crumb 响应缺少字段")
+		return "", "", nil, fmt.Errorf("Jenkins crumb 响应缺少字段")
 	}
-	return field, crumb, nil
+	return field, crumb, resp.Cookies(), nil
 }
 
 func shouldRetryJenkinsRequestWithCrumb(method string, status int, message string) bool {

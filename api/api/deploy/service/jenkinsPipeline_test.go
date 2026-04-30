@@ -56,6 +56,7 @@ func TestJenkinsPipelineTriggerBuildRetriesWithCrumb(t *testing.T) {
 		case "/crumbIssuer/api/json":
 			atomic.AddInt32(&crumbCalls, 1)
 			w.Header().Set("Content-Type", "application/json")
+			http.SetCookie(w, &http.Cookie{Name: "JSESSIONID", Value: "jenkins-session-1", Path: "/"})
 			_, _ = w.Write([]byte(`{"crumbRequestField":"Jenkins-Crumb","crumb":"crumb-123"}`))
 			return
 		case "/job/demo/buildWithParameters":
@@ -66,6 +67,9 @@ func TestJenkinsPipelineTriggerBuildRetriesWithCrumb(t *testing.T) {
 			}
 			if got := r.Header.Get("Jenkins-Crumb"); got != "crumb-123" {
 				t.Fatalf("expected Jenkins crumb header on retry, got %q", got)
+			}
+			if cookie, err := r.Cookie("JSESSIONID"); err != nil || cookie.Value != "jenkins-session-1" {
+				t.Fatalf("expected Jenkins session cookie on crumb retry, cookie=%v err=%v", cookie, err)
 			}
 			w.Header().Set("Location", "/queue/item/322/")
 			w.WriteHeader(http.StatusCreated)
