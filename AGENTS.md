@@ -86,6 +86,88 @@ HTTP → Recovery → CORS → Logger
 
 CMDB 2.0 升级已完成 Phase 0-8（详见 `progress.md`）。新功能开发时，以 CI 模型文件（`api/api/cmdb/model/ciType.go`、`dao/ciType.go`、`controller/ciType.go`）作为参考实现。
 
+## Developer Skills
+
+This project uses executable skills in `.agents/skills/` to capture team knowledge and provide repeatable workflows. These skills serve as **bus-factor protection** for a small team (≤3 people).
+
+### Available Skills
+
+| Skill | Purpose | When to Use |
+|-------|---------|-------------|
+| `deploy-flow` | Deploy through AutoOps pipeline | Releasing, hotfixing, onboarding new projects |
+| `db-migration` | Add/modify GORM models and migrations | Creating tables, adding columns, schema changes |
+| `cmdb-change` | Modify CMDB assets or CI types | New asset types, attribute changes, lifecycle updates |
+| `incident-recovery` | Recover from production failures | Service down, deployment failures, DB issues |
+
+### Using Skills
+
+Skills are markdown files with structured instructions. Both human developers and AI agents can follow them.
+
+To use a skill:
+1. Read the skill file: `.agents/skills/<skill-name>/SKILL.md`
+2. Follow the workflow section step by step
+3. Complete the verification checklist before finishing
+
+### Adding New Skills
+
+Create a new skill when:
+- A workflow is repeated ≥3 times
+- The workflow is complex and easy to forget steps
+- The workflow involves risk (production deploy, DB changes)
+- A new team member would struggle without guidance
+
+Skill format:
+```markdown
+---
+name: skill-name
+description: One-line purpose
+---
+
+# Skill Title
+
+## When to Use
+
+## Prerequisites
+
+## Workflow
+
+### Step 1: ...
+### Step 2: ...
+
+## Verification Checklist
+- [ ] ...
+```
+
+## Development Commands
+
+### Quick Start
+```bash
+make bootstrap    # Check environment
+make dev-check    # Start services + smoke test
+make fmt          # Format Go code
+make lint         # Run all linters
+make test         # Run all tests
+make help         # Show all commands
+```
+
+### Manual Setup
+```bash
+# Check prerequisites
+./scripts/bootstrap
+
+# Start services
+cd docker && docker compose up -d postgres valkey
+
+# Smoke test
+./scripts/smoke-test
+
+# Run backend
+cd api && go run .
+
+# Run frontend
+cd web && npm run dev
+```
+
 ## Legacy Docs Status
 
 | 文件 | 状态 | 说明 |
@@ -101,7 +183,7 @@ CMDB 2.0 升级已完成 Phase 0-8（详见 `progress.md`）。新功能开发�
 <claude-mem-context>
 # Memory Context
 
-# [AutoOps] recent context, 2026-04-30 9:58am GMT+8
+# [AutoOps] recent context, 2026-04-30 11:16am GMT+8
 
 Legend: 🎯session 🔴bugfix 🟣feature 🔄refactor ✅change 🔵discovery ⚖️decision 🚨security_alert 🔐security_note
 Format: ID TIME TYPE TITLE
@@ -168,72 +250,4 @@ S7 用户通过钉钉机器人与 opsclaw hermes-agents 对话得到"网络繁�
 167 " 🔴 Jenkinsfile fix confirmed: Jib pushing to Harbor via internal cluster DNS
 
 Access 548k tokens of past work via get_observations([IDs]) or mem-search skill.
-
----
-
-## Coding Style Preferences
-
-### Go
-
-- Use `gofmt` / `gofumpt` for formatting. Run `make fmt` before PR.
-- Use `golangci-lint` for linting. Run `make lint` before PR.
-- Prefer table-driven tests with `t.Run(name, func(t *testing.T) {})`.
-- Context should be named `ctx` and passed as the first parameter.
-- Error handling: wrap errors with `fmt.Errorf("...: %w", err)` for propagation.
-- Do not ignore errors (no `_ = something()` without a comment explaining why).
-- Use `const` for magic numbers/strings at the package level.
-- Group imports: standard library, third-party, project-internal (separated by blank lines).
-
-### Vue / JavaScript
-
-- Use ESLint (`npm run lint`). Run before PR.
-- Use 2-space indentation.
-- Prefer `const` / `let` over `var`.
-- Vue 3 Composition API preferred over Options API for new components.
-- Component names: PascalCase. File names match component names.
-- API calls go through `request.js` interceptor — do NOT hardcode `/api/v1` prefix.
-
-## Common AI Pitfalls
-
-1. **GORM Model Registration** — New models MUST be registered in `api/pkg/db/migrate.go` or tables won't be created automatically.
-2. **Error Code Allocation** — Check `api/common/constant/constant.go` for the next available segment before adding new error codes. Current next: 470+.
-3. **RBAC Middleware** — Every new route that requires auth MUST have `middleware.RbacMiddleware("module:sub:action")` applied.
-4. **Router Registration** — Register new module routes in `router/{module}/{module}.go`, then call from `router/router.go`.
-5. **JWT Secret** — Never hardcode JWT secrets. Production panics if `JWT_SECRET` env is missing.
-6. **Frontend Proxy** — `vue.config.js` proxy target is hardcoded to an old IP. Update for local development.
-7. **localStorage Key** — The actual localStorage namespace key is `"undefined"` (build-time `VUE_APP_NAME_SPACE` not injected). Use this exact key when debugging storage issues.
-8. **Config Loading** — Use `gopkg.in/yaml.v2` (not Viper). Config path passed via `-c config.yaml`.
-9. **PostgreSQL Only** — This project uses PostgreSQL 17, NOT MySQL. SQL syntax and GORM drivers must reflect this.
-10. **Valkey Not Redis** — Cache layer is Valkey 9 (Redis-protocol compatible). Do not assume Redis-specific features unavailable in Valkey.
-
-## Pull Request Workflow
-
-Before opening or updating a PR:
-
-1. Run `make fmt && make lint` — must pass completely.
-2. Run `go test ./...` (backend) and `npm run lint` (frontend) — must pass.
-3. Use the PR template at `.github/pull_request_template.md`.
-4. Add changelog entry when appropriate using these prefixes:
-   - `CHANGELOG-NEW-FEATURE:` for new sizable features
-   - `CHANGELOG-IMPROVEMENT:` for functionality improvements
-   - `CHANGELOG-BUG-FIX:` for bug fixes
-   - `CHANGELOG-DOCS:` for documentation changes
-5. Keep PR focused on a single logical change.
-6. Rebase on `master` before requesting review if branch is behind.
-
-## Spec-Driven Development (for substantial features)
-
-For features that are substantial (>200 LOC or cross-module):
-
-1. Write a `product.md` spec first — user-facing behavior, invariants, edge cases.
-2. Write a `tech.md` spec — implementation plan, code references, testing strategy.
-3. Place specs in `docs/specs/<issue-or-feature-name>/`.
-4. Use `docs/specs/TEMPLATE-product.md` and `docs/specs/TEMPLATE-tech.md` as starting points.
-5. Implement after specs are reviewed. Keep specs updated as implementation evolves.
-
-## Testing Requirements
-
-- **Bug fixes** should include a regression test.
-- **Algorithmic or non-trivial logic** needs unit tests.
-- **User-facing flows** should have manual verification steps documented in the PR.
 </claude-mem-context>

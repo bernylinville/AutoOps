@@ -1,0 +1,99 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+# AutoOps Smoke Test
+# Quick health check to verify local development environment works
+
+RED='\033[0;31m'
+GREEN='\033[0;32m'
+YELLOW='\033[1;33m'
+NC='\033[0m'
+
+ERRORS=0
+
+echo "================================"
+echo "AutoOps Smoke Test"
+echo "================================"
+echo ""
+
+# Check if services are running
+echo "Checking Docker services..."
+
+if docker compose -f docker/docker-compose.yml ps | grep -q "postgres.*Up"; then
+    echo -e "${GREEN}✓${NC} PostgreSQL is running"
+else
+    echo -e "${RED}✗${NC} PostgreSQL is not running. Start with: cd docker && docker compose up -d postgres"
+    ((ERRORS++))
+fi
+
+if docker compose -f docker/docker-compose.yml ps | grep -q "valkey.*Up"; then
+    echo -e "${GREEN}✓${NC} Valkey is running"
+else
+    echo -e "${YELLOW}⚠${NC} Valkey is not running (optional, start with: cd docker && docker compose up -d valkey)"
+fi
+
+echo ""
+
+# Check PostgreSQL connectivity
+echo "Checking PostgreSQL connectivity..."
+if docker compose -f docker/docker-compose.yml exec -T postgres pg_isready -U devops &> /dev/null; then
+    echo -e "${GREEN}✓${NC} PostgreSQL is accepting connections"
+else
+    echo -e "${RED}✗${NC} Cannot connect to PostgreSQL"
+    ((ERRORS++))
+fi
+
+echo ""
+
+# Check if API config exists
+echo "Checking API configuration..."
+if [ -f "api/config.yaml" ]; then
+    echo -e "${GREEN}✓${NC} API config found (api/config.yaml)"
+else
+    echo -e "${YELLOW}⚠${NC} API config not found. Copy from example: cp api/config.yaml.example api/config.yaml"
+fi
+
+echo ""
+
+# Check if backend can compile
+echo "Checking Go backend compilation..."
+cd api
+if go build -o /tmp/devops-api-smoke . 2>/dev/null; then
+    echo -e "${GREEN}✓${NC} Backend compiles successfully"
+    rm -f /tmp/devops-api-smoke
+else
+    echo -e "${RED}✗${NC} Backend compilation failed. Run 'cd api && go build .' for details"
+    ((ERRORS++))
+fi
+cd ..
+
+echo ""
+
+# Check if frontend can compile
+echo "Checking Vue frontend compilation..."
+cd web
+if npm run build &> /tmp/vue-build.log; then
+    echo -e "${GREEN}✓${NC} Frontend compiles successfully"
+else
+    echo -e "${RED}✗${NC} Frontend compilation failed. Check /tmp/vue-build.log"
+    ((ERRORS++))
+fi
+cd ..
+
+echo ""
+echo "================================"
+echo "Smoke Test Summary"
+echo "================================"
+
+if [ $ERRORS -eq 0 ]; then
+    echo -e "${GREEN}All smoke tests passed!${NC}"
+    echo ""
+    echo "Your environment is ready. Start developing:"
+    echo "  cd api && go run ."
+    echo "  cd web && npm run dev"
+    exit 0
+else
+    echo -e "${RED}$ERRORS check(s) failed.${NC}"
+    echo "Fix the issues above before starting development."
+    exit 1
+fi
