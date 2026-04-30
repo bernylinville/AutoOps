@@ -1,0 +1,62 @@
+name: Bug Report
+description: "发现 bug？请先搜索现有 issue 避免重复提交。"
+labels: ["bug"]
+body:
+  - type: checkboxes
+    attributes:
+      label: "Pre-submit Checks"
+      options:
+        - label: "我已搜索现有 issue，确认没有重复"
+          required: true
+        - label: "我已查看 docs/troubleshooting.md"
+          required: false
+  - type: textarea
+    id: "describe-the-bug"
+    attributes:
+      label: "描述 Bug"
+      description: "清晰简洁地描述 bug 是什么。"
+    validations:
+      required: true
+  - type: textarea
+    id: "to-reproduce"
+    attributes:
+      label: "复现步骤"
+      description: "提供最小复现步骤会让我们更快修复。"
+      placeholder: "1. 进入 '...' 2. 点击 '...' 3. 看到错误 '...'"
+    validations:
+      required: true
+  - type: textarea
+    id: "expected-behavior"
+    attributes:
+      label: "期望行为"
+      description: "清晰描述你期望发生什么。"
+  - type: textarea
+    id: "screenshots-logs"
+    attributes:
+      label: "截图和日志"
+      description: "如有截图、日志或报错堆栈，请附上来加速排查。"
+  - type: dropdown
+    id: "component"
+    attributes:
+      label: "涉及模块"
+      options:
+        - "请选择"
+        - CMDB
+        - Deploy
+        - Monitor
+        - Task
+        - Auth
+        - Frontend
+        - Infra / Docker
+        - Other
+    validations:
+      required: true
+  - type: dropdown
+    id: "blocker"
+    attributes:
+      label: "是否阻塞日常使用？"
+      options:
+        - "No"
+        - "Yes"
+    validations:
+      required: true

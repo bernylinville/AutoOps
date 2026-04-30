@@ -1,0 +1,58 @@
+name: Close Stale PRs
+
+on:
+  schedule:
+    - cron: '0 2 * * *'  # 每天凌晨 2 点 UTC
+  workflow_dispatch:
+
+permissions:
+  pull-requests: write
+  issues: write
+
+jobs:
+  close-stale:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Close stale PRs
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const staleDays = 30;
+            const staleMs = staleDays * 24 * 60 * 60 * 1000;
+            const now = Date.now();
+
+            const { data: prs } = await github.rest.pulls.list({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              state: 'open',
+              per_page: 100,
+            });
+
+            let closed = 0;
+            for (const pr of prs) {
+              const lastUpdated = new Date(pr.updated_at).getTime();
+              const ageMs = now - lastUpdated;
+              
+              if (ageMs > staleMs) {
+                const ageDays = Math.floor(ageMs / (24 * 60 * 60 * 1000));
+                
+                await github.rest.issues.createComment({
+                  owner: context.repo.owner,
+                  repo: context.repo.repo,
+                  issue_number: pr.number,
+                  body: `This PR has been stale for ${ageDays} days with no activity. Closing to keep the PR queue manageable. Please reopen if work resumes.`,
+                });
+
+                await github.rest.pulls.update({
+                  owner: context.repo.owner,
+                  repo: context.repo.repo,
+                  pull_number: pr.number,
+                  state: 'closed',
+                });
+                
+                closed++;
+                console.log(`Closed PR #${pr.number}: ${pr.title} (${ageDays} days stale)`);
+              }
+            }
+
+            console.log(`Closed ${closed} stale PR(s).`);

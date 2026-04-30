@@ -1,0 +1,43 @@
+name: AI Code Review
+
+on:
+  pull_request:
+    types: [opened, synchronize, ready_for_review]
+
+permissions:
+  contents: read
+  pull-requests: write
+
+jobs:
+  review:
+    runs-on: ubuntu-latest
+    if: github.event.pull_request.draft == false
+    steps:
+      - name: Checkout PR
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Get PR diff
+        id: diff
+        run: |
+          git diff origin/${{ github.base_ref }}...HEAD > pr_diff.txt
+          echo "diff_size=$(wc -c < pr_diff.txt)" >> $GITHUB_OUTPUT
+
+      # 选项 1: 使用免费的 Code Review GPT Action (不需要 API key)
+      - name: AI Code Review (Code Review GPT)
+        if: steps.diff.outputs.diff_size < 50000  # 跳过超大 diff
+        uses: mattzcarey/code-review-gpt@v0.1.10
+        with:
+          OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY || '' }}
+          MODEL: 'gpt-4o-mini'
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      # 选项 2: 如果有预算，可以启用 Codex CLI review (需要 OPENAI_API_KEY)
+      # - name: Run Codex Review
+      #   if: secrets.OPENAI_API_KEY != ''
+      #   env:
+      #     OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
+      #   run: |
+      #     npx -y @openai/codex review --diff pr_diff.txt --format github > review_comment.md
+      #     gh pr comment ${{ github.event.pull_request.number }} --body-file review_comment.md

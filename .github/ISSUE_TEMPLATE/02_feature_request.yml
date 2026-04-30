@@ -1,0 +1,58 @@
+name: Feature Request
+description: "有新想法？请先搜索现有 feature request 避免重复。"
+labels: ["enhancement"]
+body:
+  - type: checkboxes
+    attributes:
+      label: "Pre-submit Checks"
+      options:
+        - label: "我已搜索现有 feature request，确认没有重复"
+          required: true
+        - label: "我已查看文档，确认功能不存在"
+          required: false
+  - type: textarea
+    id: "describe-solution"
+    attributes:
+      label: "描述你想要的解决方案"
+      description: "清晰简洁地描述你希望发生什么。"
+    validations:
+      required: true
+  - type: textarea
+    id: "related-to-problem"
+    attributes:
+      label: "这个功能解决了什么问题？"
+      description: "描述当前遇到的问题或痛点。"
+      placeholder: "我总是遇到 [...] 的问题"
+  - type: textarea
+    id: "additional-context"
+    attributes:
+      label: "其他上下文"
+      description: "任何其他上下文、截图或参考。"
+  - type: dropdown
+    id: "component"
+    attributes:
+      label: "涉及模块"
+      options:
+        - "请选择"
+        - CMDB
+        - Deploy
+        - Monitor
+        - Task
+        - Auth
+        - Frontend
+        - Infra / Docker
+        - Other
+    validations:
+      required: true
+  - type: dropdown
+    id: "importance"
+    attributes:
+      label: "这个功能对你有多重要？"
+      options:
+        - "1 (不太重要)"
+        - "2"
+        - "3"
+        - "4"
+        - "5 (没有它无法工作)"
+    validations:
+      required: true

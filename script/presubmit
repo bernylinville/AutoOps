@@ -1,0 +1,70 @@
+#!/bin/bash
+# AutoOps 提交前检查脚本
+# 在发送 PR 前运行，确保 CI 通过
+
+set -e
+cd "$(dirname "$0")/.."
+
+echo "=== AutoOps Presubmit Checks ==="
+echo ""
+
+# Backend formatting
+echo "[1/5] Running Go formatting (gofmt)..."
+cd api
+if command -v gofumpt >/dev/null 2>&1; then
+    gofumpt -w .
+else
+    gofmt -w .
+fi
+cd ..
+echo "Go formatting OK."
+echo ""
+
+# Backend linting
+echo "[2/5] Running Go linting (golangci-lint)..."
+cd api
+if command -v golangci-lint >/dev/null 2>&1; then
+    golangci-lint run ./...
+else
+    echo "WARNING: golangci-lint not installed. Skipping Go lint."
+    echo "Install with: go install github.com/golangci/golangci-lint/cmd/golangci-lint@latest"
+fi
+cd ..
+echo "Go linting OK."
+echo ""
+
+# Backend tests
+echo "[3/5] Running Go tests..."
+cd api
+go test ./...
+cd ..
+echo "Go tests OK."
+echo ""
+
+# Frontend linting
+echo "[4/5] Running Frontend linting (ESLint)..."
+cd web
+if [ -f package.json ]; then
+    if [ -d node_modules ]; then
+        npm run lint
+    else
+        echo "WARNING: node_modules not found. Skipping frontend lint."
+        echo "Run: cd web && npm install"
+    fi
+else
+    echo "WARNING: web/package.json not found. Skipping frontend lint."
+fi
+cd ..
+echo "Frontend linting OK."
+echo ""
+
+# Build check
+echo "[5/5] Running Go build check..."
+cd api
+go build -o /dev/null .
+cd ..
+echo "Build check OK."
+echo ""
+
+echo "=== All presubmit checks passed! ==="
+echo "You are ready to open a PR."
