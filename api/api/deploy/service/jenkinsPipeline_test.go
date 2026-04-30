@@ -48,6 +48,47 @@ func TestJenkinsPipelineTriggerBuildWithParameters(t *testing.T) {
 	}
 }
 
+func TestJenkinsPipelineTriggerBuildRetriesWithCrumb(t *testing.T) {
+	var buildCalls int32
+	var crumbCalls int32
+	adapter := newTestJenkinsPipelineAdapter(t, http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		switch r.URL.Path {
+		case "/crumbIssuer/api/json":
+			atomic.AddInt32(&crumbCalls, 1)
+			w.Header().Set("Content-Type", "application/json")
+			_, _ = w.Write([]byte(`{"crumbRequestField":"Jenkins-Crumb","crumb":"crumb-123"}`))
+			return
+		case "/job/demo/buildWithParameters":
+			call := atomic.AddInt32(&buildCalls, 1)
+			if call == 1 {
+				http.Error(w, "No valid crumb was included in the request", http.StatusForbidden)
+				return
+			}
+			if got := r.Header.Get("Jenkins-Crumb"); got != "crumb-123" {
+				t.Fatalf("expected Jenkins crumb header on retry, got %q", got)
+			}
+			w.Header().Set("Location", "/queue/item/322/")
+			w.WriteHeader(http.StatusCreated)
+			return
+		default:
+			t.Fatalf("unexpected path: %s", r.URL.Path)
+		}
+	}))
+
+	queueID, err := adapter.TriggerBuild(context.Background(), 1, "demo", map[string]string{
+		"GIT_REF": "main",
+	})
+	if err != nil {
+		t.Fatalf("TriggerBuild() error = %v", err)
+	}
+	if queueID != 322 {
+		t.Fatalf("expected queueID 322, got %d", queueID)
+	}
+	if atomic.LoadInt32(&buildCalls) != 2 || atomic.LoadInt32(&crumbCalls) != 1 {
+		t.Fatalf("unexpected calls: build=%d crumb=%d", buildCalls, crumbCalls)
+	}
+}
+
 func TestJenkinsPipelineGetBuildNumberFromQueuePolls(t *testing.T) {
 	var calls int32
 	adapter := newTestJenkinsPipelineAdapter(t, http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
@@ -213,8 +254,10 @@ func newTestJenkinsPipelineAdapter(t *testing.T, handler http.Handler) *JenkinsP
 	}
 
 	return &JenkinsPipelineAdapter{
-		accountDao:       &fakeJenkinsAccountStore{account: account},
-		newClient:        func(host string, port int, username, password string) *appservice.JenkinsClient { return appservice.NewJenkinsClient(host, port, username, password) },
+		accountDao: &fakeJenkinsAccountStore{account: account},
+		newClient: func(host string, port int, username, password string) *appservice.JenkinsClient {
+			return appservice.NewJenkinsClient(host, port, username, password)
+		},
 		pollInterval:     10 * time.Millisecond,
 		defaultTimeout:   200 * time.Millisecond,
 		imageTagPatterns: compileJenkinsImageTagPatterns(),

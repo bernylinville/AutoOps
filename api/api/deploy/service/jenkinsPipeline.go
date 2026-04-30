@@ -1,6 +1,7 @@
 package service
 
 import (
+	"bytes"
 	"context"
 	"encoding/json"
 	"errors"
@@ -341,29 +342,119 @@ func (a *JenkinsPipelineAdapter) getBuildConsoleLog(ctx context.Context, client 
 }
 
 func (a *JenkinsPipelineAdapter) doRequest(ctx context.Context, client *appservice.JenkinsClient, method, endpoint string, body io.Reader, expectedStatus ...int) (*http.Response, error) {
-	requestURL := client.BaseURL + endpoint
-	req, err := http.NewRequestWithContext(ctx, method, requestURL, body)
+	var bodyBytes []byte
+	if body != nil {
+		var err error
+		bodyBytes, err = io.ReadAll(body)
+		if err != nil {
+			return nil, err
+		}
+	}
+
+	resp, message, err := a.doRequestOnce(ctx, client, method, endpoint, bodyBytes, "", "", expectedStatus...)
 	if err != nil {
 		return nil, err
+	}
+	if containsHTTPStatus(expectedStatus, resp.StatusCode) {
+		return resp, nil
+	}
+	resp.Body.Close()
+
+	if shouldRetryJenkinsRequestWithCrumb(method, resp.StatusCode, message) {
+		field, crumb, crumbErr := a.fetchJenkinsCrumb(ctx, client)
+		if crumbErr != nil {
+			return nil, fmt.Errorf("Jenkins 响应错误: %d %s；获取 Jenkins crumb 失败: %v", resp.StatusCode, message, crumbErr)
+		}
+		resp, message, err = a.doRequestOnce(ctx, client, method, endpoint, bodyBytes, field, crumb, expectedStatus...)
+		if err != nil {
+			return nil, err
+		}
+		if containsHTTPStatus(expectedStatus, resp.StatusCode) {
+			log.Printf("jenkins request retried with crumb: method=%s endpoint=%s", method, endpoint)
+			return resp, nil
+		}
+		resp.Body.Close()
+	}
+
+	return nil, fmt.Errorf("Jenkins 响应错误: %d %s", resp.StatusCode, message)
+}
+
+func (a *JenkinsPipelineAdapter) doRequestOnce(ctx context.Context, client *appservice.JenkinsClient, method, endpoint string, bodyBytes []byte, crumbField, crumb string, expectedStatus ...int) (*http.Response, string, error) {
+	requestURL := client.BaseURL + endpoint
+	req, err := http.NewRequestWithContext(ctx, method, requestURL, bytes.NewReader(bodyBytes))
+	if err != nil {
+		return nil, "", err
 	}
 	req.SetBasicAuth(client.Username, client.Password)
 	req.Header.Set("Content-Type", "application/json")
+	if crumbField != "" && crumb != "" {
+		req.Header.Set(crumbField, crumb)
+	}
 
 	resp, err := client.HTTPClient.Do(req)
 	if err != nil {
-		return nil, err
+		return nil, "", err
 	}
 	if !containsHTTPStatus(expectedStatus, resp.StatusCode) {
-		defer resp.Body.Close()
 		payload, _ := io.ReadAll(resp.Body)
 		message := strings.TrimSpace(string(payload))
 		if message == "" {
 			message = http.StatusText(resp.StatusCode)
 		}
-		return nil, fmt.Errorf("Jenkins 响应错误: %d %s", resp.StatusCode, message)
+		resp.Body = io.NopCloser(bytes.NewReader(nil))
+		return resp, message, nil
 	}
 
-	return resp, nil
+	return resp, "", nil
+}
+
+func (a *JenkinsPipelineAdapter) fetchJenkinsCrumb(ctx context.Context, client *appservice.JenkinsClient) (string, string, error) {
+	req, err := http.NewRequestWithContext(ctx, http.MethodGet, client.BaseURL+"/crumbIssuer/api/json", nil)
+	if err != nil {
+		return "", "", err
+	}
+	req.SetBasicAuth(client.Username, client.Password)
+
+	resp, err := client.HTTPClient.Do(req)
+	if err != nil {
+		return "", "", err
+	}
+	defer resp.Body.Close()
+
+	if resp.StatusCode != http.StatusOK {
+		payload, _ := io.ReadAll(resp.Body)
+		message := strings.TrimSpace(string(payload))
+		if message == "" {
+			message = http.StatusText(resp.StatusCode)
+		}
+		return "", "", fmt.Errorf("Jenkins crumbIssuer 响应错误: %d %s", resp.StatusCode, message)
+	}
+
+	var payload struct {
+		CrumbRequestField string `json:"crumbRequestField"`
+		Crumb             string `json:"crumb"`
+	}
+	if err := json.NewDecoder(resp.Body).Decode(&payload); err != nil {
+		return "", "", fmt.Errorf("解析 Jenkins crumb 响应失败: %v", err)
+	}
+	field := strings.TrimSpace(payload.CrumbRequestField)
+	crumb := strings.TrimSpace(payload.Crumb)
+	if field == "" || crumb == "" {
+		return "", "", fmt.Errorf("Jenkins crumb 响应缺少字段")
+	}
+	return field, crumb, nil
+}
+
+func shouldRetryJenkinsRequestWithCrumb(method string, status int, message string) bool {
+	if status != http.StatusForbidden {
+		return false
+	}
+	switch method {
+	case http.MethodPost, http.MethodPut, http.MethodPatch, http.MethodDelete:
+	default:
+		return false
+	}
+	return strings.Contains(strings.ToLower(message), "crumb")
 }
 
 func (a *JenkinsPipelineAdapter) effectivePollInterval() time.Duration {
