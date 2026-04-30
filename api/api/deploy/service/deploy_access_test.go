@@ -67,6 +67,37 @@ func TestBuildAccessInfoWithService(t *testing.T) {
 	}
 }
 
+func TestBuildAccessInfoIncludesDirectApplyAccessURLs(t *testing.T) {
+	req := &deploymodel.DeployRequest{
+		Image:          "10.0.17.205:80/java-demo/java-demo:v1",
+		Namespace:      "ao-direct-java-demo",
+		ReleaseName:    "java-demo",
+		ServiceEnabled: true,
+		ServiceType:    "NodePort",
+		ServicePort:    80,
+		TargetPort:     8080,
+	}
+	applyResult := &DirectApplyResult{
+		NodeIPs:    []string{"10.0.17.40"},
+		AccessURLs: []string{"http://10.0.17.40:30278/"},
+		Service: &DirectServiceResult{
+			Name: "java-demo",
+			Type: "NodePort",
+			Ports: []DirectServicePort{
+				{Port: 80, TargetPort: "8080", NodePort: 30278},
+			},
+		},
+	}
+
+	info := buildAccessInfo(req, applyResult)
+	if info.NodeIP != "10.0.17.40" || info.NodePort != 30278 {
+		t.Fatalf("node access not mapped: %+v", info)
+	}
+	if len(info.AccessURLs) != 1 || info.AccessURLs[0] != "http://10.0.17.40:30278/" {
+		t.Fatalf("access urls not mapped: %+v", info.AccessURLs)
+	}
+}
+
 func TestBuildAccessInfoServiceDisabledOmitsServiceFields(t *testing.T) {
 	req := &deploymodel.DeployRequest{
 		Image:          "registry.example.com/app:v1",
@@ -146,5 +177,33 @@ func TestExecErrorMessageInvalidJSON(t *testing.T) {
 	rec := &deploymodel.ExecutionRecord{DetailJSON: `not-json`}
 	if got := execErrorMessage(rec); got != "" {
 		t.Errorf("expected empty string for invalid JSON, got %q", got)
+	}
+}
+
+func TestDirectApplyResultFromExecutionParsesEncodedResult(t *testing.T) {
+	applyResult := &DirectApplyResult{
+		Namespace:  "ao-direct-java-demo",
+		AccessURLs: []string{"http://10.0.17.40:30278/"},
+		Service: &DirectServiceResult{
+			Name: "java-demo",
+			Type: "NodePort",
+			Ports: []DirectServicePort{
+				{Port: 80, TargetPort: "8080", NodePort: 30278},
+			},
+		},
+	}
+	rec := &deploymodel.ExecutionRecord{
+		DetailJSON: executionDetailWithDirectApplyResult("ok", "preview", applyResult),
+	}
+
+	got := directApplyResultFromExecution(rec)
+	if got == nil {
+		t.Fatal("expected DirectApplyResult")
+	}
+	if len(got.AccessURLs) != 1 || got.AccessURLs[0] != "http://10.0.17.40:30278/" {
+		t.Fatalf("unexpected access urls: %+v", got)
+	}
+	if got.Service == nil || len(got.Service.Ports) != 1 || got.Service.Ports[0].NodePort != 30278 {
+		t.Fatalf("unexpected service result: %+v", got.Service)
 	}
 }

@@ -74,6 +74,21 @@ dingtalkApproval:
 integrations:
   agent:
     bearer_token: "change-me-agent-token"
+    project_onboarding:
+      enabled: false
+      allowed_git_hosts: []
+      shared_jenkins_job_name: ""
+      default_business_group_id: 0
+      default_business_dept_id: 0
+      default_jenkins_server_id: 0
+      default_harbor_server_id: 0
+      default_harbor_project: ""
+      default_approver_admin_id: 0
+      dev_cluster_target_id: 0
+      test_cluster_target_id: 0
+      namespace_prefix: "ao-direct"
+      default_service_port: 80
+      default_target_port: 8080
   gitops:
     local_checkout_path: "/home/kchou/Code/pukka-gitops"
   deploy_bot:

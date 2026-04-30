@@ -1,7 +1,9 @@
 package service
 
 import (
+	"encoding/json"
 	"fmt"
+	"net"
 	"strconv"
 	"strings"
 	"time"
@@ -26,7 +28,13 @@ const (
 	AnnotationSource      = "autoops.io/source"
 	VolcesRegistryHost    = "pukka-all-images-cn-shanghai.cr.volces.com"
 	VolcesPullSecretName  = "volces-registry"
+	HarborPullSecretName  = "harbor-pull-secret"
 )
+
+var harborRegistryHosts = []string{
+	"10.0.17.205",
+	"harbor.harbor.svc.cluster.local",
+}
 
 type DirectManifestRenderResult struct {
 	Objects []runtime.Object `json:"-"`
@@ -154,19 +162,11 @@ func directContainer(req *model.DeployRequest) corev1.Container {
 	container := corev1.Container{
 		Name:  "main",
 		Image: req.Image,
+		Env:   directEnvVars(req),
 		Ports: []corev1.ContainerPort{
 			{ContainerPort: defaultContainerPort(req), Protocol: corev1.ProtocolTCP},
 		},
-		Resources: corev1.ResourceRequirements{
-			Requests: corev1.ResourceList{
-				corev1.ResourceCPU:    resource.MustParse("25m"),
-				corev1.ResourceMemory: resource.MustParse("32Mi"),
-			},
-			Limits: corev1.ResourceList{
-				corev1.ResourceCPU:    resource.MustParse("100m"),
-				corev1.ResourceMemory: resource.MustParse("128Mi"),
-			},
-		},
+		Resources: directResourceRequirements(req),
 	}
 	return container
 }
@@ -179,10 +179,105 @@ func directImagePullSecrets(req *model.DeployRequest) []corev1.LocalObjectRefere
 	if image == "" {
 		return nil
 	}
-	if strings.HasPrefix(image, VolcesRegistryHost+"/") {
+	registryHost := directImageRegistryHost(image)
+	if registryHost == VolcesRegistryHost {
 		return []corev1.LocalObjectReference{{Name: VolcesPullSecretName}}
 	}
+	if isHarborRegistryHost(registryHost) {
+		return []corev1.LocalObjectReference{{Name: HarborPullSecretName}}
+	}
 	return nil
+}
+
+func directEnvVars(req *model.DeployRequest) []corev1.EnvVar {
+	if req == nil || strings.TrimSpace(req.EnvJSON) == "" {
+		return nil
+	}
+	var raw map[string]interface{}
+	if err := json.Unmarshal([]byte(req.EnvJSON), &raw); err != nil || len(raw) == 0 {
+		return nil
+	}
+	envVars := make([]corev1.EnvVar, 0, len(raw))
+	for key, value := range raw {
+		key = strings.TrimSpace(key)
+		if key == "" || value == nil {
+			continue
+		}
+		envVars = append(envVars, corev1.EnvVar{Name: key, Value: fmt.Sprint(value)})
+	}
+	return envVars
+}
+
+func directResourceRequirements(req *model.DeployRequest) corev1.ResourceRequirements {
+	requirements := defaultDirectResourceRequirements()
+	if req == nil || strings.TrimSpace(req.ResourcesJSON) == "" {
+		return requirements
+	}
+	var raw struct {
+		Requests map[string]interface{} `json:"requests"`
+		Limits   map[string]interface{} `json:"limits"`
+	}
+	if err := json.Unmarshal([]byte(req.ResourcesJSON), &raw); err != nil {
+		return requirements
+	}
+	mergeResourceList(requirements.Requests, raw.Requests)
+	mergeResourceList(requirements.Limits, raw.Limits)
+	return requirements
+}
+
+func defaultDirectResourceRequirements() corev1.ResourceRequirements {
+	return corev1.ResourceRequirements{
+		Requests: corev1.ResourceList{
+			corev1.ResourceCPU:    resource.MustParse("100m"),
+			corev1.ResourceMemory: resource.MustParse("256Mi"),
+		},
+		Limits: corev1.ResourceList{
+			corev1.ResourceCPU:    resource.MustParse("1000m"),
+			corev1.ResourceMemory: resource.MustParse("768Mi"),
+		},
+	}
+}
+
+func mergeResourceList(target corev1.ResourceList, raw map[string]interface{}) {
+	for key, value := range raw {
+		name := corev1.ResourceName(strings.TrimSpace(key))
+		if name == "" || value == nil {
+			continue
+		}
+		quantity, err := resource.ParseQuantity(fmt.Sprint(value))
+		if err != nil {
+			continue
+		}
+		target[name] = quantity
+	}
+}
+
+func directImageRegistryHost(image string) string {
+	first, _, _ := strings.Cut(strings.TrimSpace(image), "/")
+	if first == "" {
+		return ""
+	}
+	if !strings.Contains(first, ".") && !strings.Contains(first, ":") && first != "localhost" {
+		return ""
+	}
+	host := strings.ToLower(first)
+	if parsedHost, _, err := net.SplitHostPort(host); err == nil {
+		return parsedHost
+	}
+	return host
+}
+
+func isHarborRegistryHost(host string) bool {
+	host = strings.ToLower(strings.TrimSpace(host))
+	if host == "" {
+		return false
+	}
+	for _, candidate := range harborRegistryHosts {
+		if host == strings.ToLower(candidate) {
+			return true
+		}
+	}
+	return strings.Contains(host, "harbor")
 }
 
 func defaultContainerPort(req *model.DeployRequest) int32 {

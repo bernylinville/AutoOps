@@ -270,18 +270,22 @@ func (s *PipelineService) executeBuildStage(run *model.PipelineRun) error {
 	if !strings.EqualFold(strings.TrimSpace(buildDetail.Result), "SUCCESS") {
 		return s.failPipelineStage(run, record, model.PipelineStageBuild, fmt.Sprintf("Jenkins 构建失败，结果=%s", buildDetail.Result), marshalPipelineJSONString(buildDetail))
 	}
-	artifactTag, err := s.jenkinsAdapter.ExtractImageTagFromBuildLog(ctx, run.JenkinsServerID, run.JenkinsJobNameSnapshot, buildNumber)
+	extractedImageRef, err := s.jenkinsAdapter.ExtractImageTagFromBuildLog(ctx, run.JenkinsServerID, run.JenkinsJobNameSnapshot, buildNumber)
 	if err != nil {
 		return s.failPipelineStage(run, record, model.PipelineStageBuild, fmt.Sprintf("提取镜像标签失败: %v", err), marshalPipelineJSONString(buildDetail))
 	}
+	artifactTag := artifactTagFromJenkinsValue(extractedImageRef)
+	plannedImageRef := plannedImageRefFromJenkinsValue(extractedImageRef)
 
 	buildStageDetail := marshalPipelineJSONString(map[string]interface{}{
-		"queueID":       queueID,
-		"buildNumber":   buildNumber,
-		"artifactTag":   artifactTag,
-		"buildDetail":   buildDetail,
-		"jenkinsJob":    run.JenkinsJobNameSnapshot,
-		"jenkinsServer": run.JenkinsServerID,
+		"queueID":           queueID,
+		"buildNumber":       buildNumber,
+		"artifactTag":       artifactTag,
+		"extractedImageRef": extractedImageRef,
+		"plannedImageRef":   plannedImageRef,
+		"buildDetail":       buildDetail,
+		"jenkinsJob":        run.JenkinsJobNameSnapshot,
+		"jenkinsServer":     run.JenkinsServerID,
 	})
 	if err := s.pipelineDao.UpdatePipelineStageRecord(record.ID, map[string]interface{}{
 		"external_id":  strconv.Itoa(buildNumber),
@@ -295,12 +299,16 @@ func (s *PipelineService) executeBuildStage(run *model.PipelineRun) error {
 	if err := s.completeStageRecord(record, model.PipelineStageStatusSucceeded, buildStageDetail, ""); err != nil {
 		return s.failPipelineStage(run, record, model.PipelineStageBuild, fmt.Sprintf("完成构建阶段记录失败: %v", err), buildStageDetail)
 	}
-	if err := s.applyRunUpdates(run, map[string]interface{}{
+	runUpdates := map[string]interface{}{
 		"jenkins_queue_id":     queueID,
 		"jenkins_build_number": buildNumber,
 		"jenkins_build_url":    buildDetail.URL,
 		"artifact_tag":         artifactTag,
-	}, nil); err != nil {
+	}
+	if plannedImageRef != "" {
+		runUpdates["planned_image_ref"] = plannedImageRef
+	}
+	if err := s.applyRunUpdates(run, runUpdates, nil); err != nil {
 		return s.failPipelineStage(run, record, model.PipelineStageBuild, fmt.Sprintf("更新构建结果失败: %v", err), buildStageDetail)
 	}
 	if err := s.transitionStage(run, model.PipelineStageScan, model.PipelineStatusScanning, ""); err != nil {
@@ -308,6 +316,32 @@ func (s *PipelineService) executeBuildStage(run *model.PipelineRun) error {
 	}
 	log.Printf("pipeline build stage succeeded: pipelineRunID=%d requestID=%d buildNumber=%d artifactTag=%s", run.ID, run.RequestID, buildNumber, artifactTag)
 	return nil
+}
+
+func artifactTagFromJenkinsValue(value string) string {
+	value = strings.TrimSpace(value)
+	if value == "" {
+		return ""
+	}
+	lastSlash := strings.LastIndex(value, "/")
+	lastColon := strings.LastIndex(value, ":")
+	if lastColon > lastSlash && lastColon < len(value)-1 {
+		return value[lastColon+1:]
+	}
+	return value
+}
+
+func plannedImageRefFromJenkinsValue(value string) string {
+	value = strings.TrimSpace(value)
+	if value == "" {
+		return ""
+	}
+	lastSlash := strings.LastIndex(value, "/")
+	lastColon := strings.LastIndex(value, ":")
+	if lastSlash >= 0 && lastColon > lastSlash && lastColon < len(value)-1 {
+		return value
+	}
+	return ""
 }
 
 func (s *PipelineService) executeScanStage(run *model.PipelineRun) error {
@@ -601,6 +635,9 @@ func (s *PipelineService) buildImageRef(run *model.PipelineRun) string {
 	tag := strings.TrimSpace(run.ArtifactTag)
 	project := strings.Trim(strings.TrimSpace(run.HarborProject), "/")
 	repository := strings.Trim(strings.TrimSpace(run.HarborRepository), "/")
+	if planned := plannedImageRefFromJenkinsValue(tag); planned != "" {
+		return firstNonEmptyPipelineString(strings.TrimSpace(run.PlannedImageRef), planned)
+	}
 	if tag == "" || project == "" || repository == "" {
 		return strings.TrimSpace(run.PlannedImageRef)
 	}

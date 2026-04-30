@@ -43,6 +43,8 @@ func RegisterAgentDeployRoutes(router *gin.RouterGroup) {
 	agentGroup.Use(middleware.AgentAuthMiddleware(), middleware.AuditMiddleware("agent"))
 	{
 		agentGroup.POST("/deploy-requests", deployCtrl.CreateAgentDeployRequest)
+		agentGroup.POST("/build-deploy-requests", deployCtrl.CreateAgentBuildDeployRequest)
+		agentGroup.POST("/project-onboard-build-deploy", deployCtrl.CreateAgentProjectOnboardBuildDeployRequest)
 		agentGroup.GET("/deploy-requests/:requestNo", deployCtrl.GetDeployRequestByRequestNo)
 		agentGroup.GET("/deploy-requests/:requestNo/status", deployCtrl.GetAgentStatus)
 		agentGroup.POST("/deploy-requests/:requestNo/dispatch-approval", deployCtrl.RetryApprovalDispatchByRequestNo)

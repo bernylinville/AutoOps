@@ -285,6 +285,15 @@ func TestBuildAgentOnboardingProfileDefaults(t *testing.T) {
 	if got.JenkinsJobName != "autoops-springboot-build" || got.HarborProject != "library" || got.HarborRepository != "springboot-demo" {
 		t.Fatalf("ci registry defaults wrong: job=%q harbor=%s/%s", got.JenkinsJobName, got.HarborProject, got.HarborRepository)
 	}
+	resources := mergeProfileMaps(got.ResourcesJSON, nil)
+	limits, ok := resources["limits"].(map[string]interface{})
+	if !ok || limits["memory"] != "768Mi" || limits["cpu"] != "1000m" {
+		t.Fatalf("resource limits should default to Spring Boot safe values, got %v", resources)
+	}
+	requests, ok := resources["requests"].(map[string]interface{})
+	if !ok || requests["memory"] != "256Mi" || requests["cpu"] != "100m" {
+		t.Fatalf("resource requests should default to Spring Boot safe values, got %v", resources)
+	}
 	params := mergeProfileMaps(got.BuildParamsJSON, nil)
 	if params["GIT_URL"] != repo.RawURL || params["APPLICATION_CODE"] != app.Code || params["HARBOR_PROJECT"] != "library" || params["HARBOR_REPOSITORY"] != app.Code {
 		t.Fatalf("build params missing required values: %v", params)

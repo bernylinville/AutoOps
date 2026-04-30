@@ -14,7 +14,7 @@ func TestExecuteDeployRequestInternalRequiresApprovedStatus(t *testing.T) {
 		ExecutionStatus: deploymodel.ExecutionStatusPending,
 	}
 
-	_, _, err := service.executeDeployRequestInternal(req, "auto execute")
+	_, _, err := service.executeDeployRequestInternal(req, "auto execute", true)
 	if err == nil {
 		t.Fatal("expected approval guard error")
 	}
@@ -30,7 +30,7 @@ func TestExecuteDeployRequestInternalRejectsSucceededRequest(t *testing.T) {
 		ExecutionStatus: deploymodel.ExecutionStatusSucceeded,
 	}
 
-	_, _, err := service.executeDeployRequestInternal(req, "auto execute")
+	_, _, err := service.executeDeployRequestInternal(req, "auto execute", true)
 	if err == nil {
 		t.Fatal("expected execution status guard error")
 	}

@@ -106,6 +106,24 @@ func (dc *DeployController) CreateAgentDeployRequest(c *gin.Context) {
 	dc.service.CreateAgentDeployRequest(c, &req)
 }
 
+func (dc *DeployController) CreateAgentBuildDeployRequest(c *gin.Context) {
+	var req model.CreateAgentBuildDeployRequest
+	if err := c.ShouldBindJSON(&req); err != nil {
+		result.Failed(c, 400, "请求参数错误: "+err.Error())
+		return
+	}
+	dc.service.CreateAgentBuildDeployRequest(c, &req)
+}
+
+func (dc *DeployController) CreateAgentProjectOnboardBuildDeployRequest(c *gin.Context) {
+	var req model.CreateAgentProjectOnboardBuildDeployRequest
+	if err := c.ShouldBindJSON(&req); err != nil {
+		result.Failed(c, 400, "请求参数错误: "+err.Error())
+		return
+	}
+	dc.service.CreateAgentProjectOnboardBuildDeployRequest(c, &req)
+}
+
 func (dc *DeployController) ListDeployRequests(c *gin.Context) {
 	var query model.DeployRequestListQuery
 	if err := c.ShouldBindQuery(&query); err != nil {

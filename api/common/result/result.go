@@ -63,3 +63,17 @@ func Failed(c *gin.Context, code int, message string) {
 func FailedWithCode(c *gin.Context, code int, message string) {
 	Failed(c, code, message)
 }
+
+// FailedWithStatus returns a business error with an explicit HTTP status.
+// errorKey is accepted for compatibility with newer handlers but the legacy
+// response shape only exposes code/message/data.
+func FailedWithStatus(c *gin.Context, httpStatus int, code int, errorKey string, message string) {
+	res := Result{
+		Code:    code,
+		Message: message,
+		Data: gin.H{
+			"error": errorKey,
+		},
+	}
+	c.JSON(httpStatus, res)
+}

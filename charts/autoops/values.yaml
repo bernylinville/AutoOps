@@ -34,6 +34,10 @@ service:
 
 api:
   replicaCount: 1
+  # Optional service account for API runtime. Set this when using
+  # deploy_cluster_target.direct_kubeconfig_ref=in-cluster so Direct deploys
+  # run with a Kubernetes RBAC identity instead of the namespace default SA.
+  serviceAccountName: ""
   timezone: Asia/Shanghai
   imageHost: http://10.0.17.206
   dbSslMode: disable
@@ -216,6 +220,21 @@ dingtalkApproval:
 integrations:
   agent:
     bearerToken: ""
+    projectOnboarding:
+      enabled: false
+      allowedGitHosts: []
+      sharedJenkinsJobName: ""
+      defaultBusinessGroupID: 0
+      defaultBusinessDeptID: 0
+      defaultJenkinsServerID: 0
+      defaultHarborServerID: 0
+      defaultHarborProject: ""
+      defaultApproverAdminID: 0
+      devClusterTargetID: 0
+      testClusterTargetID: 0
+      namespacePrefix: ao-direct
+      defaultServicePort: 80
+      defaultTargetPort: 8080
   deployBot:
     provider: dingtalk
     enabled: false

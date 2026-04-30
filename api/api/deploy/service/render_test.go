@@ -9,6 +9,8 @@ import (
 
 	deploymodel "dodevops-api/api/deploy/model"
 	commonconfig "dodevops-api/common/config"
+
+	appsv1 "k8s.io/api/apps/v1"
 )
 
 func TestRenderDirectManifestAddsOwnerLabelsAndTTL(t *testing.T) {
@@ -75,6 +77,94 @@ func TestRenderDirectManifestAddsVolcesImagePullSecret(t *testing.T) {
 	}
 	if !strings.Contains(rendered.YAML, "- name: volces-registry") {
 		t.Fatalf("expected volces-registry pull secret, got:\n%s", rendered.YAML)
+	}
+}
+
+func TestRenderDirectManifestAddsHarborImagePullSecret(t *testing.T) {
+	req := &deploymodel.DeployRequest{
+		RequestNo:    "DRTEST005",
+		Mode:         deploymodel.DeployModeDirect,
+		ResourceType: deploymodel.DeployResourceTypeDeployment,
+		ReleaseName:  "java-demo",
+		Namespace:    "ao-direct-java-demo",
+		Image:        "10.0.17.205:80/java-demo/java-demo:20260430040417-470cfcd",
+		Replicas:     1,
+	}
+
+	rendered, err := RenderDirectManifest(req)
+	if err != nil {
+		t.Fatalf("RenderDirectManifest() error = %v", err)
+	}
+	if !strings.Contains(rendered.YAML, "- name: harbor-pull-secret") {
+		t.Fatalf("expected harbor-pull-secret for Harbor image, got:\n%s", rendered.YAML)
+	}
+}
+
+func TestRenderDirectManifestAppliesEnvAndResourceDefaults(t *testing.T) {
+	req := &deploymodel.DeployRequest{
+		RequestNo:      "DRTEST006",
+		Mode:           deploymodel.DeployModeDirect,
+		ResourceType:   deploymodel.DeployResourceTypeDeployment,
+		ReleaseName:    "java-demo",
+		Namespace:      "ao-direct-java-demo",
+		Image:          "java-demo:latest",
+		Replicas:       1,
+		EnvJSON:        `{"SPRING_PROFILES_ACTIVE":"dev","JAVA_TOOL_OPTIONS":"-XX:MaxRAMPercentage=75"}`,
+		ResourcesJSON:  `{}`,
+		ServiceEnabled: true,
+		ServicePort:    80,
+		TargetPort:     8080,
+	}
+
+	rendered, err := RenderDirectManifest(req)
+	if err != nil {
+		t.Fatalf("RenderDirectManifest() error = %v", err)
+	}
+	deployment, ok := rendered.Objects[0].(*appsv1.Deployment)
+	if !ok {
+		t.Fatalf("expected deployment object, got %T", rendered.Objects[0])
+	}
+	container := deployment.Spec.Template.Spec.Containers[0]
+	if len(container.Env) != 2 {
+		t.Fatalf("expected env vars from EnvJSON, got %#v", container.Env)
+	}
+	if got := container.Resources.Requests.Memory().String(); got != "256Mi" {
+		t.Fatalf("default memory request = %s, want 256Mi", got)
+	}
+	if got := container.Resources.Limits.Cpu().String(); got != "1" {
+		t.Fatalf("default cpu limit = %s, want 1", got)
+	}
+	if got := container.Resources.Limits.Memory().String(); got != "768Mi" {
+		t.Fatalf("default memory limit = %s, want 768Mi", got)
+	}
+}
+
+func TestRenderDirectManifestOverridesResourceJSON(t *testing.T) {
+	req := &deploymodel.DeployRequest{
+		RequestNo:     "DRTEST007",
+		Mode:          deploymodel.DeployModeDirect,
+		ResourceType:  deploymodel.DeployResourceTypeDeployment,
+		ReleaseName:   "java-demo",
+		Namespace:     "ao-direct-java-demo",
+		Image:         "java-demo:latest",
+		Replicas:      1,
+		ResourcesJSON: `{"requests":{"memory":"512Mi"},"limits":{"cpu":"1500m"}}`,
+	}
+
+	rendered, err := RenderDirectManifest(req)
+	if err != nil {
+		t.Fatalf("RenderDirectManifest() error = %v", err)
+	}
+	deployment := rendered.Objects[0].(*appsv1.Deployment)
+	container := deployment.Spec.Template.Spec.Containers[0]
+	if got := container.Resources.Requests.Memory().String(); got != "512Mi" {
+		t.Fatalf("memory request = %s, want 512Mi", got)
+	}
+	if got := container.Resources.Limits.Cpu().String(); got != "1500m" {
+		t.Fatalf("cpu limit = %s, want 1500m", got)
+	}
+	if got := container.Resources.Requests.Cpu().String(); got != "100m" {
+		t.Fatalf("default cpu request = %s, want 100m", got)
 	}
 }
 

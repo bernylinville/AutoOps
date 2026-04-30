@@ -12,10 +12,14 @@ import (
 	authorizationv1 "k8s.io/api/authorization/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/client-go/kubernetes"
+	"k8s.io/client-go/rest"
 	"k8s.io/client-go/tools/clientcmd"
 )
 
-const DirectKubeconfigRefPrefix = "account:"
+const (
+	DirectKubeconfigRefPrefix    = "account:"
+	DirectKubeconfigRefInCluster = "in-cluster"
+)
 
 type DirectKubeconfigValidationResult struct {
 	Valid      bool                    `json:"valid"`
@@ -42,7 +46,7 @@ func ResolveDirectKubeconfig(ref string) (string, error) {
 		return "", fmt.Errorf("direct_kubeconfig_ref 为空")
 	}
 	if !strings.HasPrefix(ref, DirectKubeconfigRefPrefix) {
-		return "", fmt.Errorf("direct_kubeconfig_ref 仅支持 account:<id|alias>")
+		return "", fmt.Errorf("direct_kubeconfig_ref 仅支持 account:<id|alias> 或 in-cluster")
 	}
 
 	accountRef := strings.TrimSpace(strings.TrimPrefix(ref, DirectKubeconfigRefPrefix))
@@ -79,34 +83,24 @@ func ResolveDirectKubeconfig(ref string) (string, error) {
 }
 
 func ValidateDirectKubeconfigRef(ref string) (*DirectKubeconfigValidationResult, error) {
-	kubeconfig, err := ResolveDirectKubeconfig(ref)
+	restConfig, err := directRESTConfigFromRef(ref)
 	if err != nil {
 		return &DirectKubeconfigValidationResult{Valid: false, Ref: ref, Message: err.Error()}, err
-	}
-
-	restConfig, err := clientcmd.RESTConfigFromKubeConfig([]byte(kubeconfig))
-	if err != nil {
-		return &DirectKubeconfigValidationResult{Valid: false, Ref: ref, Message: "解析 kubeconfig 失败: " + err.Error()}, err
 	}
 
 	validation := &DirectKubeconfigValidationResult{
 		Valid:   true,
 		Ref:     ref,
-		Message: "kubeconfig 解析成功；尚未执行集群 API 权限探测",
+		Message: "direct kubeconfig 解析成功；尚未执行集群 API 权限探测",
 		Host:    restConfig.Host,
 	}
 	return validation, nil
 }
 
 func ValidateDirectKubeconfigAccess(ref string, namespace string) (*DirectKubeconfigValidationResult, error) {
-	kubeconfig, err := ResolveDirectKubeconfig(ref)
+	restConfig, err := directRESTConfigFromRef(ref)
 	if err != nil {
 		return &DirectKubeconfigValidationResult{Valid: false, Ref: ref, Message: err.Error()}, err
-	}
-
-	restConfig, err := clientcmd.RESTConfigFromKubeConfig([]byte(kubeconfig))
-	if err != nil {
-		return &DirectKubeconfigValidationResult{Valid: false, Ref: ref, Message: "解析 kubeconfig 失败: " + err.Error()}, err
 	}
 	restConfig.Timeout = 10 * time.Second
 
@@ -161,6 +155,27 @@ func ValidateDirectKubeconfigAccess(ref string, namespace string) (*DirectKubeco
 }
 
 func NewDirectKubeClient(ref string) (*kubernetes.Clientset, error) {
+	restConfig, err := directRESTConfigFromRef(ref)
+	if err != nil {
+		return nil, err
+	}
+	restConfig.Timeout = 15 * time.Second
+	clientset, err := kubernetes.NewForConfig(restConfig)
+	if err != nil {
+		return nil, fmt.Errorf("创建 Kubernetes 客户端失败: %v", err)
+	}
+	return clientset, nil
+}
+
+func directRESTConfigFromRef(ref string) (*rest.Config, error) {
+	if isDirectInClusterRef(ref) {
+		restConfig, err := rest.InClusterConfig()
+		if err != nil {
+			return nil, fmt.Errorf("加载 in-cluster kubeconfig 失败: %v", err)
+		}
+		return restConfig, nil
+	}
+
 	kubeconfig, err := ResolveDirectKubeconfig(ref)
 	if err != nil {
 		return nil, err
@@ -169,12 +184,11 @@ func NewDirectKubeClient(ref string) (*kubernetes.Clientset, error) {
 	if err != nil {
 		return nil, fmt.Errorf("解析 kubeconfig 失败: %v", err)
 	}
-	restConfig.Timeout = 15 * time.Second
-	clientset, err := kubernetes.NewForConfig(restConfig)
-	if err != nil {
-		return nil, fmt.Errorf("创建 Kubernetes 客户端失败: %v", err)
-	}
-	return clientset, nil
+	return restConfig, nil
+}
+
+func isDirectInClusterRef(ref string) bool {
+	return strings.EqualFold(strings.TrimSpace(ref), DirectKubeconfigRefInCluster)
 }
 
 func selfSubjectAccessReview(ctx context.Context, clientset *kubernetes.Clientset, check DirectPermissionCheck) (bool, string) {

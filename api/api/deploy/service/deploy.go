@@ -33,6 +33,8 @@ type IDeployService interface {
 	UpdateClusterTarget(c *gin.Context, id uint, req *model.UpdateClusterTargetRequest)
 	CreateDeployRequest(c *gin.Context, req *model.CreateDeployRequest)
 	CreateAgentDeployRequest(c *gin.Context, req *model.CreateAgentDeployRequest)
+	CreateAgentBuildDeployRequest(c *gin.Context, req *model.CreateAgentBuildDeployRequest)
+	CreateAgentProjectOnboardBuildDeployRequest(c *gin.Context, req *model.CreateAgentProjectOnboardBuildDeployRequest)
 	ListDeployRequests(c *gin.Context, query *model.DeployRequestListQuery)
 	GetDeployRequest(c *gin.Context, id uint)
 	GetDeployRequestByRequestNo(c *gin.Context, requestNo string)
@@ -262,33 +264,91 @@ func (s *DeployService) CreateAgentDeployRequest(c *gin.Context, req *model.Crea
 		RequesterDisplayName:  defaultString(req.RequesterDisplayName, requester.Nickname),
 		RequesterExternalType: strings.TrimSpace(req.RequesterExternalType),
 		RequesterExternalID:   strings.TrimSpace(req.RequesterExternalID),
-		Request: &model.CreateDeployRequest{
-			Mode:             req.Mode,
-			WorkflowKind:     req.WorkflowKind,
-			ResourceType:     req.ResourceType,
-			ClusterTargetID:  req.ClusterTargetID,
-			ApplicationID:    req.ApplicationID,
-			ReleaseName:      req.ReleaseName,
-			Namespace:        req.Namespace,
-			Image:            req.Image,
-			Replicas:         req.Replicas,
-			ServiceEnabled:   req.ServiceEnabled,
-			ServiceType:      req.ServiceType,
-			ServicePort:      req.ServicePort,
-			TargetPort:       req.TargetPort,
-			Env:              req.Env,
-			Resources:        req.Resources,
-			TTLHours:         req.TTLHours,
-			ApproverAdminID:  req.ApproverAdminID,
-			Reason:           req.Reason,
-			ChatContext:      req.ChatContext,
-			GitRef:           req.GitRef,
-			BuildParams:      req.BuildParams,
-			HarborProject:    req.HarborProject,
-			HarborRepository: req.HarborRepository,
-			ArtifactTag:      req.ArtifactTag,
-		},
+		Request:               createDeployRequestFromAgent(req),
 	})
+}
+
+func createDeployRequestFromAgent(req *model.CreateAgentDeployRequest) *model.CreateDeployRequest {
+	if req == nil {
+		return nil
+	}
+	return &model.CreateDeployRequest{
+		Mode:             req.Mode,
+		WorkflowKind:     req.WorkflowKind,
+		ApplicationID:    req.ApplicationID,
+		ResourceType:     req.ResourceType,
+		ClusterTargetID:  req.ClusterTargetID,
+		ReleaseName:      req.ReleaseName,
+		Namespace:        req.Namespace,
+		Image:            req.Image,
+		Replicas:         req.Replicas,
+		ServiceEnabled:   req.ServiceEnabled,
+		ServiceType:      req.ServiceType,
+		ServicePort:      req.ServicePort,
+		TargetPort:       req.TargetPort,
+		Env:              cloneInterfaceMap(req.Env),
+		Resources:        cloneInterfaceMap(req.Resources),
+		TTLHours:         req.TTLHours,
+		ApproverAdminID:  req.ApproverAdminID,
+		Reason:           req.Reason,
+		ChatContext:      cloneInterfaceMap(req.ChatContext),
+		GitRef:           req.GitRef,
+		BuildParams:      cloneInterfaceMap(req.BuildParams),
+		JenkinsServerID:  req.JenkinsServerID,
+		JenkinsJobName:   req.JenkinsJobName,
+		HarborServerID:   req.HarborServerID,
+		HarborProject:    req.HarborProject,
+		HarborRepository: req.HarborRepository,
+		ArtifactTag:      req.ArtifactTag,
+		ScanPolicy:       cloneInterfaceMap(req.ScanPolicy),
+	}
+}
+
+func cloneCreateDeployRequest(req *model.CreateDeployRequest) *model.CreateDeployRequest {
+	if req == nil {
+		return nil
+	}
+	return &model.CreateDeployRequest{
+		Mode:             req.Mode,
+		WorkflowKind:     req.WorkflowKind,
+		ApplicationID:    req.ApplicationID,
+		ResourceType:     req.ResourceType,
+		ClusterTargetID:  req.ClusterTargetID,
+		ReleaseName:      req.ReleaseName,
+		Namespace:        req.Namespace,
+		Image:            req.Image,
+		Replicas:         req.Replicas,
+		ServiceEnabled:   req.ServiceEnabled,
+		ServiceType:      req.ServiceType,
+		ServicePort:      req.ServicePort,
+		TargetPort:       req.TargetPort,
+		Env:              cloneInterfaceMap(req.Env),
+		Resources:        cloneInterfaceMap(req.Resources),
+		TTLHours:         req.TTLHours,
+		ApproverAdminID:  req.ApproverAdminID,
+		Reason:           req.Reason,
+		ChatContext:      cloneInterfaceMap(req.ChatContext),
+		GitRef:           req.GitRef,
+		BuildParams:      cloneInterfaceMap(req.BuildParams),
+		JenkinsServerID:  req.JenkinsServerID,
+		JenkinsJobName:   req.JenkinsJobName,
+		HarborServerID:   req.HarborServerID,
+		HarborProject:    req.HarborProject,
+		HarborRepository: req.HarborRepository,
+		ArtifactTag:      req.ArtifactTag,
+		ScanPolicy:       cloneInterfaceMap(req.ScanPolicy),
+	}
+}
+
+func cloneInterfaceMap(in map[string]interface{}) map[string]interface{} {
+	if len(in) == 0 {
+		return nil
+	}
+	out := make(map[string]interface{}, len(in))
+	for key, value := range in {
+		out[key] = value
+	}
+	return out
 }
 
 type createDeployIdentity struct {
@@ -357,6 +417,14 @@ func (s *DeployService) createDeployRequestWithIdentity(c *gin.Context, identity
 	}
 
 	if workflowKind == model.WorkflowKindBuildDeploy {
+		jenkinsServerID := defaultUint(req.JenkinsServerID)
+		if jenkinsServerID == 0 {
+			jenkinsServerID = defaultUint(target.JenkinsServerID)
+		}
+		harborServerID := defaultUint(req.HarborServerID)
+		if harborServerID == 0 {
+			harborServerID = defaultUint(target.HarborServerID)
+		}
 		if req.ApplicationID == nil || *req.ApplicationID == 0 {
 			result.Failed(c, 400, "build_deploy 工作流需要指定应用ID")
 			return
@@ -365,12 +433,12 @@ func (s *DeployService) createDeployRequestWithIdentity(c *gin.Context, identity
 			result.Failed(c, 400, "build_deploy 工作流需要指定 Git 引用")
 			return
 		}
-		if target.JenkinsServerID == nil || *target.JenkinsServerID == 0 {
-			result.Failed(c, 400, "build_deploy 工作流需要部署目标配置 Jenkins 服务器")
+		if jenkinsServerID == 0 {
+			result.Failed(c, 400, "build_deploy 工作流需要配置 Jenkins 服务器")
 			return
 		}
-		if target.HarborServerID == nil || *target.HarborServerID == 0 {
-			result.Failed(c, 400, "build_deploy 工作流需要部署目标配置 Harbor 服务器")
+		if harborServerID == 0 {
+			result.Failed(c, 400, "build_deploy 工作流需要配置 Harbor 服务器")
 			return
 		}
 		if strings.TrimSpace(req.HarborProject) == "" || strings.TrimSpace(req.HarborRepository) == "" {
@@ -446,21 +514,32 @@ func (s *DeployService) createPipelineRunForRequest(req *model.DeployRequest, bu
 	}
 
 	pipelineSvc := NewPipelineService(s.db)
+	jenkinsServerID := defaultUint(buildReq.JenkinsServerID)
+	if jenkinsServerID == 0 {
+		jenkinsServerID = defaultUint(target.JenkinsServerID)
+	}
+	harborServerID := defaultUint(buildReq.HarborServerID)
+	if harborServerID == 0 {
+		harborServerID = defaultUint(target.HarborServerID)
+	}
 	createReq := &model.CreatePipelineRunRequest{
 		RequestID:        req.ID,
 		ApplicationID:    defaultUint(req.ApplicationID),
-		JenkinsServerID:  defaultUint(target.JenkinsServerID),
-		HarborServerID:   defaultUint(target.HarborServerID),
+		JenkinsServerID:  jenkinsServerID,
+		HarborServerID:   harborServerID,
 		GitRef:           strings.TrimSpace(buildReq.GitRef),
 		BuildParams:      buildReq.BuildParams,
 		HarborProject:    strings.TrimSpace(buildReq.HarborProject),
 		HarborRepository: strings.TrimSpace(buildReq.HarborRepository),
 		ArtifactTag:      strings.TrimSpace(buildReq.ArtifactTag),
+		ScanPolicy:       buildReq.ScanPolicy,
+	}
+	if jobName := strings.TrimSpace(buildReq.JenkinsJobName); jobName != "" {
+		createReq.JenkinsJobNameSnapshot = jobName
 	}
 	if req.ApplicationID != nil && *req.ApplicationID > 0 {
 		createReq.ApplicationID = *req.ApplicationID
-		jobName := s.getJenkinsJobNameForApp(*req.ApplicationID, target.EnvType)
-		if jobName != "" {
+		if jobName := s.getJenkinsJobNameForApp(*req.ApplicationID, target.EnvType); jobName != "" && createReq.JenkinsJobNameSnapshot == "" {
 			createReq.JenkinsJobNameSnapshot = jobName
 		}
 	}
@@ -858,7 +937,12 @@ func (s *DeployService) GetAgentStatusByRequestNo(c *gin.Context, requestNo stri
 
 	var accessInfo *AccessInfo
 	if req.ExecutionStatus == model.ExecutionStatusSucceeded {
-		accessInfo = buildAccessInfo(req)
+		record, recordErr := s.dao.GetLatestExecutionRecordByRequestID(req.ID)
+		if recordErr == nil {
+			accessInfo = buildAccessInfo(req, directApplyResultFromExecution(record))
+		} else {
+			accessInfo = buildAccessInfo(req)
+		}
 	}
 
 	result.Success(c, map[string]interface{}{
@@ -1557,17 +1641,21 @@ type AccessInfo struct {
 	Namespace   string `json:"namespace"`
 	ReleaseName string `json:"releaseName"`
 	// Service fields — present only when ServiceEnabled is true
-	ServiceEnabled bool   `json:"serviceEnabled"`
-	ServiceType    string `json:"serviceType,omitempty"`
-	ServicePort    int32  `json:"servicePort,omitempty"`
-	TargetPort     int32  `json:"targetPort,omitempty"`
+	ServiceEnabled bool     `json:"serviceEnabled"`
+	ServiceType    string   `json:"serviceType,omitempty"`
+	ServicePort    int32    `json:"servicePort,omitempty"`
+	TargetPort     int32    `json:"targetPort,omitempty"`
+	NodeIP         string   `json:"nodeIp,omitempty"`
+	NodePort       int32    `json:"nodePort,omitempty"`
+	NodeIPs        []string `json:"nodeIps,omitempty"`
+	NodePorts      []int32  `json:"nodePorts,omitempty"`
+	AccessURLs     []string `json:"accessUrls,omitempty"`
+	Warnings       []string `json:"warnings,omitempty"`
 }
 
 // buildAccessInfo constructs an AccessInfo from the fields stored on the
-// DeployRequest. ServiceClusterIP and NodePort are not available here because
-// directExecutor.go only records which resources were Applied, not the
-// live Kubernetes service state.
-func buildAccessInfo(req *model.DeployRequest) *AccessInfo {
+// DeployRequest and enriches it with live Direct apply results when available.
+func buildAccessInfo(req *model.DeployRequest, applyResults ...*DirectApplyResult) *AccessInfo {
 	if req == nil {
 		return nil
 	}
@@ -1591,7 +1679,91 @@ func buildAccessInfo(req *model.DeployRequest) *AccessInfo {
 			info.TargetPort = info.ServicePort
 		}
 	}
+	for _, applyResult := range applyResults {
+		if applyResult == nil {
+			continue
+		}
+		if applyResult.Service != nil {
+			info.ServiceEnabled = true
+			if applyResult.Service.Type != "" {
+				info.ServiceType = applyResult.Service.Type
+			}
+			if len(applyResult.Service.Ports) > 0 {
+				firstPort := applyResult.Service.Ports[0]
+				if firstPort.Port > 0 {
+					info.ServicePort = firstPort.Port
+				}
+				if firstPort.TargetPort != "" {
+					if parsed, err := strconv.ParseInt(firstPort.TargetPort, 10, 32); err == nil {
+						info.TargetPort = int32(parsed)
+					}
+				}
+				for _, port := range applyResult.Service.Ports {
+					if port.NodePort > 0 {
+						info.NodePorts = append(info.NodePorts, port.NodePort)
+					}
+				}
+				info.NodePorts = dedupeInt32s(info.NodePorts)
+				if len(info.NodePorts) > 0 {
+					info.NodePort = info.NodePorts[0]
+				}
+			}
+		}
+		info.NodeIPs = dedupeStrings(append(info.NodeIPs, applyResult.NodeIPs...))
+		if len(info.NodeIPs) > 0 {
+			info.NodeIP = info.NodeIPs[0]
+		}
+		info.AccessURLs = dedupeStrings(append(info.AccessURLs, applyResult.AccessURLs...))
+		info.Warnings = dedupeStrings(append(info.Warnings, applyResult.Warnings...))
+	}
 	return info
+}
+
+func directApplyResultFromExecution(record *model.ExecutionRecord) *DirectApplyResult {
+	if record == nil || strings.TrimSpace(record.DetailJSON) == "" {
+		return nil
+	}
+
+	var detail map[string]json.RawMessage
+	if err := json.Unmarshal([]byte(record.DetailJSON), &detail); err != nil {
+		return nil
+	}
+	raw, ok := detail["result"]
+	if !ok || len(raw) == 0 {
+		return nil
+	}
+
+	var result DirectApplyResult
+	if raw[0] == '"' {
+		var encoded string
+		if err := json.Unmarshal(raw, &encoded); err != nil || strings.TrimSpace(encoded) == "" {
+			return nil
+		}
+		if err := json.Unmarshal([]byte(encoded), &result); err != nil {
+			return nil
+		}
+		return &result
+	}
+	if err := json.Unmarshal(raw, &result); err != nil {
+		return nil
+	}
+	return &result
+}
+
+func dedupeInt32s(values []int32) []int32 {
+	seen := map[int32]struct{}{}
+	out := make([]int32, 0, len(values))
+	for _, value := range values {
+		if value <= 0 {
+			continue
+		}
+		if _, ok := seen[value]; ok {
+			continue
+		}
+		seen[value] = struct{}{}
+		out = append(out, value)
+	}
+	return out
 }
 
 // execErrorMessage extracts the "error" field from an ExecutionRecord's

@@ -125,6 +125,28 @@ data:
     integrations:
       agent:
         bearer_token: "__AGENT_BEARER_TOKEN__"
+        project_onboarding:
+          enabled: {{ .Values.integrations.agent.projectOnboarding.enabled }}
+{{- if .Values.integrations.agent.projectOnboarding.allowedGitHosts }}
+          allowed_git_hosts:
+{{- range .Values.integrations.agent.projectOnboarding.allowedGitHosts }}
+            - {{ . | quote }}
+{{- end }}
+{{- else }}
+          allowed_git_hosts: []
+{{- end }}
+          shared_jenkins_job_name: {{ .Values.integrations.agent.projectOnboarding.sharedJenkinsJobName | quote }}
+          default_business_group_id: {{ .Values.integrations.agent.projectOnboarding.defaultBusinessGroupID }}
+          default_business_dept_id: {{ .Values.integrations.agent.projectOnboarding.defaultBusinessDeptID }}
+          default_jenkins_server_id: {{ .Values.integrations.agent.projectOnboarding.defaultJenkinsServerID }}
+          default_harbor_server_id: {{ .Values.integrations.agent.projectOnboarding.defaultHarborServerID }}
+          default_harbor_project: {{ .Values.integrations.agent.projectOnboarding.defaultHarborProject | quote }}
+          default_approver_admin_id: {{ .Values.integrations.agent.projectOnboarding.defaultApproverAdminID }}
+          dev_cluster_target_id: {{ .Values.integrations.agent.projectOnboarding.devClusterTargetID }}
+          test_cluster_target_id: {{ .Values.integrations.agent.projectOnboarding.testClusterTargetID }}
+          namespace_prefix: {{ .Values.integrations.agent.projectOnboarding.namespacePrefix | quote }}
+          default_service_port: {{ .Values.integrations.agent.projectOnboarding.defaultServicePort }}
+          default_target_port: {{ .Values.integrations.agent.projectOnboarding.defaultTargetPort }}
       gitops:
         local_checkout_path: "__GITOPS_REPO_PATH__"
       deploy_bot:

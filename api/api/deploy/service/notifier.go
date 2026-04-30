@@ -136,7 +136,7 @@ func (n *DeployNotifier) buildMarkdown(req *model.DeployRequest, exec *model.Exe
 
 	// Enrich with image and service access when execution succeeded.
 	if exec.Status == model.ExecutionStatusSucceeded {
-		access := buildAccessInfo(req)
+		access := buildAccessInfo(req, directApplyResultFromExecution(exec))
 		if access != nil && strings.TrimSpace(access.Image) != "" {
 			fmt.Fprintf(&b, "\n- **镜像**: %s", access.Image)
 		}
@@ -144,6 +144,12 @@ func (n *DeployNotifier) buildMarkdown(req *model.DeployRequest, exec *model.Exe
 			fmt.Fprintf(&b, "\n- **Service 类型**: %s", access.ServiceType)
 			if access.ServicePort > 0 {
 				fmt.Fprintf(&b, "\n- **Service 端口**: %d → %d", access.ServicePort, access.TargetPort)
+			}
+			if access.NodePort > 0 {
+				fmt.Fprintf(&b, "\n- **NodePort**: %d", access.NodePort)
+			}
+			if len(access.AccessURLs) > 0 {
+				fmt.Fprintf(&b, "\n- **对外访问地址**: %s", strings.Join(access.AccessURLs, ", "))
 			}
 		}
 	}

@@ -1,15 +1,15 @@
 package service
 
 import (
-	"encoding/json"
-	"errors"
-	"fmt"
 	"dodevops-api/api/app/dao"
 	"dodevops-api/api/app/model"
 	ccdao "dodevops-api/api/configcenter/dao"
 	ccmodel "dodevops-api/api/configcenter/model"
 	"dodevops-api/common/result"
 	"dodevops-api/common/util"
+	"encoding/json"
+	"errors"
+	"fmt"
 	"net/http"
 	"net/http/cookiejar"
 	"net/url"
@@ -34,6 +34,12 @@ type IApplicationService interface {
 	UpdateAppJenkinsEnv(c *gin.Context, appID uint, envID uint, req *model.UpdateJenkinsEnvRequest)
 	DeleteAppJenkinsEnv(c *gin.Context, appID uint, envID uint)
 
+	// 部署 Profile 管理
+	ListDeployProfiles(c *gin.Context, appID uint)
+	CreateDeployProfile(c *gin.Context, appID uint, req *model.CreateAppDeployProfileRequest)
+	UpdateDeployProfile(c *gin.Context, appID uint, profileID uint, req *model.UpdateAppDeployProfileRequest)
+	DeleteDeployProfile(c *gin.Context, appID uint, profileID uint)
+	ValidateDeployProfile(c *gin.Context, appID uint, profileID uint)
 
 	// Jenkins服务器管理
 	GetJenkinsServers(c *gin.Context)
@@ -584,8 +590,8 @@ func (s *ApplicationService) CreateQuickDeployment(c *gin.Context, req *model.Cr
 
 	// 获取当前用户信息（这里需要从JWT token或session中获取）
 	// 暂时使用硬编码，实际应该从认证中间件获取
-	creatorID := uint(1)      // TODO: 从认证信息获取
-	creatorName := "管理员"    // TODO: 从认证信息获取
+	creatorID := uint(1) // TODO: 从认证信息获取
+	creatorName := "管理员" // TODO: 从认证信息获取
 
 	// 创建快速发布记录
 	deployment := &model.QuickDeployment{
@@ -593,7 +599,7 @@ func (s *ApplicationService) CreateQuickDeployment(c *gin.Context, req *model.Cr
 		BusinessGroupID: req.BusinessGroupID,
 		BusinessDeptID:  req.BusinessDeptID,
 		Description:     req.Description,
-		Status:          1, // 待发布
+		Status:          1,                     // 待发布
 		TaskCount:       len(req.Applications), // 记录任务数量
 		CreatorID:       creatorID,
 		CreatorName:     creatorName,
@@ -665,7 +671,7 @@ func (s *ApplicationService) CreateQuickDeployment(c *gin.Context, req *model.Cr
 			Environment:   appReq.Environment,
 			JenkinsEnvID:  targetEnv.ID,
 			JenkinsJobURL: jobURL,
-			Status:        1, // 未部署
+			Status:        1,         // 未部署
 			ExecuteOrder:  index + 1, // 使用数组索引+1作为执行顺序
 		}
 
@@ -1065,8 +1071,6 @@ func (s *ApplicationService) createJenkinsEnvFromRequest(req *model.CreateJenkin
 	return s.appDao.CreateJenkinsEnv(env)
 }
 
-
-
 // updateJenkinsEnvs 更新应用的Jenkins环境配置
 func (s *ApplicationService) updateJenkinsEnvs(appID uint, envs []model.UpdateJenkinsEnvRequest) error {
 	// 获取现有的Jenkins环境配置
@@ -1134,7 +1138,6 @@ func (s *ApplicationService) updateJenkinsEnvs(appID uint, envs []model.UpdateJe
 
 	return nil
 }
-
 
 // GetJenkinsServers 获取Jenkins服务器列表
 func (s *ApplicationService) GetJenkinsServers(c *gin.Context) {
@@ -1398,16 +1401,16 @@ func (s *ApplicationService) GetServiceTree(c *gin.Context, req *model.GetServic
 
 		// 构建服务树节点
 		serviceNode := model.ServiceTreeNode{
-			ID:                app.ID,
-			Name:              app.Name,
-			Code:              app.Code,
-			Status:            app.Status,
-			StatusText:        statusTextMap[app.Status],
-			ProgrammingLang:   app.ProgrammingLang,
-			BusinessDeptID:    app.BusinessDeptID,
-			BusinessDeptName:  s.getBusinessDeptName(app.BusinessDeptID), // 需要从业务部门表获取名称
-			CreatedAt:         app.CreatedAt.Format("2006-01-02 15:04:05"),
-			JenkinsEnvs:       jenkinsEnvs,
+			ID:               app.ID,
+			Name:             app.Name,
+			Code:             app.Code,
+			Status:           app.Status,
+			StatusText:       statusTextMap[app.Status],
+			ProgrammingLang:  app.ProgrammingLang,
+			BusinessDeptID:   app.BusinessDeptID,
+			BusinessDeptName: s.getBusinessDeptName(app.BusinessDeptID), // 需要从业务部门表获取名称
+			CreatedAt:        app.CreatedAt.Format("2006-01-02 15:04:05"),
+			JenkinsEnvs:      jenkinsEnvs,
 		}
 
 		// 添加到对应业务线
@@ -1497,7 +1500,7 @@ func (s *ApplicationService) executeJenkinsJob(serverID uint, jobName string) (b
 	defer crumbResp.Body.Close()
 
 	var crumbData struct {
-		Crumb            string `json:"crumb"`
+		Crumb             string `json:"crumb"`
 		CrumbRequestField string `json:"crumbRequestField"`
 	}
 
@@ -1589,7 +1592,7 @@ func (s *ApplicationService) waitForNewBuildStart(baseURL, username, password, j
 		currentBuildNumber = 0
 	}
 
-	maxWaitTime := 60 * time.Second // 最大等待60秒
+	maxWaitTime := 60 * time.Second  // 最大等待60秒
 	checkInterval := 2 * time.Second // 每2秒检查一次
 	startTime := time.Now()
 
@@ -1618,7 +1621,7 @@ func (s *ApplicationService) waitForNewBuildStart(baseURL, username, password, j
 
 // waitForBuildCompletion 等待构建完成并获取最终状态
 func (s *ApplicationService) waitForBuildCompletion(baseURL, username, password, jobName string, buildNumber int) (bool, string, error) {
-	maxWaitTime := 20 * time.Minute // 最大等待20分钟
+	maxWaitTime := 20 * time.Minute   // 最大等待20分钟
 	checkInterval := 10 * time.Second // 每10秒检查一次
 	startTime := time.Now()
 
@@ -1669,7 +1672,7 @@ func (s *ApplicationService) getBuildStatusDetailed(baseURL, username, password,
 
 	var buildData struct {
 		Building bool   `json:"building"`
-		Result   string `json:"result"`   // 可能是 "SUCCESS", "FAILURE", "ABORTED" 或 null
+		Result   string `json:"result"` // 可能是 "SUCCESS", "FAILURE", "ABORTED" 或 null
 		URL      string `json:"url"`
 	}
 
@@ -1847,20 +1850,20 @@ func (s *ApplicationService) GetBusinessGroupOptions(c *gin.Context) {
 		var children []map[string]interface{}
 		for _, dept := range depts {
 			children = append(children, map[string]interface{}{
-				"value": dept.BusinessDeptID,
-				"label": fmt.Sprintf("%s (%d个服务)", dept.BusinessDeptName, dept.ServiceCount),
-				"dept_id": dept.BusinessDeptID,
+				"value":     dept.BusinessDeptID,
+				"label":     fmt.Sprintf("%s (%d个服务)", dept.BusinessDeptName, dept.ServiceCount),
+				"dept_id":   dept.BusinessDeptID,
 				"dept_name": dept.BusinessDeptName,
 			})
 		}
 
 		// 构建业务组选项
 		option := map[string]interface{}{
-			"value": group.BusinessGroupID,
-			"label": fmt.Sprintf("%s (%d个服务)", group.BusinessGroupName, group.ServiceCount),
-			"group_id": group.BusinessGroupID,
+			"value":      group.BusinessGroupID,
+			"label":      fmt.Sprintf("%s (%d个服务)", group.BusinessGroupName, group.ServiceCount),
+			"group_id":   group.BusinessGroupID,
 			"group_name": group.BusinessGroupName,
-			"children": children,
+			"children":   children,
 		}
 
 		options = append(options, option)
@@ -2038,7 +2041,7 @@ func (s *ApplicationService) calculateTaskProgress(task *model.QuickDeploymentTa
 
 		estimatedTime := 5.0 // 5分钟
 		progressRatio := runningTime / estimatedTime
-		progress := int(progressRatio * 80) + 10 // 10%-90%
+		progress := int(progressRatio*80) + 10 // 10%-90%
 
 		// 限制进度范围
 		if progress < 10 {
@@ -2112,7 +2115,7 @@ func (s *ApplicationService) DeleteQuickDeployment(c *gin.Context, id uint) {
 	}
 
 	result.Success(c, gin.H{
-		"message": "删除成功",
+		"message":               "删除成功",
 		"deleted_deployment_id": id,
 	})
 }
@@ -2180,4 +2183,3 @@ func (s *ApplicationService) checkAndUpdateDeploymentStatus(taskID uint) {
 		})
 	}
 }
-

@@ -205,13 +205,6 @@ func (a *JenkinsPipelineAdapter) ExtractImageTagFromBuildLog(ctx context.Context
 		if value == "" {
 			continue
 		}
-		// If the extracted value is a full image ref (registry/project/repo:tag), extract just the tag
-		if idx := strings.LastIndex(value, ":"); idx > 0 {
-			candidate := value[idx+1:]
-			if candidate != "" && !strings.Contains(candidate, "/") {
-				value = candidate
-			}
-		}
 		log.Printf("jenkins build image tag extracted: server=%d job=%s buildNumber=%d value=%s", serverID, jobName, buildNumber, value)
 		return value, nil
 	}

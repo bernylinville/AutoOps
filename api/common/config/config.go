@@ -76,10 +76,29 @@ type integrations struct {
 	Agent     agentIntegration     `yaml:"agent"`
 	GitOps    gitOpsIntegration    `yaml:"gitops"`
 	DeployBot deployBotIntegration `yaml:"deploy_bot"`
+	Dingtalk  dingtalkIntegration  `yaml:"dingtalk"`
 }
 
 type agentIntegration struct {
-	BearerToken string `yaml:"bearer_token"`
+	BearerToken       string                       `yaml:"bearer_token"`
+	ProjectOnboarding projectOnboardingIntegration `yaml:"project_onboarding"`
+}
+
+type projectOnboardingIntegration struct {
+	Enabled                bool     `yaml:"enabled"`
+	AllowedGitHosts        []string `yaml:"allowed_git_hosts"`
+	SharedJenkinsJobName   string   `yaml:"shared_jenkins_job_name"`
+	DefaultBusinessGroupID uint     `yaml:"default_business_group_id"`
+	DefaultBusinessDeptID  uint     `yaml:"default_business_dept_id"`
+	DefaultJenkinsServerID uint     `yaml:"default_jenkins_server_id"`
+	DefaultHarborServerID  uint     `yaml:"default_harbor_server_id"`
+	DefaultHarborProject   string   `yaml:"default_harbor_project"`
+	DefaultApproverAdminID uint     `yaml:"default_approver_admin_id"`
+	DevClusterTargetID     uint     `yaml:"dev_cluster_target_id"`
+	TestClusterTargetID    uint     `yaml:"test_cluster_target_id"`
+	NamespacePrefix        string   `yaml:"namespace_prefix"`
+	DefaultServicePort     int32    `yaml:"default_service_port"`
+	DefaultTargetPort      int32    `yaml:"default_target_port"`
 }
 
 type gitOpsIntegration struct {
@@ -91,6 +110,14 @@ type deployBotIntegration struct {
 	Enabled    bool   `yaml:"enabled"`
 	WebhookURL string `yaml:"webhook_url"`
 	Secret     string `yaml:"secret"`
+}
+
+type dingtalkIntegration struct {
+	Inbound dingtalkInboundIntegration `yaml:"inbound"`
+}
+
+type dingtalkInboundIntegration struct {
+	Enabled bool `yaml:"enabled"`
 }
 
 // Agent配置

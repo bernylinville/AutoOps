@@ -76,6 +76,16 @@ func TestBuildMarkdown_IncludesAccessInfo(t *testing.T) {
 	exec := &deploymodel.ExecutionRecord{
 		Status: deploymodel.ExecutionStatusSucceeded,
 		Phase:  deploymodel.ExecutionPhaseQueued,
+		DetailJSON: executionDetailWithDirectApplyResult("ok", "", &DirectApplyResult{
+			AccessURLs: []string{"http://10.0.17.40:30278/"},
+			Service: &DirectServiceResult{
+				Name: "nginx-demo",
+				Type: "NodePort",
+				Ports: []DirectServicePort{
+					{Port: 80, TargetPort: "80", NodePort: 30278},
+				},
+			},
+		}),
 	}
 	_, text := n.buildMarkdown(req, exec)
 	if !strings.Contains(text, "镜像") {
@@ -89,6 +99,9 @@ func TestBuildMarkdown_IncludesAccessInfo(t *testing.T) {
 	}
 	if !strings.Contains(text, "80") {
 		t.Fatalf("expected service port in markdown, got:\n%s", text)
+	}
+	if !strings.Contains(text, "对外访问地址") || !strings.Contains(text, "http://10.0.17.40:30278/") {
+		t.Fatalf("expected external access URL in markdown, got:\n%s", text)
 	}
 }
 

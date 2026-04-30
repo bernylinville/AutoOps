@@ -340,6 +340,9 @@ func (s *DeployService) ensureAgentProjectOnboarded(defaults *agentProjectOnboar
 		if strings.TrimSpace(profile.DefaultGitRef) == "" {
 			updates["default_git_ref"] = "main"
 		}
+		if isEmptyProfileJSON(profile.ResourcesJSON) {
+			updates["resources_json"] = marshalProfileMap(defaultAgentProjectResources())
+		}
 		if err := tx.Model(&profile).Updates(updates).Error; err != nil {
 			return err
 		}
@@ -410,7 +413,7 @@ func buildAgentOnboardingProfileDefaults(defaults *agentProjectOnboardingDefault
 		ServicePort:      servicePort,
 		TargetPort:       targetPort,
 		EnvJSON:          marshalProfileMap(map[string]interface{}{"SPRING_PROFILES_ACTIVE": env}),
-		ResourcesJSON:    "{}",
+		ResourcesJSON:    marshalProfileMap(defaultAgentProjectResources()),
 		BuildParamsJSON:  mergeAgentProjectBuildParamsJSON("{}", requiredAgentProjectBuildParams(repo.RawURL, app.Code, defaults.DefaultHarborProject, harborRepository, servicePort, targetPort)),
 		ScanPolicyJSON:   "{}",
 		HealthCheckPath:  "/actuator/health",
@@ -487,6 +490,24 @@ func marshalProfileMap(v map[string]interface{}) string {
 	}
 	b, _ := json.Marshal(v)
 	return string(b)
+}
+
+func defaultAgentProjectResources() map[string]interface{} {
+	return map[string]interface{}{
+		"requests": map[string]interface{}{
+			"cpu":    "100m",
+			"memory": "256Mi",
+		},
+		"limits": map[string]interface{}{
+			"cpu":    "1000m",
+			"memory": "768Mi",
+		},
+	}
+}
+
+func isEmptyProfileJSON(raw string) bool {
+	trimmed := strings.TrimSpace(raw)
+	return trimmed == "" || trimmed == "{}" || trimmed == "null"
 }
 
 func parseAgentGitRepoURL(raw string) (agentGitRepo, error) {

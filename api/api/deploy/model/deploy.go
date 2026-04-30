@@ -267,9 +267,13 @@ type CreateDeployRequest struct {
 	// BuildDeployFields 仅在 workflowKind=build_deploy 时生效
 	GitRef           string                 `json:"gitRef"`
 	BuildParams      map[string]interface{} `json:"buildParams"`
+	JenkinsServerID  *uint                  `json:"jenkinsServerId"`
+	JenkinsJobName   string                 `json:"jenkinsJobName"`
+	HarborServerID   *uint                  `json:"harborServerId"`
 	HarborProject    string                 `json:"harborProject"`
 	HarborRepository string                 `json:"harborRepository"`
 	ArtifactTag      string                 `json:"artifactTag"`
+	ScanPolicy       map[string]interface{} `json:"scanPolicy"`
 }
 
 // CreateAgentDeployRequest Agent 创建部署申请请求
@@ -299,9 +303,44 @@ type CreateAgentDeployRequest struct {
 	// BuildDeployFields 仅在 workflowKind=build_deploy 时生效
 	GitRef           string                 `json:"gitRef"`
 	BuildParams      map[string]interface{} `json:"buildParams"`
+	JenkinsServerID  *uint                  `json:"jenkinsServerId"`
+	JenkinsJobName   string                 `json:"jenkinsJobName"`
+	HarborServerID   *uint                  `json:"harborServerId"`
 	HarborProject    string                 `json:"harborProject"`
 	HarborRepository string                 `json:"harborRepository"`
 	ArtifactTag      string                 `json:"artifactTag"`
+	ScanPolicy       map[string]interface{} `json:"scanPolicy"`
+}
+
+// CreateAgentBuildDeployRequest lets Hermes submit a build+deploy request by
+// application/env; AutoOps resolves deployment details from AppDeployProfile.
+type CreateAgentBuildDeployRequest struct {
+	RequesterExternalType string                 `json:"requesterExternalType" binding:"required"`
+	RequesterExternalID   string                 `json:"requesterExternalId" binding:"required"`
+	RequesterDisplayName  string                 `json:"requesterDisplayName"`
+	ApplicationCode       string                 `json:"applicationCode" binding:"required"`
+	Env                   string                 `json:"env" binding:"required,oneof=dev test"`
+	GitRef                string                 `json:"gitRef"`
+	Reason                string                 `json:"reason"`
+	BuildParams           map[string]interface{} `json:"buildParams"`
+	ChatContext           map[string]interface{} `json:"chatContext"`
+}
+
+// CreateAgentProjectOnboardBuildDeployRequest lets Hermes onboard a GitLab
+// project into AutoOps and immediately create a profile-driven build+deploy
+// request.
+type CreateAgentProjectOnboardBuildDeployRequest struct {
+	RequesterExternalType string                 `json:"requesterExternalType" binding:"required"`
+	RequesterExternalID   string                 `json:"requesterExternalId" binding:"required"`
+	RequesterDisplayName  string                 `json:"requesterDisplayName"`
+	GitRepoURL            string                 `json:"gitRepoUrl" binding:"required"`
+	ApplicationCode       string                 `json:"applicationCode"`
+	Env                   string                 `json:"env" binding:"required,oneof=dev test"`
+	GitRef                string                 `json:"gitRef"`
+	Reason                string                 `json:"reason"`
+	ExposureMode          string                 `json:"exposureMode"`
+	BuildParams           map[string]interface{} `json:"buildParams"`
+	ChatContext           map[string]interface{} `json:"chatContext"`
 }
 
 // ApproveDeployRequest 审批通过请求
