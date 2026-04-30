@@ -1379,13 +1379,14 @@ func (s *DeployService) buildApprovalFormValues(deployRequest *model.DeployReque
 		return nil, fmt.Errorf("读取部署目标失败")
 	}
 
+	pipelineRun := s.pipelineRunForApproval(deployRequest)
 	values := []DingtalkFormComponentValue{
 		{Name: mappings.RequestNo, Value: deployRequest.RequestNo},
 		{Name: mappings.ReleaseName, Value: deployRequest.ReleaseName},
 		{Name: mappings.ClusterTarget, Value: target.Name},
 		{Name: mappings.DeployMode, Value: deployRequest.Mode},
 		{Name: mappings.ResourceType, Value: deployRequest.ResourceType},
-		{Name: mappings.Image, Value: deployRequest.Image},
+		{Name: mappings.Image, Value: approvalImageFormValue(deployRequest, pipelineRun)},
 		{Name: mappings.Namespace, Value: deployRequest.Namespace},
 		{Name: mappings.Reason, Value: deployRequest.Reason},
 	}
@@ -1396,6 +1397,48 @@ func (s *DeployService) buildApprovalFormValues(deployRequest *model.DeployReque
 		})
 	}
 	return values, nil
+}
+
+func (s *DeployService) pipelineRunForApproval(deployRequest *model.DeployRequest) *model.PipelineRun {
+	if deployRequest == nil ||
+		deployRequest.WorkflowKind != model.WorkflowKindBuildDeploy ||
+		deployRequest.ID == 0 ||
+		s.db == nil {
+		return nil
+	}
+
+	pipelineRun, err := dao.NewPipelineDao(s.db).GetPipelineRunByRequestID(deployRequest.ID)
+	if err != nil {
+		if !errors.Is(err, gorm.ErrRecordNotFound) {
+			log.Printf("[DeployService] 读取审批流水线信息失败 requestNo=%s err=%v", deployRequest.RequestNo, err)
+		}
+		return nil
+	}
+	return pipelineRun
+}
+
+func approvalImageFormValue(deployRequest *model.DeployRequest, pipelineRun *model.PipelineRun) string {
+	if deployRequest == nil {
+		return ""
+	}
+	if image := strings.TrimSpace(deployRequest.Image); image != "" {
+		return image
+	}
+	if deployRequest.WorkflowKind != model.WorkflowKindBuildDeploy {
+		return ""
+	}
+
+	details := []string{"构建后由 Jenkins 生成"}
+	if pipelineRun != nil {
+		repository := strings.Trim(strings.TrimSpace(pipelineRun.HarborProject)+"/"+strings.TrimSpace(pipelineRun.HarborRepository), "/")
+		if repository != "" {
+			details = append(details, "Harbor: "+repository)
+		}
+		if gitRef := strings.TrimSpace(pipelineRun.GitRef); gitRef != "" {
+			details = append(details, "Git: "+gitRef)
+		}
+	}
+	return strings.Join(details, "；")
 }
 
 func (s *DeployService) markApprovalDispatch(deployRequest *model.DeployRequest, status, message, processInstanceID string) *model.DeployRequest {

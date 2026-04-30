@@ -1,6 +1,7 @@
 package service
 
 import (
+	"strings"
 	"testing"
 
 	deploymodel "dodevops-api/api/deploy/model"
@@ -205,5 +206,51 @@ func TestDirectApplyResultFromExecutionParsesEncodedResult(t *testing.T) {
 	}
 	if got.Service == nil || len(got.Service.Ports) != 1 || got.Service.Ports[0].NodePort != 30278 {
 		t.Fatalf("unexpected service result: %+v", got.Service)
+	}
+}
+
+func TestApprovalImageFormValueUsesExistingImage(t *testing.T) {
+	req := &deploymodel.DeployRequest{
+		WorkflowKind: deploymodel.WorkflowKindBuildDeploy,
+		Image:        "10.0.17.205:80/java-demo/java-demo:v1",
+	}
+
+	if got := approvalImageFormValue(req, nil); got != req.Image {
+		t.Fatalf("approvalImageFormValue() = %q, want %q", got, req.Image)
+	}
+}
+
+func TestApprovalImageFormValueDescribesPendingBuildImage(t *testing.T) {
+	req := &deploymodel.DeployRequest{
+		WorkflowKind: deploymodel.WorkflowKindBuildDeploy,
+	}
+	run := &deploymodel.PipelineRun{
+		GitRef:           "main",
+		HarborProject:    "java-demo",
+		HarborRepository: "java-demo",
+	}
+
+	got := approvalImageFormValue(req, run)
+	if got == "" {
+		t.Fatal("expected non-empty placeholder for build-deploy approval image field")
+	}
+	for _, want := range []string{"构建后由 Jenkins 生成", "Harbor: java-demo/java-demo", "Git: main"} {
+		if !strings.Contains(got, want) {
+			t.Fatalf("approval image placeholder %q missing %q", got, want)
+		}
+	}
+}
+
+func TestApprovalImageFormValueDescribesPendingBuildImageWithoutPipelineMetadata(t *testing.T) {
+	req := &deploymodel.DeployRequest{WorkflowKind: deploymodel.WorkflowKindBuildDeploy}
+	if got := approvalImageFormValue(req, nil); got != "构建后由 Jenkins 生成" {
+		t.Fatalf("approvalImageFormValue() = %q, want pending build placeholder", got)
+	}
+}
+
+func TestApprovalImageFormValueLeavesEmptyNonBuildDeployImageEmpty(t *testing.T) {
+	req := &deploymodel.DeployRequest{WorkflowKind: deploymodel.WorkflowKindDeployOnly}
+	if got := approvalImageFormValue(req, nil); got != "" {
+		t.Fatalf("approvalImageFormValue() = %q, want empty", got)
 	}
 }
