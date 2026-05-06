@@ -306,11 +306,16 @@ func (s *K8sConfigService) GetSecretDetail(clusterId int, namespaceName, secretN
 	// 获取使用情况
 	usage, _ := s.getSecretUsage(clientset, namespaceName, secretName)
 
+	// H7: 创建原始 secret 的深拷贝并遮蔽敏感数据
+	sanitizedSecret := secret.DeepCopy()
+	sanitizedSecret.Data = nil
+	sanitizedSecret.StringData = nil
+
 	return &model.SecretDetail{
 		K8sSecret: secretModel,
 		Events:    events,
 		Usage:     usage,
-		Spec:      secret,
+		Spec:      sanitizedSecret,
 	}, nil
 }
 

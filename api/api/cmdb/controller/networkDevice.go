@@ -150,7 +150,7 @@ func (c *NetworkDeviceController) InspectDevice(ctx *gin.Context) {
 		method = "tcp"
 		checkPorts := []int{22, 23, 80}
 		for _, port := range checkPorts {
-			addr := fmt.Sprintf("%s:%d", mgmtIP, port)
+			addr := net.JoinHostPort(mgmtIP, fmt.Sprint(port))
 			start := time.Now()
 			conn, dialErr := net.DialTimeout("tcp", addr, 3*time.Second)
 			elapsed := int(time.Since(start).Milliseconds())

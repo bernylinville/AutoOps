@@ -98,6 +98,11 @@ This project uses executable skills in `.agents/skills/` to capture team knowled
 | `db-migration` | Add/modify GORM models and migrations | Creating tables, adding columns, schema changes |
 | `cmdb-change` | Modify CMDB assets or CI types | New asset types, attribute changes, lifecycle updates |
 | `incident-recovery` | Recover from production failures | Service down, deployment failures, DB issues |
+| `spec-driven-implementation` | Drive spec-first workflow for features | Starting significant features, agent-driven implementation |
+| `write-product-spec` | Write PRODUCT.md with behavior invariants | Defining feature behavior before implementation |
+| `write-tech-spec` | Write TECH.md grounded in codebase context | Implementation planning for cross-module changes |
+| `review-pr` | Structured PR review for correctness and security | Reviewing PRs, pre-merge quality check |
+| `go-modern-practices` | Modern Go 1.25+ idioms and conventions | Writing/refactoring Go code, PR review reference |
 
 ### Using Skills
 
@@ -139,6 +144,17 @@ description: One-line purpose
 ```
 
 ## Development Commands
+
+### Pull Request Workflow
+
+- **ALWAYS** run `./scripts/presubmit` (or `make presubmit`) before opening a PR or pushing updates to an existing PR branch. It must pass completely — if `go fmt`, `go vet`, `go test`, `npm run lint`, or `npm run build` fail, fix all issues before proceeding.
+
+### Testing Requirements
+
+- **Bug fixes** must include a regression test that would have caught the bug.
+- **Algorithmic or non-trivial logic** requires unit tests.
+- **User-facing flows** should have end-to-end coverage whenever the behavior can be exercised that way.
+- If a change genuinely cannot be tested automatically, document the reason in the PR description.
 
 ### Quick Start
 ```bash
@@ -183,7 +199,7 @@ cd web && npm run dev
 <claude-mem-context>
 # Memory Context
 
-# [AutoOps] recent context, 2026-04-30 11:16am GMT+8
+# [AutoOps] recent context, 2026-05-06 1:36pm GMT+8
 
 Legend: 🎯session 🔴bugfix 🟣feature 🔄refactor ✅change 🔵discovery ⚖️decision 🚨security_alert 🔐security_note
 Format: ID TIME TYPE TITLE
