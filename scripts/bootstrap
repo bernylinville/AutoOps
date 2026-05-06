@@ -61,7 +61,17 @@ echo ""
 # Check Go
 echo "Checking Go..."
 if check_command "go"; then
-    check_version "go" "1.24"
+    check_version "go" "1.25"
+else
+    ((ERRORS++))
+fi
+
+echo ""
+
+# Check golangci-lint
+echo "Checking golangci-lint..."
+if check_command "golangci-lint"; then
+    check_version "golangci-lint" "latest" "--version"
 else
     ((ERRORS++))
 fi
@@ -141,7 +151,8 @@ else
     echo ""
     echo "Quick install suggestions:"
     echo "  - Docker: https://docs.docker.com/get-docker/"
-    echo "  - Go: https://go.dev/dl/ or 'mise install go@1.24'"
+    echo "  - Go: https://go.dev/dl/ or 'mise install go@1.25'"
+    echo "  - golangci-lint: https://golangci-lint.run/welcome/install/"
     echo "  - Node.js: https://nodejs.org/ or 'mise install node@22'"
     exit 1
 fi

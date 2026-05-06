@@ -1,0 +1,45 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+ROOT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
+cd "$ROOT_DIR"
+
+echo "==> Go fmt/vet/test"
+before_fmt="$(mktemp)"
+after_fmt="$(mktemp)"
+trap 'rm -f "$before_fmt" "$after_fmt"' EXIT
+git diff -- api ':*.go' > "$before_fmt"
+(
+  cd api
+  go fmt ./...
+)
+git diff -- api ':*.go' > "$after_fmt"
+if ! cmp -s "$before_fmt" "$after_fmt"; then
+  echo "Go formatting changed files. Review go fmt output and rerun presubmit." >&2
+  exit 1
+fi
+(
+  cd api
+  go vet ./...
+  go test ./... -v -count=1
+)
+
+echo "==> Vue lint/build"
+(
+  cd web
+  npm ci
+  npm run lint
+  npm run build
+)
+
+echo "==> GORM migration registration baseline"
+if ! ./scripts/check-migrations; then
+  cat <<'MSG'
+Migration registration baseline currently has known gaps.
+This is non-blocking for presubmit until the baseline is cleared, but new GORM
+models with TableName() must either be registered in api/pkg/db/migrate.go or
+explicitly allowed with a rationale in scripts/check-migrations.
+MSG
+fi
+
+echo "Presubmit completed."

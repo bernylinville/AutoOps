@@ -1,8 +1,21 @@
 name: AI Code Review
 
 on:
+  workflow_dispatch:
+    inputs:
+      base_ref:
+        description: 'Base branch/ref for manual diff'
+        required: false
+        default: 'main'
   pull_request:
-    types: [opened, synchronize, ready_for_review]
+    types: [labeled, synchronize]
+    paths:
+      - 'api/**'
+      - 'web/**'
+      - '.github/workflows/**'
+      - 'docker/**'
+      - 'deploy/**'
+      - 'charts/**'
 
 permissions:
   contents: read
@@ -11,7 +24,15 @@ permissions:
 jobs:
   review:
     runs-on: ubuntu-latest
-    if: github.event.pull_request.draft == false
+    env:
+      OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
+    # Low-noise policy: run manually, or when a maintainer adds the ai-review label.
+    # This workflow is advisory and should not be configured as a required check.
+    if: >-
+      github.event_name == 'workflow_dispatch' ||
+      (github.event_name == 'pull_request' &&
+       github.event.pull_request.draft == false &&
+       contains(github.event.pull_request.labels.*.name, 'ai-review'))
     steps:
       - name: Checkout PR
         uses: actions/checkout@v4
@@ -20,24 +41,31 @@ jobs:
 
       - name: Get PR diff
         id: diff
+        env:
+          BASE_REF: ${{ github.base_ref || inputs.base_ref || github.event.repository.default_branch }}
         run: |
-          git diff origin/${{ github.base_ref }}...HEAD > pr_diff.txt
-          echo "diff_size=$(wc -c < pr_diff.txt)" >> $GITHUB_OUTPUT
+          git fetch origin "$BASE_REF" --depth=1
+          git diff "origin/${BASE_REF}"...HEAD > pr_diff.txt
+          echo "diff_size=$(wc -c < pr_diff.txt)" >> "$GITHUB_OUTPUT"
 
-      # 选项 1: 使用免费的 Code Review GPT Action (不需要 API key)
+      - name: Skip AI review when OpenAI key is unavailable
+        if: ${{ env.OPENAI_API_KEY == '' }}
+        run: echo "::notice::OPENAI_API_KEY is not configured; advisory AI review skipped."
+
       - name: AI Code Review (Code Review GPT)
-        if: steps.diff.outputs.diff_size < 50000  # 跳过超大 diff
+        if: ${{ env.OPENAI_API_KEY != '' && fromJSON(steps.diff.outputs.diff_size) < 50000 }}
         uses: mattzcarey/code-review-gpt@v0.1.10
         with:
-          OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY || '' }}
+          OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
           MODEL: 'gpt-4o-mini'
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
-      # 选项 2: 如果有预算，可以启用 Codex CLI review (需要 OPENAI_API_KEY)
+      # Optional Codex review path. Keep advisory only; do not make this workflow required.
       # - name: Run Codex Review
       #   if: secrets.OPENAI_API_KEY != ''
       #   env:
       #     OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
+      #     GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       #   run: |
       #     npx -y @openai/codex review --diff pr_diff.txt --format github > review_comment.md
       #     gh pr comment ${{ github.event.pull_request.number }} --body-file review_comment.md

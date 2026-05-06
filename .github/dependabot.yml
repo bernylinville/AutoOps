@@ -32,15 +32,25 @@ updates:
     assignees:
       - "bernylinville"
 
-  # GitHub Actions
+  # GitHub Actions: optional low-frequency grouped version updates.
+  # Go/npm remain security-only above to keep dependency noise low for a small team.
   - package-ecosystem: "github-actions"
     directory: "/"
     schedule:
-      interval: "weekly"
-      day: "monday"
-    open-pull-requests-limit: 0
+      interval: "monthly"
+    cooldown:
+      # Don't update to any action release that is less than two weeks old.
+      default-days: 14
+    open-pull-requests-limit: 1
+    groups:
+      github-actions:
+        applies-to: version-updates
+        patterns:
+          - "*"
+        update-types:
+          - "minor"
+          - "patch"
     labels:
-      - "security"
       - "dependencies"
     assignees:
       - "bernylinville"

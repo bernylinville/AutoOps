@@ -1,0 +1,56 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+ROOT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
+cd "$ROOT_DIR"
+
+python3 - <<'PY'
+from pathlib import Path
+import re
+import sys
+
+root = Path('.')
+migrate = root / 'api/pkg/db/migrate.go'
+text = migrate.read_text()
+registered = set(re.findall(r'&(?:[a-zA-Z0-9_]+\.)?(\w+)\{\}', text))
+
+# Explicit baseline/allowlist for known pre-existing gaps. Remove entries when
+# the model is registered in api/pkg/db/migrate.go or documented as intentionally
+# non-migrated. TableName-bearing GORM structs are the baseline; intentional
+# non-migrated structs require an explicit allowlist entry with a rationale here.
+allowlist = {
+    'AppDeployProfile': 'baseline gap: deployment profile table is used by app/deploy services but not yet registered',
+    'AgentApproverAllowlist': 'baseline gap: agent approval allowlist table is used by deploy services but not yet registered',
+    'AgentOutboxEvent': 'baseline gap: agent outbox event table is used by deploy DAO but not yet registered',
+}
+
+models = []
+for path in sorted((root / 'api/api').glob('**/model/*.go')):
+    if path.name.endswith('_test.go') or path.name == 'types.go':
+        continue
+    data = path.read_text()
+    for match in re.finditer(r'func \((\w+)\) TableName\(\) string', data):
+        name = match.group(1)
+        models.append((name, path))
+
+missing = [(name, path) for name, path in models if name not in registered]
+new_missing = [(name, path) for name, path in missing if name not in allowlist]
+baseline_missing = [(name, path, allowlist[name]) for name, path in missing if name in allowlist]
+
+if baseline_missing:
+    print('Known GORM migration registration baseline gaps:')
+    for name, path, reason in baseline_missing:
+        print(f'- {name}: {path} ({reason})')
+
+if new_missing:
+    print('\nERROR: GORM models with TableName() are not registered in api/pkg/db/migrate.go:')
+    for name, path in new_missing:
+        print(f'- {name}: {path}')
+    sys.exit(1)
+
+if baseline_missing:
+    print('\nBaseline gaps remain. Register or explicitly document these models before making this check blocking.')
+    sys.exit(1)
+
+print('All TableName-bearing GORM models are registered in api/pkg/db/migrate.go.')
+PY

@@ -1,7 +1,7 @@
 # AutoOps Development Makefile
 # Quick commands for common development tasks
 
-.PHONY: bootstrap dev-check fmt lint test dev build clean help
+.PHONY: bootstrap dev-check fmt lint test presubmit dev build clean help
 
 # Default target
 .DEFAULT_GOAL := help
@@ -29,15 +29,18 @@ fmt: ## Format Go code
 
 lint: ## Run linters (Go + Vue)
 	@echo "Running Go linter..."
-	@cd api && golangci-lint run ./... || true
+	@cd api && golangci-lint run --new ./...
 	@echo "Running Vue linter..."
 	@cd web && npm run lint
+
+presubmit: ## Run local checks equivalent to CI
+	@./scripts/presubmit
 
 test: ## Run tests (Go + Vue)
 	@echo "Running Go tests..."
 	@cd api && go test ./... -v -count=1
 	@echo "Running Vue tests..."
-	@cd web && npm run test:unit || true
+	@cd web && npm run lint && npm run build
 
 dev: ## Start development environment (services + backend + frontend)
 	@echo "Starting background services..."

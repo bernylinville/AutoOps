@@ -5,6 +5,7 @@ on:
     branches: [main, master]
   pull_request:
     branches: [main, master]
+    types: [opened, reopened, synchronize, ready_for_review]
 
 # Cancel any outstanding CI workflow runs against the same PR.
 concurrency:
@@ -12,9 +13,44 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
+  params:
+    name: Compute workflow parameters
+    timeout-minutes: 3
+    runs-on: ubuntu-latest
+    # Skip CI for draft PRs to reduce Actions cost.
+    if: github.event.pull_request.draft == false
+    outputs:
+      affects-go: ${{ steps.filter.outputs.affects-go }}
+      affects-vue: ${{ steps.filter.outputs.affects-vue }}
+      affects-db-schema: ${{ steps.filter.outputs.affects-db-schema }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Check changed files
+        uses: dorny/paths-filter@v3
+        id: filter
+        with:
+          filters: |
+            affects-go:
+              - 'api/**'
+              - 'go.mod'
+              - 'go.sum'
+              - '.github/workflows/ci.yml'
+            affects-vue:
+              - 'web/**'
+              - '.github/workflows/ci.yml'
+            affects-db-schema:
+              - 'api/pkg/db/migrate.go'
+              - 'api/**/migrations/**'
+              - 'api/**/model/*.go'
+
   go-checks:
     name: Go Backend
     runs-on: ubuntu-latest
+    needs: params
+    if: |
+      needs.params.result != 'skipped' &&
+      (needs.params.outputs.affects-go == 'true' || github.ref == 'refs/heads/main' || github.ref == 'refs/heads/master')
     defaults:
       run:
         working-directory: ./api
@@ -24,7 +60,7 @@ jobs:
       - name: Set up Go
         uses: actions/setup-go@v5
         with:
-          go-version: '1.24'
+          go-version: '1.25.x'
           cache-dependency-path: api/go.sum
 
       - name: Go fmt
@@ -35,15 +71,25 @@ jobs:
       - name: Go vet
         run: go vet ./...
 
+      - name: Run golangci-lint
+        uses: golangci/golangci-lint-action@v6
+        with:
+          working-directory: ./api
+          version: latest
+          args: --timeout=5m --new
+
       - name: Run tests
         run: go test ./... -v -count=1
         env:
-          # Skip tests requiring live DB unless mocked
           CI: true
 
   vue-checks:
     name: Vue Frontend
     runs-on: ubuntu-latest
+    needs: params
+    if: |
+      needs.params.result != 'skipped' &&
+      (needs.params.outputs.affects-vue == 'true' || github.ref == 'refs/heads/main' || github.ref == 'refs/heads/master')
     defaults:
       run:
         working-directory: ./web
@@ -66,20 +112,45 @@ jobs:
       - name: Build
         run: npm run build
 
+  migration-check:
+    name: GORM Migration Baseline
+    runs-on: ubuntu-latest
+    needs: params
+    if: |
+      needs.params.result != 'skipped' &&
+      (needs.params.outputs.affects-db-schema == 'true' || github.ref == 'refs/heads/main' || github.ref == 'refs/heads/master')
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Check GORM migration registration baseline
+        run: ./scripts/check-migrations || true
+
   ci-result:
     name: Check CI results
     runs-on: ubuntu-latest
-    needs: [go-checks, vue-checks]
-    if: ${{ !cancelled() }}
+    # Always run this job, as it needs to check the results of all other jobs.
+    if: ${{ !cancelled() && needs.params.result != 'skipped' }}
+    needs:
+      - params
+      - go-checks
+      - vue-checks
+      - migration-check
     steps:
-      - name: Check results
+      - name: Check CI results
         run: |
-          if [ "${{ needs.go-checks.result }}" != "success" ]; then
-            echo "::error::Go backend checks failed"
-            exit 1
-          fi
-          if [ "${{ needs.vue-checks.result }}" != "success" ]; then
-            echo "::error::Vue frontend checks failed"
-            exit 1
-          fi
+          echo '${{ toJSON(needs) }}' | jq -r '
+            to_entries |
+            map(select(.key != "params")) |
+            .[] |
+            if .value.result != "success" then
+              "::error::Required job \(.key) failed or was skipped (status: \(.value.result))"
+            else
+              empty
+            end
+          ' | {
+            if read -r error; then
+              echo "$error"
+              exit 1
+            fi
+          }
           echo "All CI checks passed!"
