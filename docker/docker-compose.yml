@@ -121,6 +121,7 @@ services:
       TZ: ${TZ:-Asia/Shanghai}
       # 传递环境变量到容器(供应用读取)
       IMAGE_HOST: ${IMAGE_HOST:-http://localhost:8080}
+      DB_SSL_MODE: disable
       DB_HOST: ${DB_HOST:-postgres}
       DB_PORT: ${DB_PORT:-5432}
       DB_NAME: ${POSTGRES_DB:-autoops}
@@ -149,7 +150,7 @@ services:
       prometheus:
         condition: service_healthy
     healthcheck:
-      test: ["CMD", "wget", "--quiet", "--tries=1", "--spider", "http://127.0.0.1:8000/api/v1/healthz"]
+      test: [ "CMD", "curl", "-sf", "http://127.0.0.1:8000/api/v1/healthz" ]
       interval: 15s
       timeout: 5s
       retries: 10
@@ -177,7 +178,7 @@ services:
     depends_on:
       - devops-api
     healthcheck:
-      test: [ "CMD", "wget", "--quiet", "--tries=1", "--spider", "http://127.0.0.1:80" ]
+      test: [ "CMD", "curl", "-sf", "http://127.0.0.1:80/" ]
       interval: 10s
       timeout: 3s
       retries: 5

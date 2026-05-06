@@ -3,18 +3,14 @@ FROM golang:1.25-alpine AS builder
 
 WORKDIR /build
 
-# 设置 Go 国内代理
 ENV GO111MODULE=on \
     GOPROXY=https://goproxy.cn,direct
 
-# 安装编译依赖
 RUN apk --no-cache add gcc musl-dev git
 
-# 先复制依赖文件，利用 Docker 缓存
 COPY go.mod go.sum ./
 RUN go mod download
 
-# 复制源码并编译
 COPY . .
 RUN CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build -ldflags="-s -w" -o /build/devops .
 
@@ -23,10 +19,8 @@ FROM alpine:3.23
 
 WORKDIR /app
 
-# 设置 Alpine 国内镜像源
 RUN sed -i 's/dl-cdn.alpinelinux.org/mirrors.aliyun.com/g' /etc/apk/repositories
 
-# H2-P2-3: 运行时仅安装必要依赖，移除编译工具链
 RUN apk --no-cache add \
     ca-certificates \
     openssh-client \
@@ -36,28 +30,35 @@ RUN apk --no-cache add \
     wget && \
     rm -rf /var/cache/apk/*
 
-# 设置时区
 ENV TZ=Asia/Shanghai
 RUN ln -snf /usr/share/zoneinfo/$TZ /etc/localtime && echo $TZ > /etc/timezone
 
-# H2-P2-3: 创建非 root 用户
 RUN addgroup -S devops && adduser -S devops -G devops
+RUN mkdir -p /app/log /app/upload /app/docs && chown -R devops:devops /app
 
-# 创建必要的目录
-RUN mkdir -p /app/log /app/upload /app/docs && \
-    chown -R devops:devops /app
-
-# 从构建阶段复制二进制
 COPY --from=builder /build/devops /app/devops
 RUN chmod +x /app/devops
 
-# 复制运行时需要的资源文件（工具列表/服务模版等）
 COPY --from=builder /build/common/templates /app/common/templates
 RUN chown -R devops:devops /app
 
-# H2-P2-3: 以非 root 用户运行
-USER devops
-
 EXPOSE 8000
 
-CMD ["/app/devops"]
+USER devops
+
+# Runtime config substitution from env vars
+CMD ["/bin/sh", "-c", "\
+  cp /app/config.yaml /app/config.tmp.yaml && \
+  sed \
+    -e \"s|__DB_HOST__|${DB_HOST:-postgres}|g\" \
+    -e \"s|__DB_PORT__|${DB_PORT:-5432}|g\" \
+    -e \"s|__DB_NAME__|${DB_NAME:-autoops}|g\" \
+    -e \"s|__DB_USER__|${DB_USER:-devops}|g\" \
+    -e \"s|__DB_PASSWORD__|${DB_PASSWORD:-devops@2025}|g\" \
+    -e \"s|__REDIS_ADDR__|${REDIS_ADDR:-valkey:6379}|g\" \
+    -e \"s|__REDIS_PASSWORD__|${REDIS_PASSWORD:-zhangfan@123}|g\" \
+    -e \"s|__IMAGE_HOST__|${IMAGE_HOST:-http://localhost:8080}|g\" \
+    -e \"s|__GITOPS_REPO_PATH__|${GITOPS_REPO_PATH:-/workspace/pukka-gitops}|g\" \
+    /app/config.tmp.yaml > /app/config.runtime.yaml && \
+  exec /app/devops -c /app/config.runtime.yaml \
+"]
