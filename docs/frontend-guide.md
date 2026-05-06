@@ -1,8 +1,8 @@
 # Frontend Development Guide
 
-> 前端开发时阅读：新增页面、修改 API 调用、调整路由和状态管理。
+前端开发时阅读：新增页面、修改 API 调用、调整路由和状态管理。
 
-## 项目结构
+## 1. 项目结构
 
 ```
 web/src/
@@ -16,7 +16,7 @@ web/src/
   views/            # 按模块组织的页面（dashboard, system, cmdb, k8s, configcenter, monitor, work, app）
 ```
 
-## API 层
+## 2. API 层
 
 **封装模式**（`src/api/{module}.js`）：
 
@@ -32,21 +32,25 @@ export default {
 }
 ```
 
-- URL **不需要**写 `/api/v1` 前缀 — `request.js` 拦截器自动添加
-- `params` 用于 GET 查询参数，`data` 用于 POST/PUT/DELETE 请求体
+关键规则：
+
+- URL 不写 `/api/v1` 前缀 —— `request.js` 拦截器自动添加
+- `params` 用于 GET 查询参数，`data` 用于 POST / PUT / DELETE 请求体
 - 所有方法返回 Axios Promise
 
 **Axios 实例配置**（`src/utils/request.js`）：
-- baseURL: 空字符串（依赖 devServer proxy 或 nginx 代理）
-- timeout: 15000ms
+
+- `baseURL`：空字符串（依赖 devServer proxy 或 Nginx 反代）
+- `timeout`：15000 ms
 - 请求拦截器：自动注入 `Authorization: Bearer <token>`
-- 响应拦截器：`code === 401/406` 时自动清除 localStorage 并跳转 `/login`
+- 响应拦截器：`code === 401` 或 `406` 时自动清除 localStorage 并跳转 `/login`
 
-## 路由
+## 3. 路由
 
-**组织方式**：每个模块一个路由文件（`router/{module}.js`），导出路由数组，在 `router/router.js` 中 spread 到 `/home` 的 children。
+每个模块一个路由文件（`router/{module}.js`），导出路由数组，在 `router/router.js` 中展开到 `/home` 的 `children`。
 
 **路由守卫**（`router/router.js`）：
+
 ```javascript
 router.beforeEach((to, from, next) => {
   const token = storage.getItem('token')
@@ -57,9 +61,9 @@ router.beforeEach((to, from, next) => {
 })
 ```
 
-## 状态管理
+## 4. 状态管理
 
-Vuex store 5 个 key，全部持久化到 localStorage：
+Vuex store 共 5 个 key，全部持久化到 localStorage：
 
 | Key | 用途 | 来源 |
 |-----|------|------|
@@ -69,62 +73,41 @@ Vuex store 5 个 key，全部持久化到 localStorage：
 | `permissionList` | 权限码列表 | 登录接口返回 |
 | `activePath` | 当前激活菜单路径 | 导航时更新 |
 
-## 环境配置
+## 5. 环境配置
 
 ### localStorage 命名空间
 
 `src/utils/storage.js` 使用 `process.env.VUE_APP_NAME_SPACE` 作为 localStorage key。
 
-**已知问题**：`web/src/.env` 定义了 `VUE_APP_NAME_SPACE: 'devops-api'`，但 Vue CLI 构建时**未注入此变量**（文件在 `src/` 而非项目根目录，且使用 YAML 冒号语法而非 dotenv `=` 语法）。实际构建后 localStorage key 为字符串 `"undefined"`。
+已知问题：`web/src/.env` 中定义了 `VUE_APP_NAME_SPACE: 'devops-api'`，但 Vue CLI 构建时未注入此变量（文件在 `src/` 而非项目根目录，使用 YAML 冒号语法而非 dotenv `=` 语法）。实际构建后 localStorage key 为字符串 `"undefined"`。
 
 ### devServer Proxy
 
-`vue.config.js` 中 proxy 配置：
+`vue.config.js` 中 proxy 配置的 target 硬编码为 `http://192.168.1.156:5700`，本地开发需改为本机后端地址（如 `http://localhost:8000`）。
 
-```javascript
-proxy: {
-  '/api/v1': {
-    target: 'http://192.168.1.156:5700',  // ⚠️ 硬编码，本地开发需修改
-    changeOrigin: true
-  }
-}
-```
+Docker 全栈开发时不需要 proxy —— Nginx 直接反代 API。
 
-本地开发时需改为指向你的后端地址（如 `http://localhost:8000`）。
+## 6. 新增页面 Checklist
 
-使用 Docker 全栈开发时不需要 proxy — nginx 直接代理。
-
-## 新增页面 Checklist
-
-1. 创建 `src/api/{module}.js` — 添加 API 方法
-2. 创建 `src/views/{module}/{Page}.vue` — 页面组件
-3. 在 `src/router/{module}.js` — 添加路由配置
-4. 在后端 seed 菜单数据（`sys_menu` 表）— 控制左侧菜单显示
-5. 分配 RBAC 权限码 — 控制按钮级权限
+1. 创建 `src/api/{module}.js` —— 添加 API 方法
+2. 创建 `src/views/{module}/{Page}.vue` —— 页面组件
+3. 在 `src/router/{module}.js` 中添加路由配置
+4. 在后端 seed 菜单数据（`sys_menu` 表）中控制左侧菜单显示
+5. 分配 RBAC 权限码，控制按钮级权限
 6. UI 样式参考 [docs/design-system.md](design-system.md)
 
-## 部署中心页面
+## 7. 部署中心页面
 
-当前已新增基础页面：
-
-- `src/views/K8s/K8sReleaseCenter.vue`
-
-当前已接入基础能力：
+当前能力：
 
 - 部署申请列表
 - 部署目标列表
 - 新建部署申请弹窗
-- 审批状态同步
-- 审批重发
+- 审批状态同步与重发
 - 执行记录查看
 - 直连凭据校验
 - GitOps 工作树 / 仓库校验
 
-对应 API：
+对应 API：`src/api/deploy.js`
 
-- `src/api/deploy.js`
-
-说明：
-
-- 当前页面是基础运维页，不是最终交互稿
-- 后续如果继续完善，应优先补详情侧栏、审批时间线、申请表单校验，以及 Direct / GitOps 差异化字段展示
+后续完善方向：详情侧栏、审批时间线、申请表单校验、Direct / GitOps 差异化字段展示。
