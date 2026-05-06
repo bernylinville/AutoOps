@@ -90,6 +90,12 @@ CMDB 2.0 升级已完成 Phase 0-8（详见 `progress.md`）。新功能开发�
 
 This project uses executable skills in `.agents/skills/` to capture team knowledge and provide repeatable workflows. These skills serve as **bus-factor protection** for a small team (≤3 people).
 
+**First-time setup**: Claude Code reads skills from `.claude/skills/`. Create a symlink so both paths resolve to the same skill files:
+
+```bash
+rm -rf .claude/skills && ln -s ../.agents/skills .claude/skills
+```
+
 ### Available Skills
 
 | Skill | Purpose | When to Use |
