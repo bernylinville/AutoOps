@@ -5,8 +5,8 @@ import (
 	"dodevops-api/api/cmdb/model"
 	"dodevops-api/common/result"
 	"dodevops-api/common/util"
-	"time"
 	"github.com/gin-gonic/gin"
+	"time"
 )
 
 type CmdbSQLRecordService struct {

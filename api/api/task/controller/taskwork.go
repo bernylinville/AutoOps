@@ -1,20 +1,20 @@
 package controller
 
 import (
-	"net/http"
-	"strconv"
 	"dodevops-api/api/task/dao"
 	"dodevops-api/api/task/service"
 	"dodevops-api/common"
 	"dodevops-api/common/result"
 	"github.com/gin-gonic/gin"
+	"net/http"
+	"strconv"
 )
 
 type ITaskWorkController interface {
-	StartJob(c *gin.Context)                  // 启动指定任务
-	GetJobLog(c *gin.Context)                 // 获取任务日志
-	StopJob(c *gin.Context)                   // 停止单个任务
-	GetJobStatus(c *gin.Context)              // 获取任务状态
+	StartJob(c *gin.Context)     // 启动指定任务
+	GetJobLog(c *gin.Context)    // 获取任务日志
+	StopJob(c *gin.Context)      // 停止单个任务
+	GetJobStatus(c *gin.Context) // 获取任务状态
 }
 
 type TaskWorkController struct {

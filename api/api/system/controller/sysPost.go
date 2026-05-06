@@ -8,8 +8,6 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-
-
 // @Tags System系统管理
 // @Summary 新增岗位接口
 // @Produce json

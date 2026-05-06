@@ -18,58 +18,58 @@ import (
 
 // TaskQueue Redis任务队列服务
 type TaskQueue struct {
-	client       *redis.Client
-	ctx          context.Context
-	cancel       context.CancelFunc
-	workerPool   *WorkerPool
-	metrics      *QueueMetrics
-	mu           sync.RWMutex
-	running      bool
+	client     *redis.Client
+	ctx        context.Context
+	cancel     context.CancelFunc
+	workerPool *WorkerPool
+	metrics    *QueueMetrics
+	mu         sync.RWMutex
+	running    bool
 }
 
 // WorkerPool 工作池
 type WorkerPool struct {
-	workers      int
-	semaphore    *semaphore.Weighted
-	hostLimits   map[uint]*semaphore.Weighted // 每台主机的并发限制
-	globalLimit  *semaphore.Weighted          // 全局并发限制
-	wg           sync.WaitGroup
-	ctx          context.Context
-	cancel       context.CancelFunc
-	taskQueue    *TaskQueue
-	mu           sync.RWMutex
+	workers     int
+	semaphore   *semaphore.Weighted
+	hostLimits  map[uint]*semaphore.Weighted // 每台主机的并发限制
+	globalLimit *semaphore.Weighted          // 全局并发限制
+	wg          sync.WaitGroup
+	ctx         context.Context
+	cancel      context.CancelFunc
+	taskQueue   *TaskQueue
+	mu          sync.RWMutex
 }
 
 // QueueMetrics 队列指标
 type QueueMetrics struct {
-	EnqueuedTotal    int64 `json:"enqueued_total"`    // 总入队数
-	ProcessedTotal   int64 `json:"processed_total"`   // 总处理数
-	FailedTotal      int64 `json:"failed_total"`      // 总失败数
-	ActiveWorkers    int64 `json:"active_workers"`    // 活跃工作者数
-	QueueLength      int64 `json:"queue_length"`      // 队列长度
-	LastProcessTime  time.Time `json:"last_process_time"` // 最后处理时间
-	mu               sync.RWMutex
+	EnqueuedTotal   int64     `json:"enqueued_total"`    // 总入队数
+	ProcessedTotal  int64     `json:"processed_total"`   // 总处理数
+	FailedTotal     int64     `json:"failed_total"`      // 总失败数
+	ActiveWorkers   int64     `json:"active_workers"`    // 活跃工作者数
+	QueueLength     int64     `json:"queue_length"`      // 队列长度
+	LastProcessTime time.Time `json:"last_process_time"` // 最后处理时间
+	mu              sync.RWMutex
 }
 
 // TaskMessage 任务消息结构
 type TaskMessage struct {
-	TaskWork   *model.TaskWork `json:"task_work"`
-	Priority   string          `json:"priority"`
-	RetryCount int             `json:"retry_count"`
-	MaxRetries int             `json:"max_retries"`
-	EnqueuedAt time.Time       `json:"enqueued_at"`
+	TaskWork   *model.TaskWork        `json:"task_work"`
+	Priority   string                 `json:"priority"`
+	RetryCount int                    `json:"retry_count"`
+	MaxRetries int                    `json:"max_retries"`
+	EnqueuedAt time.Time              `json:"enqueued_at"`
 	Metadata   map[string]interface{} `json:"metadata,omitempty"`
 }
 
 // 队列名称常量
 const (
-	QueueHigh     = "dodevops:task_queue:high"
-	QueueNormal   = "dodevops:task_queue:normal"
-	QueueLow      = "dodevops:task_queue:low"
-	QueueRetry    = "dodevops:task_queue:retry"
-	QueueFailed   = "dodevops:task_queue:failed"
-	MetricsKey    = "dodevops:task_queue:metrics"
-	WorkerKey     = "dodevops:task_queue:workers"
+	QueueHigh   = "dodevops:task_queue:high"
+	QueueNormal = "dodevops:task_queue:normal"
+	QueueLow    = "dodevops:task_queue:low"
+	QueueRetry  = "dodevops:task_queue:retry"
+	QueueFailed = "dodevops:task_queue:failed"
+	MetricsKey  = "dodevops:task_queue:metrics"
+	WorkerKey   = "dodevops:task_queue:workers"
 )
 
 // TaskQueueConfig 配置

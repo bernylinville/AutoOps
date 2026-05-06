@@ -89,10 +89,10 @@ func (s *SSHUtil) getSSHConfig(auth *SSHConfig) (*ssh.ClientConfig, error) {
 	}
 
 	return &ssh.ClientConfig{
-		User: auth.Username,
-		Auth: authMethods,
+		User:            auth.Username,
+		Auth:            authMethods,
 		HostKeyCallback: getHostKeyCallback(),
-		Timeout: 30 * time.Second,
+		Timeout:         30 * time.Second,
 	}, nil
 }
 
@@ -388,4 +388,3 @@ func ExecuteSSHCommandWithOutput(client *ssh.Client, command string) (string, er
 
 	return output, nil
 }
-

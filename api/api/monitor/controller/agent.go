@@ -48,7 +48,6 @@ func (c *AgentController) DeployAgent(ctx *gin.Context) {
 	}
 }
 
-
 // UninstallAgent 卸载指定主机的agent(支持单个或多个)
 // @Summary 卸载指定主机的agent(支持单个或多个)
 // @Description 停止agent服务并删除相关文件，单个主机传[hostId]，多个主机传[hostId1,hostId2,hostId3]

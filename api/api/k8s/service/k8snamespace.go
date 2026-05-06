@@ -31,13 +31,13 @@ type IK8sNamespaceService interface {
 	CreateNamespace(c *gin.Context, clusterId uint, req *model.CreateNamespaceRequest)
 	UpdateNamespace(c *gin.Context, clusterId uint, namespaceName string, req *model.UpdateNamespaceRequest)
 	DeleteNamespace(c *gin.Context, clusterId uint, namespaceName string)
-	
+
 	// ResourceQuota管理
 	GetResourceQuotas(c *gin.Context, clusterId uint, namespaceName string)
 	CreateResourceQuota(c *gin.Context, clusterId uint, namespaceName string, req *model.CreateResourceQuotaRequest)
 	UpdateResourceQuota(c *gin.Context, clusterId uint, namespaceName string, quotaName string, req *model.UpdateResourceQuotaRequest)
 	DeleteResourceQuota(c *gin.Context, clusterId uint, namespaceName string, quotaName string)
-	
+
 	// LimitRange管理
 	GetLimitRanges(c *gin.Context, clusterId uint, namespaceName string)
 	CreateLimitRange(c *gin.Context, clusterId uint, namespaceName string, req *model.CreateLimitRangeRequest)
@@ -47,13 +47,13 @@ type IK8sNamespaceService interface {
 
 // K8sNamespaceServiceImpl K8s命名空间服务实现
 type K8sNamespaceServiceImpl struct {
-	clusterDao *dao.KubeClusterDao
+	clusterDao   *dao.KubeClusterDao
 	cacheService cache.ICacheService
 }
 
 func NewK8sNamespaceService(db *gorm.DB) IK8sNamespaceService {
 	return &K8sNamespaceServiceImpl{
-		clusterDao: dao.NewKubeClusterDao(db),
+		clusterDao:   dao.NewKubeClusterDao(db),
 		cacheService: nil, // 将通过依赖注入设置
 	}
 }
@@ -61,7 +61,7 @@ func NewK8sNamespaceService(db *gorm.DB) IK8sNamespaceService {
 // NewK8sNamespaceServiceWithCache 创建带缓存的命名空间服务
 func NewK8sNamespaceServiceWithCache(db *gorm.DB, redisClient *redis.Client) IK8sNamespaceService {
 	return &K8sNamespaceServiceImpl{
-		clusterDao: dao.NewKubeClusterDao(db),
+		clusterDao:   dao.NewKubeClusterDao(db),
 		cacheService: cache.NewRedisCache(redisClient),
 	}
 }
@@ -69,7 +69,7 @@ func NewK8sNamespaceServiceWithCache(db *gorm.DB, redisClient *redis.Client) IK8
 // GetNamespaces 获取命名空间列表
 func (s *K8sNamespaceServiceImpl) GetNamespaces(c *gin.Context, clusterId uint) {
 	ctx := c.Request.Context()
-	
+
 	// 尝试从缓存获取
 	if s.cacheService != nil {
 		var cachedResponse model.NamespaceListResponse
@@ -128,7 +128,7 @@ func (s *K8sNamespaceServiceImpl) GetNamespaces(c *gin.Context, clusterId uint) 
 // GetNamespace 获取单个命名空间详情
 func (s *K8sNamespaceServiceImpl) GetNamespace(c *gin.Context, clusterId uint, namespaceName string) {
 	ctx := c.Request.Context()
-	
+
 	// 尝试从缓存获取
 	if s.cacheService != nil {
 		var cachedNamespace model.K8sNamespace
@@ -191,13 +191,13 @@ func (s *K8sNamespaceServiceImpl) CreateNamespace(c *gin.Context, clusterId uint
 		result.Failed(c, http.StatusBadRequest, "命名空间名称不符合规范: "+err.Error())
 		return
 	}
-	
+
 	// 验证标签
 	if err := s.validateLabels(req.Labels); err != nil {
 		result.Failed(c, http.StatusBadRequest, "标签格式不符合规范: "+err.Error())
 		return
 	}
-	
+
 	// 验证注释
 	if err := s.validateAnnotations(req.Annotations); err != nil {
 		result.Failed(c, http.StatusBadRequest, "注释格式不符合规范: "+err.Error())
@@ -264,7 +264,7 @@ func (s *K8sNamespaceServiceImpl) UpdateNamespace(c *gin.Context, clusterId uint
 		result.Failed(c, http.StatusBadRequest, "标签格式不符合规范: "+err.Error())
 		return
 	}
-	
+
 	// 验证注释
 	if err := s.validateAnnotations(req.Annotations); err != nil {
 		result.Failed(c, http.StatusBadRequest, "注释格式不符合规范: "+err.Error())
@@ -442,32 +442,31 @@ func (s *K8sNamespaceServiceImpl) convertToK8sNamespace(ns *corev1.Namespace) mo
 	}
 }
 
-
 // validateNamespaceName 验证命名空间名称
 func (s *K8sNamespaceServiceImpl) validateNamespaceName(name string) error {
 	if name == "" {
 		return fmt.Errorf("命名空间名称不能为空")
 	}
-	
+
 	if len(name) > 63 {
 		return fmt.Errorf("命名空间名称长度不能超过63个字符")
 	}
-	
+
 	// K8s命名空间名称规则：只能包含小写字母、数字和连字符，且必须以字母数字开头和结尾
 	if !strings.HasPrefix(strings.ToLower(name), strings.ToLower(string(name[0]))) {
 		return fmt.Errorf("命名空间名称必须以字母或数字开头")
 	}
-	
+
 	for _, char := range name {
 		if !((char >= 'a' && char <= 'z') || (char >= '0' && char <= '9') || char == '-') {
 			return fmt.Errorf("命名空间名称只能包含小写字母、数字和连字符")
 		}
 	}
-	
+
 	if strings.HasSuffix(name, "-") {
 		return fmt.Errorf("命名空间名称不能以连字符结尾")
 	}
-	
+
 	return nil
 }
 
@@ -939,7 +938,7 @@ func (s *K8sNamespaceServiceImpl) DeleteLimitRange(c *gin.Context, clusterId uin
 // convertToLimitRangeDetail 转换为LimitRangeDetail结构
 func (s *K8sNamespaceServiceImpl) convertToLimitRangeDetail(lr *corev1.LimitRange) model.LimitRangeDetail {
 	var limits []model.LimitRangeItem
-	
+
 	for _, item := range lr.Spec.Limits {
 		limitItem := model.LimitRangeItem{
 			Type:           string(item.Type),
@@ -1052,12 +1051,12 @@ func (s *K8sNamespaceServiceImpl) validateLabels(labels map[string]string) error
 	if labels == nil {
 		return nil
 	}
-	
+
 	// K8s标签键的正则表达式：可选前缀/键名
 	keyRegex := regexp.MustCompile(`^([a-z0-9]([-a-z0-9]*[a-z0-9])?(\.[a-z0-9]([-a-z0-9]*[a-z0-9])?)*\/)?[a-z0-9A-Z]([-._a-z0-9A-Z]*[a-z0-9A-Z])?$`)
 	// K8s标签值的正则表达式：空字符串或字母数字字符、连字符、下划线和点号
 	valueRegex := regexp.MustCompile(`^(([A-Za-z0-9][-A-Za-z0-9_.]*)?[A-Za-z0-9])?$`)
-	
+
 	for key, value := range labels {
 		// 验证键名长度
 		if len(key) == 0 {
@@ -1066,23 +1065,23 @@ func (s *K8sNamespaceServiceImpl) validateLabels(labels map[string]string) error
 		if len(key) > 253 {
 			return fmt.Errorf("标签键'%s'长度超过253个字符", key)
 		}
-		
+
 		// 验证键名格式
 		if !keyRegex.MatchString(key) {
 			return fmt.Errorf("标签键'%s'格式不符合规范，只能包含小写字母、数字、连字符、点号，可选的DNS前缀", key)
 		}
-		
+
 		// 验证值长度
 		if len(value) > 63 {
 			return fmt.Errorf("标签值'%s'长度超过63个字符", value)
 		}
-		
+
 		// 验证值格式
 		if !valueRegex.MatchString(value) {
 			return fmt.Errorf("标签值'%s'格式不符合规范，只能包含字母数字字符、连字符、下划线和点号，且必须以字母数字字符开头和结尾", value)
 		}
 	}
-	
+
 	return nil
 }
 
@@ -1091,10 +1090,10 @@ func (s *K8sNamespaceServiceImpl) validateAnnotations(annotations map[string]str
 	if annotations == nil {
 		return nil
 	}
-	
+
 	// K8s注释键的正则表达式（与标签键相同）
 	keyRegex := regexp.MustCompile(`^([a-z0-9]([-a-z0-9]*[a-z0-9])?(\.[a-z0-9]([-a-z0-9]*[a-z0-9])?)*\/)?[a-z0-9A-Z]([-._a-z0-9A-Z]*[a-z0-9A-Z])?$`)
-	
+
 	for key, value := range annotations {
 		// 验证键名长度
 		if len(key) == 0 {
@@ -1103,17 +1102,17 @@ func (s *K8sNamespaceServiceImpl) validateAnnotations(annotations map[string]str
 		if len(key) > 253 {
 			return fmt.Errorf("注释键'%s'长度超过253个字符", key)
 		}
-		
+
 		// 验证键名格式
 		if !keyRegex.MatchString(key) {
 			return fmt.Errorf("注释键'%s'格式不符合规范，只能包含小写字母、数字、连字符、点号，可选的DNS前缀", key)
 		}
-		
+
 		// 注释值的长度限制更宽松，但仍有限制
 		if len(value) > 262144 { // 256KB
 			return fmt.Errorf("注释值长度超过256KB限制")
 		}
 	}
-	
+
 	return nil
 }

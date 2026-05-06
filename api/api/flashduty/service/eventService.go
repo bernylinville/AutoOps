@@ -45,7 +45,7 @@ func PushStandardEvent(title, description, severity string) error {
 	}
 
 	eventURL := fmt.Sprintf("%s/event/push/alert/standard?integration_key=%s", cfg.BaseURL, cfg.IntegrationKey)
-	
+
 	jsonBody, _ := json.Marshal(event)
 	req, err := http.NewRequest("POST", eventURL, bytes.NewReader(jsonBody))
 	if err != nil {

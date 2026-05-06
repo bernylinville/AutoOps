@@ -59,7 +59,7 @@ func NewWebSSH(host, port, user, password string) (*WebSSH, error) {
 		Config: ssh.Config{
 			Ciphers: []string{
 				"aes128-ctr",
-				"aes192-ctr", 
+				"aes192-ctr",
 				"aes256-ctr",
 				"aes128-gcm@openssh.com",
 				"arcfour256",
@@ -77,14 +77,14 @@ func NewWebSSH(host, port, user, password string) (*WebSSH, error) {
 // NewWebSSHWithAuth 创建新的WebSSH连接(自定义认证方法)
 func NewWebSSHWithAuth(host, port, user string, authMethod ssh.AuthMethod) (*WebSSH, error) {
 	config := &ssh.ClientConfig{
-		User: user,
-		Auth: []ssh.AuthMethod{authMethod},
+		User:            user,
+		Auth:            []ssh.AuthMethod{authMethod},
 		HostKeyCallback: ssh.InsecureIgnoreHostKey(),
 		Timeout:         15 * time.Second,
 		Config: ssh.Config{
 			Ciphers: []string{
 				"aes128-ctr",
-				"aes192-ctr", 
+				"aes192-ctr",
 				"aes256-ctr",
 				"aes128-gcm@openssh.com",
 				"arcfour256",
@@ -122,13 +122,13 @@ func newWebSSHWithConfig(host, port string, config *ssh.ClientConfig) (*WebSSH, 
 	addr := net.JoinHostPort(host, port)
 	log.Printf("尝试连接SSH服务器: %s", addr)
 	log.Printf("使用的认证方法: %v", config.Auth)
-	
+
 	client, err := ssh.Dial("tcp", addr, config)
 	if err != nil {
 		log.Printf("SSH连接失败详情: %v", err)
 		return nil, fmt.Errorf("failed to dial SSH server: %v", err)
 	}
-	
+
 	log.Println("SSH连接成功建立")
 
 	return &WebSSH{
@@ -162,14 +162,14 @@ func (w *WebSSH) Connect(wsConn *websocket.Conn) error {
 		ssh.ECHO:          1,
 		ssh.TTY_OP_ISPEED: 14400,
 		ssh.TTY_OP_OSPEED: 14400,
-		ssh.ONLCR:         1,      // 启用换行转换
-		ssh.OCRNL:         0,      // 禁止将回车转换为换行
-		ssh.INLCR:         0,      // 禁止将换行转换为回车
-		ssh.IGNCR:         0,      // 不忽略回车
-		ssh.ICRNL:         1,      // 启用回车转换
-		ssh.OPOST:         1,      // 启用输出处理
-		ssh.ONLRET:        0,      // 允许输出时执行回车
-		ssh.ONOCR:         0,      // 允许在列0时输出回车
+		ssh.ONLCR:         1, // 启用换行转换
+		ssh.OCRNL:         0, // 禁止将回车转换为换行
+		ssh.INLCR:         0, // 禁止将换行转换为回车
+		ssh.IGNCR:         0, // 不忽略回车
+		ssh.ICRNL:         1, // 启用回车转换
+		ssh.OPOST:         1, // 启用输出处理
+		ssh.ONLRET:        0, // 允许输出时执行回车
+		ssh.ONOCR:         0, // 允许在列0时输出回车
 	}
 	width := 160 // 默认宽度
 	height := 40

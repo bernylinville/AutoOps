@@ -77,12 +77,12 @@ type TopProcessesResult struct {
 
 // PortInfo TCP端口信息
 type PortInfo struct {
-	Port       string  `json:"port"`       // 端口号
-	PID        string  `json:"pid"`        // 进程ID
-	Service    string  `json:"service"`    // 服务名称
-	Status     int     `json:"status"`     // 监听状态(1:监听中,0:未监听)
-	CPUUsage   float64 `json:"cpuUsage"`   // 进程CPU使用率百分比
-	MemUsage   float64 `json:"memUsage"`   // 进程内存使用率百分比
+	Port     string  `json:"port"`     // 端口号
+	PID      string  `json:"pid"`      // 进程ID
+	Service  string  `json:"service"`  // 服务名称
+	Status   int     `json:"status"`   // 监听状态(1:监听中,0:未监听)
+	CPUUsage float64 `json:"cpuUsage"` // 进程CPU使用率百分比
+	MemUsage float64 `json:"memUsage"` // 进程内存使用率百分比
 }
 
 // HostPortsResult 主机端口信息结果

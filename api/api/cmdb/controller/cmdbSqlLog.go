@@ -27,14 +27,14 @@ func GetCmdbSqlLogList(c *gin.Context) {
 	ExecUser := c.Query("execUser")
 	BeginTime := c.Query("beginTime")
 	EndTime := c.Query("endTime")
-	
+
 	// 设置默认分页参数
 	PageSize, err := strconv.Atoi(c.Query("pageSize"))
 	if err != nil || PageSize <= 0 {
 		PageSize = 10 // 默认每页10条
 	}
-	
-	PageNum, err := strconv.Atoi(c.Query("pageNum")) 
+
+	PageNum, err := strconv.Atoi(c.Query("pageNum"))
 	if err != nil || PageNum <= 0 {
 		PageNum = 1 // 默认第一页
 	}

@@ -2,12 +2,12 @@ package model
 
 // DashboardStats 看板统计数据
 type DashboardStats struct {
-	HostStats        HostStats        `json:"hostStats"`        // 主机统计
-	K8sClusterStats  K8sClusterStats  `json:"k8sClusterStats"`  // K8s集群统计
-	DeploymentStats  DeploymentStats  `json:"deploymentStats"`  // 发布统计
-	TaskStats        TaskStats        `json:"taskStats"`        // 任务统计
-	ServiceStats     ServiceStats     `json:"serviceStats"`     // 服务统计
-	DatabaseStats    DatabaseStats    `json:"databaseStats"`    // 数据库统计
+	HostStats       HostStats       `json:"hostStats"`       // 主机统计
+	K8sClusterStats K8sClusterStats `json:"k8sClusterStats"` // K8s集群统计
+	DeploymentStats DeploymentStats `json:"deploymentStats"` // 发布统计
+	TaskStats       TaskStats       `json:"taskStats"`       // 任务统计
+	ServiceStats    ServiceStats    `json:"serviceStats"`    // 服务统计
+	DatabaseStats   DatabaseStats   `json:"databaseStats"`   // 数据库统计
 }
 
 // HostStats 主机统计
@@ -48,27 +48,27 @@ type ServiceStats struct {
 
 // DatabaseStats 数据库统计
 type DatabaseStats struct {
-	Total   int            `json:"total"`   // 数据库总数
-	ByType  map[string]int `json:"byType"`  // 按类型统计
+	Total  int            `json:"total"`  // 数据库总数
+	ByType map[string]int `json:"byType"` // 按类型统计
 }
 
 // BusinessDistributionStats 业务分布统计
 type BusinessDistributionStats struct {
-	TotalServices    int                    `json:"totalServices"`    // 总服务数量
-	BusinessLines    []BusinessLineStats    `json:"businessLines"`    // 业务线列表
+	TotalServices int                 `json:"totalServices"` // 总服务数量
+	BusinessLines []BusinessLineStats `json:"businessLines"` // 业务线列表
 }
 
 // BusinessLineStats 业务线统计
 type BusinessLineStats struct {
-	ID           uint   `json:"id"`           // 业务组ID
-	Name         string `json:"name"`         // 业务线名称
-	ServiceCount int    `json:"serviceCount"` // 服务数量
-	Percentage   float64 `json:"percentage"`  // 占比
+	ID           uint    `json:"id"`           // 业务组ID
+	Name         string  `json:"name"`         // 业务线名称
+	ServiceCount int     `json:"serviceCount"` // 服务数量
+	Percentage   float64 `json:"percentage"`   // 占比
 }
 
 // AssetStats 资产统计
 type AssetStats struct {
-	TotalAssets int                `json:"totalAssets"` // 总资产数量
+	TotalAssets int                  `json:"totalAssets"` // 总资产数量
 	Categories  []AssetCategoryStats `json:"categories"`  // 资产分类统计
 }
 

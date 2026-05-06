@@ -1,0 +1,32 @@
+# golangci-lint configuration for AutoOps API
+# https://golangci-lint.run/usage/configuration/
+
+run:
+  timeout: 5m
+  tests: false
+
+linters:
+  enable:
+    - errcheck
+    - gosimple
+    - govet
+    - ineffassign
+    - staticcheck
+    - unused
+    - gofmt
+    - goimports
+    - misspell
+    - unconvert
+
+linters-settings:
+  goimports:
+    local-prefixes: dodevops-api
+  misspell:
+    locale: US
+
+issues:
+  exclude-dirs:
+    - vendor
+    - third_party
+  max-issues-per-linter: 0
+  max-same-issues: 0

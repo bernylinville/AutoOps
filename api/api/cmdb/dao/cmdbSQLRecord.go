@@ -51,7 +51,7 @@ func (d *CmdbSQLRecordDao) GetRecentRecords(limit int) ([]model.CmdbSQLRecord, e
 func (d *CmdbSQLRecordDao) GetRecordsByPage(execUser, beginTime, endTime string, pageSize, pageNum int) ([]model.CmdbSQLRecord, int64, error) {
 	var records []model.CmdbSQLRecord
 	var total int64
-	
+
 	query := d.db.Model(&model.CmdbSQLRecord{})
 	if execUser != "" {
 		query = query.Where("exec_user = ?", execUser)
@@ -62,18 +62,18 @@ func (d *CmdbSQLRecordDao) GetRecordsByPage(execUser, beginTime, endTime string,
 	if endTime != "" {
 		query = query.Where("query_time <= ?", endTime)
 	}
-	
+
 	err := query.Count(&total).Error
 	if err != nil {
 		return nil, 0, err
 	}
-	
+
 	offset := (pageNum - 1) * pageSize
 	err = query.Order("query_time DESC").
 		Offset(offset).
 		Limit(pageSize).
 		Find(&records).Error
-		
+
 	return records, total, err
 }
 

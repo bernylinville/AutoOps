@@ -244,7 +244,7 @@ func (s *K8sNodesServiceImpl) convertToK8sNode(node *corev1.Node, pods []corev1.
 
 	// 获取节点角色 - 支持多种角色组合显示
 	var roles []string
-	
+
 	// 检查各种角色标签
 	if _, exists := node.Labels["node-role.kubernetes.io/control-plane"]; exists {
 		roles = append(roles, "control-plane")
@@ -258,7 +258,7 @@ func (s *K8sNodesServiceImpl) convertToK8sNode(node *corev1.Node, pods []corev1.
 	if _, exists := node.Labels["node-role.kubernetes.io/etcd"]; exists {
 		roles = append(roles, "etcd")
 	}
-	
+
 	// 如果没有找到任何角色标签，检查是否为master节点
 	if len(roles) == 0 {
 		// 通过其他方式判断是否为master节点
@@ -271,13 +271,13 @@ func (s *K8sNodesServiceImpl) convertToK8sNode(node *corev1.Node, pods []corev1.
 			roles = append(roles, "worker")
 		}
 	}
-	
+
 	// 将角色数组转换为逗号分隔的字符串，与kubectl显示格式一致
 	rolesStr := strings.Join(roles, ",")
 	if rolesStr == "" {
 		rolesStr = "<none>"
 	}
-	
+
 	// 保持兼容性，为Configuration.Role设置主要角色
 	primaryRole := "worker"
 	if len(roles) > 0 {
@@ -1030,11 +1030,11 @@ func (s *K8sNodesServiceImpl) calculateResourceAllocation(node *corev1.Node, pod
 	// 获取节点容量和可分配资源
 	capacity := make(map[string]string)
 	allocatable := make(map[string]string)
-	
+
 	for resource, quantity := range node.Status.Capacity {
 		capacity[string(resource)] = quantity.String()
 	}
-	
+
 	for resource, quantity := range node.Status.Allocatable {
 		allocatable[string(resource)] = quantity.String()
 	}
@@ -1043,15 +1043,15 @@ func (s *K8sNodesServiceImpl) calculateResourceAllocation(node *corev1.Node, pod
 	allocated := make(map[string]string)
 	cpuRequests := int64(0)
 	memoryRequests := int64(0)
-	
+
 	var podList []model.PodResourceInfo
-	
+
 	for _, pod := range pods {
 		podCPU := int64(0)
 		podMemory := int64(0)
 		requests := make(map[string]string)
 		limits := make(map[string]string)
-		
+
 		for _, container := range pod.Spec.Containers {
 			if container.Resources.Requests != nil {
 				if cpu := container.Resources.Requests.Cpu(); cpu != nil {
@@ -1061,7 +1061,7 @@ func (s *K8sNodesServiceImpl) calculateResourceAllocation(node *corev1.Node, pod
 					podMemory += memory.Value()
 				}
 			}
-			
+
 			// 记录requests和limits
 			for resource, quantity := range container.Resources.Requests {
 				requests[string(resource)] = quantity.String()
@@ -1070,10 +1070,10 @@ func (s *K8sNodesServiceImpl) calculateResourceAllocation(node *corev1.Node, pod
 				limits[string(resource)] = quantity.String()
 			}
 		}
-		
+
 		cpuRequests += podCPU
 		memoryRequests += podMemory
-		
+
 		podList = append(podList, model.PodResourceInfo{
 			Name:      pod.Name,
 			Namespace: pod.Namespace,
@@ -1081,7 +1081,7 @@ func (s *K8sNodesServiceImpl) calculateResourceAllocation(node *corev1.Node, pod
 			Limits:    limits,
 		})
 	}
-	
+
 	allocated["cpu"] = fmt.Sprintf("%dm", cpuRequests)
 	allocated["memory"] = fmt.Sprintf("%d", memoryRequests)
 
@@ -1322,34 +1322,34 @@ func (s *K8sNodesServiceImpl) calculateNodeMonitoring(node *corev1.Node, pods []
 
 	// CPU监控信息
 	monitoring.CPU = model.NodeResourceUsage{
-		Total:     fmt.Sprintf("%.1f cores", float64(totalCPU)/1000),
-		Used:      "0 cores", // 需要metrics-server支持
-		Available: fmt.Sprintf("%.1f cores", float64(allocatableCPU)/1000),
-		Requests:  fmt.Sprintf("%.1f cores", float64(cpuRequests)/1000),
-		Limits:    fmt.Sprintf("%.1f cores", float64(cpuLimits)/1000),
-		UsageRate: 0, // 需要metrics-server支持
+		Total:       fmt.Sprintf("%.1f cores", float64(totalCPU)/1000),
+		Used:        "0 cores", // 需要metrics-server支持
+		Available:   fmt.Sprintf("%.1f cores", float64(allocatableCPU)/1000),
+		Requests:    fmt.Sprintf("%.1f cores", float64(cpuRequests)/1000),
+		Limits:      fmt.Sprintf("%.1f cores", float64(cpuLimits)/1000),
+		UsageRate:   0, // 需要metrics-server支持
 		RequestRate: float64(cpuRequests) / float64(allocatableCPU) * 100,
 	}
 
 	// 内存监控信息
 	monitoring.Memory = model.NodeResourceUsage{
-		Total:     fmt.Sprintf("%d Mi", totalMemory/(1024*1024)),
-		Used:      "0 Mi", // 需要metrics-server支持
-		Available: fmt.Sprintf("%d Mi", allocatableMemory/(1024*1024)),
-		Requests:  fmt.Sprintf("%d Mi", memoryRequests/(1024*1024)),
-		Limits:    fmt.Sprintf("%d Mi", memoryLimits/(1024*1024)),
-		UsageRate: 0, // 需要metrics-server支持
+		Total:       fmt.Sprintf("%d Mi", totalMemory/(1024*1024)),
+		Used:        "0 Mi", // 需要metrics-server支持
+		Available:   fmt.Sprintf("%d Mi", allocatableMemory/(1024*1024)),
+		Requests:    fmt.Sprintf("%d Mi", memoryRequests/(1024*1024)),
+		Limits:      fmt.Sprintf("%d Mi", memoryLimits/(1024*1024)),
+		UsageRate:   0, // 需要metrics-server支持
 		RequestRate: float64(memoryRequests) / float64(allocatableMemory) * 100,
 	}
 
 	// 存储监控信息（示例数据）
 	monitoring.Storage = model.NodeResourceUsage{
-		Total:     "100 Gi",
-		Used:      "0 Gi",
-		Available: "100 Gi",
-		Requests:  "0 Gi",
-		Limits:    "0 Gi",
-		UsageRate: 0,
+		Total:       "100 Gi",
+		Used:        "0 Gi",
+		Available:   "100 Gi",
+		Requests:    "0 Gi",
+		Limits:      "0 Gi",
+		UsageRate:   0,
 		RequestRate: 0,
 	}
 

@@ -1,15 +1,15 @@
 package service
 
 import (
-	"fmt"
-	"net/http"
 	"dodevops-api/api/cmdb/service"
+	sysmodel "dodevops-api/api/system/model"
 	"dodevops-api/api/task/dao"
 	"dodevops-api/api/task/model"
-	sysmodel "dodevops-api/api/system/model"
 	"dodevops-api/common/constant"
 	"dodevops-api/common/result"
+	"fmt"
 	"github.com/gin-gonic/gin"
+	"net/http"
 )
 
 type TaskServiceInterface interface {
@@ -24,11 +24,9 @@ type TaskServiceInterface interface {
 }
 
 type TaskService struct {
-	hostSSHService    service.CmdbHostSSHServiceInterface
-	taskTemplateDao   dao.TaskTemplateDaoInterface
+	hostSSHService  service.CmdbHostSSHServiceInterface
+	taskTemplateDao dao.TaskTemplateDaoInterface
 }
-
-
 
 func NewTaskServiceImpl(
 	hostSSHService service.CmdbHostSSHServiceInterface,
@@ -36,9 +34,8 @@ func NewTaskServiceImpl(
 
 ) *TaskService {
 	return &TaskService{
-		hostSSHService:    hostSSHService,
-		taskTemplateDao:   taskTemplateDao,
-
+		hostSSHService:  hostSSHService,
+		taskTemplateDao: taskTemplateDao,
 	}
 }
 
@@ -71,7 +68,7 @@ func (s *TaskService) CreateTemplate(ctx *gin.Context, template *model.TaskTempl
 		result.Failed(ctx, http.StatusInternalServerError, fmt.Sprintf("创建任务模板失败: %v", err))
 		return nil
 	}
-	
+
 	result.Success(ctx, gin.H{
 		"id":      template.ID,
 		"name":    template.Name,

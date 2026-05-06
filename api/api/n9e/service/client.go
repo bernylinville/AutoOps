@@ -27,7 +27,7 @@ func NewN9EClient(endpoint, token string, timeout int) *N9EClient {
 
 	httpClient := resty.New().
 		SetBaseURL(strings.TrimRight(endpoint, "/")).
-		SetTimeout(time.Duration(timeout) * time.Second).
+		SetTimeout(time.Duration(timeout)*time.Second).
 		SetHeader("X-User-Token", token).
 		SetHeader("Content-Type", "application/json").
 		SetRetryCount(3).

@@ -13,10 +13,10 @@ const (
 	// 缓存键前缀
 	NamespaceListKeyPrefix   = "k8s:namespaces:list:"
 	NamespaceDetailKeyPrefix = "k8s:namespaces:detail:"
-	
+
 	// 默认过期时间
-	DefaultExpiration = 5 * time.Minute
-	NamespaceListExpiration = 3 * time.Minute
+	DefaultExpiration         = 5 * time.Minute
+	NamespaceListExpiration   = 3 * time.Minute
 	NamespaceDetailExpiration = 5 * time.Minute
 )
 
@@ -61,7 +61,7 @@ func (r *RedisCache) SetJSON(ctx context.Context, key string, value interface{},
 	if err != nil {
 		return fmt.Errorf("marshal json failed: %w", err)
 	}
-	
+
 	return r.client.Set(ctx, key, jsonValue, expiration).Err()
 }
 
@@ -71,7 +71,7 @@ func (r *RedisCache) GetJSON(ctx context.Context, key string, dest interface{}) 
 	if err != nil {
 		return err
 	}
-	
+
 	return json.Unmarshal([]byte(jsonValue), dest)
 }
 
@@ -108,11 +108,11 @@ func (r *RedisCache) GetNamespaceDetail(ctx context.Context, clusterId uint, nam
 // InvalidateNamespaceCache 使命名空间缓存失效
 func (r *RedisCache) InvalidateNamespaceCache(ctx context.Context, clusterId uint, namespaceName ...string) error {
 	var keysToDelete []string
-	
+
 	// 删除命名空间列表缓存
 	listKey := fmt.Sprintf("%s%d", NamespaceListKeyPrefix, clusterId)
 	keysToDelete = append(keysToDelete, listKey)
-	
+
 	// 删除指定命名空间的详情缓存
 	if len(namespaceName) > 0 {
 		for _, name := range namespaceName {
@@ -128,10 +128,10 @@ func (r *RedisCache) InvalidateNamespaceCache(ctx context.Context, clusterId uin
 		}
 		keysToDelete = append(keysToDelete, keys...)
 	}
-	
+
 	if len(keysToDelete) > 0 {
 		return r.Del(ctx, keysToDelete...)
 	}
-	
+
 	return nil
 }

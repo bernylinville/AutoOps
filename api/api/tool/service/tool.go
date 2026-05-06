@@ -12,12 +12,12 @@ import (
 
 // IToolService 接口定义
 type IToolService interface {
-	CreateTool(c *gin.Context, dto model.AddToolDto)      // 创建导航工具
-	GetToolByID(c *gin.Context, id uint)                  // 根据ID获取导航工具
-	UpdateTool(c *gin.Context, dto model.UpdateToolDto)   // 更新导航工具
-	DeleteTool(c *gin.Context, id uint)                   // 删除导航工具
-	GetToolList(c *gin.Context, dto model.ToolQueryDto)   // 获取导航工具列表（分页）
-	GetAllTools(c *gin.Context)                           // 获取所有启用的导航工具
+	CreateTool(c *gin.Context, dto model.AddToolDto)    // 创建导航工具
+	GetToolByID(c *gin.Context, id uint)                // 根据ID获取导航工具
+	UpdateTool(c *gin.Context, dto model.UpdateToolDto) // 更新导航工具
+	DeleteTool(c *gin.Context, id uint)                 // 删除导航工具
+	GetToolList(c *gin.Context, dto model.ToolQueryDto) // 获取导航工具列表（分页）
+	GetAllTools(c *gin.Context)                         // 获取所有启用的导航工具
 }
 
 type ToolServiceImpl struct{}

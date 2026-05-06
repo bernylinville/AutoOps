@@ -71,7 +71,7 @@ func (s *K8sEventsServiceImpl) GetEvents(c *gin.Context, clusterId uint, namespa
 
 	// 构建查询选项
 	listOptions := metav1.ListOptions{}
-	
+
 	// 如果指定了资源类型和名称，添加字段选择器
 	if kind != "" && name != "" {
 		listOptions.FieldSelector = "involvedObject.kind=" + kind + ",involvedObject.name=" + name
@@ -90,7 +90,7 @@ func (s *K8sEventsServiceImpl) GetEvents(c *gin.Context, clusterId uint, namespa
 
 	// 转换事件数据
 	k8sEvents := s.convertToK8sEvents(events.Items)
-	
+
 	// 按时间降序排序（最新的在前面）
 	sort.Slice(k8sEvents, func(i, j int) bool {
 		return k8sEvents[i].LastTime > k8sEvents[j].LastTime
@@ -150,7 +150,7 @@ func (s *K8sEventsServiceImpl) GetClusterEvents(c *gin.Context, clusterId uint, 
 
 	// 转换事件数据
 	k8sEvents := s.convertToK8sEvents(events.Items)
-	
+
 	// 按时间降序排序
 	sort.Slice(k8sEvents, func(i, j int) bool {
 		return k8sEvents[i].LastTime > k8sEvents[j].LastTime

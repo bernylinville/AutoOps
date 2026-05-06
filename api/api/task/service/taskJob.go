@@ -1,15 +1,15 @@
 package service
 
 import (
+	cmdbmodel "dodevops-api/api/cmdb/model"
+	"dodevops-api/api/task/dao"
+	"dodevops-api/api/task/model"
 	"errors"
+	"github.com/robfig/cron/v3"
+	"gorm.io/gorm"
 	"strconv"
 	"strings"
 	"time"
-	"dodevops-api/api/task/dao"
-	"dodevops-api/api/task/model"
-	cmdbmodel "dodevops-api/api/cmdb/model"
-	"gorm.io/gorm"
-	"github.com/robfig/cron/v3"
 )
 
 // TaskJobService 任务服务接口
@@ -32,13 +32,13 @@ type TaskJobService interface {
 }
 
 type taskJobServiceImpl struct {
-	db     *gorm.DB
+	db      *gorm.DB
 	taskDao dao.TaskDao
 }
 
 func NewTaskService(db *gorm.DB) TaskJobService {
 	return &taskJobServiceImpl{
-		db:     db,
+		db:      db,
 		taskDao: dao.NewTaskDao(db),
 	}
 }
@@ -119,12 +119,12 @@ func (s *taskJobServiceImpl) GetTasksByStatus(status int) ([]model.Task, error) 
 func (s *taskJobServiceImpl) GetNextExecutionTime(cronExpr string) (time.Time, error) {
 	scheduler := cron.New(cron.WithSeconds())
 	defer scheduler.Stop()
-	
+
 	schedule, err := cron.ParseStandard(cronExpr)
 	if err != nil {
 		return time.Time{}, err
 	}
-	
+
 	return schedule.Next(time.Now()), nil
 }
 

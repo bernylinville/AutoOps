@@ -1,10 +1,10 @@
 package dao
 
 import (
-	"time"
 	"dodevops-api/api/configcenter/model"
 	"dodevops-api/common"
 	"dodevops-api/common/util"
+	"time"
 )
 
 type KeyManageDao struct{}
@@ -28,7 +28,7 @@ func (d *KeyManageDao) Update(keyManage *model.KeyManage) error {
 	}
 	// 设置当前时间为更新时间
 	keyManage.UpdatedAt = util.HTime{Time: time.Now()}
-	
+
 	return common.GetDB().Model(keyManage).Updates(map[string]interface{}{
 		"key_type":   keyManage.KeyType,
 		"key_id":     keyManage.KeyID,
@@ -61,14 +61,14 @@ func (d *KeyManageDao) List() ([]model.KeyManage, error) {
 func (d *KeyManageDao) ListWithPage(page, pageSize int) ([]model.KeyManage, int64, error) {
 	var keyManages []model.KeyManage
 	var total int64
-	
+
 	offset := (page - 1) * pageSize
-	
+
 	db := common.GetDB()
 	if err := db.Model(&model.KeyManage{}).Count(&total).Error; err != nil {
 		return nil, 0, err
 	}
-	
+
 	err := db.Offset(offset).Limit(pageSize).Find(&keyManages).Error
 	return keyManages, total, err
 }

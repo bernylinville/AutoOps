@@ -59,11 +59,11 @@ func (tc *terminalConn) Write(p []byte) (n int, err error) {
 func (kws *K8sWebSocketStream) Close() error {
 	kws.Lock()
 	defer kws.Unlock()
-	
+
 	if kws.closed {
 		return nil
 	}
-	
+
 	kws.closed = true
 	if kws.cancel != nil {
 		kws.cancel()
@@ -84,17 +84,17 @@ func (kws *K8sWebSocketStream) WriteToWebSocket(p []byte) (n int, err error) {
 	if kws.IsClosed() {
 		return 0, io.EOF
 	}
-	
+
 	message := K8sMessage{
 		Operation: "stdout",
 		Data:      string(p),
 	}
-	
+
 	if err = kws.Conn.WriteJSON(message); err != nil {
 		go kws.Close() // 异步关闭，避免死锁
 		return 0, err
 	}
-	
+
 	return len(p), nil
 }
 
@@ -107,18 +107,18 @@ func (kws *K8sWebSocketStream) ReadFromWebSocket() {
 			kws.writer.Close()
 		}
 	}()
-	
+
 	for {
 		if kws.IsClosed() {
 			return
 		}
-		
+
 		var message K8sMessage
 		err := kws.Conn.ReadJSON(&message)
 		if err != nil {
 			return
 		}
-		
+
 		switch message.Operation {
 		case "stdin":
 			if kws.writer != nil && !kws.IsClosed() {
@@ -128,7 +128,7 @@ func (kws *K8sWebSocketStream) ReadFromWebSocket() {
 				} else {
 					continue
 				}
-				
+
 				_, err := kws.writer.Write([]byte(data))
 				if err != nil {
 					return

@@ -510,9 +510,9 @@ func (s *AgentServiceImpl) DeleteAgentByID(c *gin.Context, agentID uint) {
 	}
 
 	result.Success(c, map[string]interface{}{
-		"message": "Agent数据删除成功",
-		"agentId": agentID,
-		"hostId":  agent.HostID,
+		"message":  "Agent数据删除成功",
+		"agentId":  agentID,
+		"hostId":   agent.HostID,
 		"hostName": agent.HostName,
 	})
 }
@@ -986,11 +986,11 @@ require (
 	baseEnvVars := []string{
 		"GO111MODULE=on",
 		"CGO_ENABLED=0",
-		"GOFLAGS=-buildvcs=false", // 禁用VCS信息，避免生产环境权限问题
+		"GOFLAGS=-buildvcs=false",                   // 禁用VCS信息，避免生产环境权限问题
 		fmt.Sprintf("GOMODCACHE=%s", goModCacheDir), // 设置模块缓存目录
-		fmt.Sprintf("GOCACHE=%s", goCacheDir), // 设置构建缓存
-		fmt.Sprintf("GOTMPDIR=%s", goTmpDir), // 设置临时目录
-		fmt.Sprintf("GOPATH=%s", goTempDir), // 设置GOPATH作为备用
+		fmt.Sprintf("GOCACHE=%s", goCacheDir),       // 设置构建缓存
+		fmt.Sprintf("GOTMPDIR=%s", goTmpDir),        // 设置临时目录
+		fmt.Sprintf("GOPATH=%s", goTempDir),         // 设置GOPATH作为备用
 	}
 
 	// 下载专用环境变量
@@ -1088,7 +1088,7 @@ require (
 	log.Printf("开始生产环境独立编译...")
 	buildFlags := []string{
 		"build",
-		"-a", // 强制重新构建所有包
+		"-a",                                      // 强制重新构建所有包
 		"-ldflags", "-s -w -extldflags '-static'", // 静态链接
 		"-installsuffix", "netgo", // 使用纯Go网络栈
 		"-tags", "netgo,osusergo", // 禁用CGO依赖
@@ -1202,7 +1202,6 @@ require (
 	} else {
 		return fmt.Errorf("主机未配置SSH认证信息")
 	}
-
 
 	// 创建远程目录并进行环境预检查
 	log.Printf("创建远程目录并检查环境兼容性...")
@@ -1593,10 +1592,10 @@ WantedBy=multi-user.target`
 
 	// 更新进度：启动成功 (100%) 并同时更新状态为运行中
 	updateErr := s.agentDao.UpdateByHostID(hostID, map[string]interface{}{
-		"status": agentModel.AgentStatusRunning,
+		"status":           agentModel.AgentStatusRunning,
 		"install_progress": agentModel.InstallProgressStarted,
-		"error_msg": "",
-		"update_time": time.Now(),
+		"error_msg":        "",
+		"update_time":      time.Now(),
 	})
 	if updateErr != nil {
 		log.Printf("Failed to update agent status to running for host %d: %v", hostID, updateErr)

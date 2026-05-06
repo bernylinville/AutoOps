@@ -15,7 +15,7 @@ type EcsAuthServiceInterface interface {
 	GetEcsAuthList(c *gin.Context)                                              // 获取所有认证信息
 	GetEcsAuthListWithPage(c *gin.Context, page, pageSize int)                  // 获取认证信息（分页）
 	GetEcsAuthByName(c *gin.Context, name string)                               // 根据名称获取认证信息
-	GetEcsAuthById(c *gin.Context, id uint)                                    // 根据ID获取认证信息
+	GetEcsAuthById(c *gin.Context, id uint)                                     // 根据ID获取认证信息
 	CreateEcsAuth(c *gin.Context, dto *model.CreateEcsPasswordAuthDto)          // 创建认证信息
 	UpdateEcsAuth(c *gin.Context, id uint, dto *model.CreateEcsPasswordAuthDto) // 更新认证信息
 	DeleteEcsAuth(c *gin.Context, id uint)                                      // 删除认证信息
@@ -32,6 +32,7 @@ func maskCredential(val string) string {
 	}
 	return "***"
 }
+
 // 获取所有认证信息
 func (s *EcsAuthServiceImpl) GetEcsAuthList(c *gin.Context) {
 	list := s.dao.GetEcsAuthList()
@@ -69,7 +70,7 @@ func (s *EcsAuthServiceImpl) GetEcsAuthListWithPage(c *gin.Context, page, pageSi
 			Remark:     auth.Remark,
 		})
 	}
-	
+
 	pageResult := result.PageResult{
 		List:     vos,
 		Total:    total,
@@ -78,6 +79,7 @@ func (s *EcsAuthServiceImpl) GetEcsAuthListWithPage(c *gin.Context, page, pageSi
 	}
 	result.Success(c, pageResult)
 }
+
 // 创建认证信息
 func (s *EcsAuthServiceImpl) CreateEcsAuth(c *gin.Context, dto *model.CreateEcsPasswordAuthDto) {
 	// 检查名称是否已存在
@@ -103,15 +105,16 @@ func (s *EcsAuthServiceImpl) CreateEcsAuth(c *gin.Context, dto *model.CreateEcsP
 	}
 	result.Success(c, true)
 }
+
 // 修改认证信息
 func (s *EcsAuthServiceImpl) UpdateEcsAuth(c *gin.Context, id uint, dto *model.CreateEcsPasswordAuthDto) {
 	auth := model.EcsAuth{
-		Name:     dto.Name,
-		Username: dto.Username,
-		Password: dto.Password,
-		Port:     dto.Port,
-		Remark:   dto.Remark,
-		Type:     dto.Type,
+		Name:      dto.Name,
+		Username:  dto.Username,
+		Password:  dto.Password,
+		Port:      dto.Port,
+		Remark:    dto.Remark,
+		Type:      dto.Type,
 		PublicKey: dto.PublicKey,
 	}
 	err := s.dao.UpdateEcsAuth(id, &auth)
@@ -135,6 +138,7 @@ func (s *EcsAuthServiceImpl) DeleteEcsAuth(c *gin.Context, id uint) {
 	}
 	result.Success(c, true)
 }
+
 // 根据名称获取认证信息
 func (s *EcsAuthServiceImpl) GetEcsAuthByName(c *gin.Context, name string) {
 	auth, err := s.dao.GetEcsAuthByName(name)

@@ -7,10 +7,10 @@ import (
 	"strings"
 	"sync"
 
+	cmdbModel "dodevops-api/api/cmdb/model"
 	"dodevops-api/api/n9e/dao"
 	"dodevops-api/api/n9e/model"
 	"dodevops-api/common"
-	cmdbModel "dodevops-api/api/cmdb/model"
 	"dodevops-api/common/util"
 	"dodevops-api/pkg/log"
 	"time"
@@ -228,7 +228,7 @@ func (s *SyncService) syncHosts(targets []model.TargetData) (model.SyncStats, er
 				CPU:        cpuModel,
 				Memory:     memoryTotal,
 				Status:     hostStatus, // 根据 target_up: 1=在线, 3=离线
-				Vendor:     1, // 自建
+				Vendor:     1,          // 自建
 				SourceType: "n9e",
 				N9EID:      target.ID,
 				N9EIdent:   ident,

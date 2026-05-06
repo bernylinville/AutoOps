@@ -8,8 +8,6 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-
-
 // @Tags System系统管理
 // 查询部门列表
 // @Summary 查询部门列表接口

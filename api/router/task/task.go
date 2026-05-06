@@ -21,18 +21,18 @@ func RegisterTaskRoutes(router *gin.RouterGroup) {
 	router.GET("/template/query/type", middleware.AuthMiddleware(), controller.GetTemplatesByType)
 
 	// 任务管理路由
-	router.POST("/task/add", middleware.AuthMiddleware(), controller.CreateTask)                      // 创建任务
-	router.GET("/task/get", middleware.AuthMiddleware(), controller.GetTaskByID)                      // 获取任务信息
-	router.PUT("/task/update", middleware.AuthMiddleware(), controller.UpdateTask)                    // 修改任务
-	router.DELETE("/task/delete", middleware.AuthMiddleware(), controller.DeleteTask)                 // 删除任务
-	router.GET("/task/list", middleware.AuthMiddleware(), controller.ListTasks)                       // 获取任务列表
+	router.POST("/task/add", middleware.AuthMiddleware(), controller.CreateTask)                        // 创建任务
+	router.GET("/task/get", middleware.AuthMiddleware(), controller.GetTaskByID)                        // 获取任务信息
+	router.PUT("/task/update", middleware.AuthMiddleware(), controller.UpdateTask)                      // 修改任务
+	router.DELETE("/task/delete", middleware.AuthMiddleware(), controller.DeleteTask)                   // 删除任务
+	router.GET("/task/list", middleware.AuthMiddleware(), controller.ListTasks)                         // 获取任务列表
 	router.GET("/task/list-with-details", middleware.AuthMiddleware(), controller.ListTasksWithDetails) // 获取任务列表（包含关联信息）
-	router.GET("/task/query/name", middleware.AuthMiddleware(), controller.GetTasksByName)            // 获取任务名称列表
-	router.GET("/task/query/type", middleware.AuthMiddleware(), controller.GetTasksByType)            // 获取任务类型列表
-	router.GET("/task/query/status", middleware.AuthMiddleware(), controller.GetTasksByStatus)         // 获取任务状态列表
-	router.GET("/task/next-execution", middleware.AuthMiddleware(), controller.GetNextExecutionTime)  // 获取任务下次执行时间
-	router.GET("/task/execution-info", middleware.AuthMiddleware(), controller.GetTaskExecutionInfo) // 获取任务执行信息
-	router.GET("/task/templates", middleware.AuthMiddleware(), controller.GetTaskTemplatesWithStatus) // 获取任务模板列表
+	router.GET("/task/query/name", middleware.AuthMiddleware(), controller.GetTasksByName)              // 获取任务名称列表
+	router.GET("/task/query/type", middleware.AuthMiddleware(), controller.GetTasksByType)              // 获取任务类型列表
+	router.GET("/task/query/status", middleware.AuthMiddleware(), controller.GetTasksByStatus)          // 获取任务状态列表
+	router.GET("/task/next-execution", middleware.AuthMiddleware(), controller.GetNextExecutionTime)    // 获取任务下次执行时间
+	router.GET("/task/execution-info", middleware.AuthMiddleware(), controller.GetTaskExecutionInfo)    // 获取任务执行信息
+	router.GET("/task/templates", middleware.AuthMiddleware(), controller.GetTaskTemplatesWithStatus)   // 获取任务模板列表
 
 	// 任务作业路由
 	router.POST("/taskjob/start", middleware.AuthMiddleware(), controller.TaskWork().StartJob)
@@ -42,18 +42,18 @@ func RegisterTaskRoutes(router *gin.RouterGroup) {
 
 	// 任务监控路由
 	taskMonitorCtrl := controller.NewTaskMonitorController()
-	router.GET("/task/monitor/queue/metrics", middleware.AuthMiddleware(), taskMonitorCtrl.GetQueueMetrics)      // 获取队列指标
-	router.GET("/task/monitor/scheduler/stats", middleware.AuthMiddleware(), taskMonitorCtrl.GetSchedulerStats) // 获取调度器统计
-	router.GET("/task/monitor/system/status", middleware.AuthMiddleware(), taskMonitorCtrl.GetSystemStatus)     // 获取系统状态
-	router.GET("/task/monitor/queue/details", middleware.AuthMiddleware(), taskMonitorCtrl.GetQueueDetails)     // 获取队列详情
+	router.GET("/task/monitor/queue/metrics", middleware.AuthMiddleware(), taskMonitorCtrl.GetQueueMetrics)        // 获取队列指标
+	router.GET("/task/monitor/scheduler/stats", middleware.AuthMiddleware(), taskMonitorCtrl.GetSchedulerStats)    // 获取调度器统计
+	router.GET("/task/monitor/system/status", middleware.AuthMiddleware(), taskMonitorCtrl.GetSystemStatus)        // 获取系统状态
+	router.GET("/task/monitor/queue/details", middleware.AuthMiddleware(), taskMonitorCtrl.GetQueueDetails)        // 获取队列详情
 	router.POST("/task/monitor/queue/clear-failed", middleware.AuthMiddleware(), taskMonitorCtrl.ClearFailedQueue) // 清空失败队列
 	router.POST("/task/monitor/queue/retry-failed", middleware.AuthMiddleware(), taskMonitorCtrl.RetryFailedTasks) // 重试失败任务
 
 	// 定时任务管理路由
-	router.POST("/task/monitor/scheduled/pause", middleware.AuthMiddleware(), taskMonitorCtrl.PauseScheduledTask)  // 暂停定时任务
-	router.POST("/task/monitor/scheduled/resume", middleware.AuthMiddleware(), taskMonitorCtrl.ResumeScheduledTask) // 恢复定时任务
+	router.POST("/task/monitor/scheduled/pause", middleware.AuthMiddleware(), taskMonitorCtrl.PauseScheduledTask)       // 暂停定时任务
+	router.POST("/task/monitor/scheduled/resume", middleware.AuthMiddleware(), taskMonitorCtrl.ResumeScheduledTask)     // 恢复定时任务
 	router.POST("/task/monitor/scheduled/reset", middleware.AuthMiddleware(), taskMonitorCtrl.ResetScheduledTaskStatus) // 重置定时任务状态
-	router.GET("/task/monitor/task/status", middleware.AuthMiddleware(), taskMonitorCtrl.GetTaskStatus)           // 获取任务状态详情
+	router.GET("/task/monitor/task/status", middleware.AuthMiddleware(), taskMonitorCtrl.GetTaskStatus)                 // 获取任务状态详情
 
 	// Ansible任务路由
 	taskAnsibleCtrl := controller.NewTaskAnsibleController(service.NewTaskAnsibleService(common.GetDB()))

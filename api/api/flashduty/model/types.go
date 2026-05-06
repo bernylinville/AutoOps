@@ -4,7 +4,7 @@ package model
 
 // Response FlashDuty API 统一响应结构
 type Response struct {
-	Error *ErrorInfo   `json:"error,omitempty"`
+	Error *ErrorInfo  `json:"error,omitempty"`
 	Data  interface{} `json:"data,omitempty"`
 }
 
@@ -76,24 +76,24 @@ type AlertListResponse struct {
 
 // Incident FlashDuty 故障
 type Incident struct {
-	IncidentID      string            `json:"incident_id"`
-	Title           string            `json:"title"`
-	Description     string            `json:"description"`
-	IncidentSeverity string           `json:"incident_severity"` // Critical, Warning, Info
-	Progress        string            `json:"progress"`          // Triggered, Processing, Closed
-	ChannelID       int               `json:"channel_id"`
-	ChannelName     string            `json:"channel_name"`
-	StartTime       int64             `json:"start_time"`
-	LastTime        int64             `json:"last_time"`
-	EndTime         int64             `json:"end_time,omitempty"`
-	AckTime         int64             `json:"ack_time,omitempty"`
-	CloseTime       int64             `json:"close_time,omitempty"`
-	CreatedAt       int64             `json:"created_at"`
-	UpdatedAt       int64             `json:"updated_at"`
-	Labels          map[string]string `json:"labels"`
-	AlertCnt        int               `json:"alert_cnt"`
-	Assignees       []Assignee        `json:"assignees,omitempty"`
-	Creator         string            `json:"creator,omitempty"`
+	IncidentID       string            `json:"incident_id"`
+	Title            string            `json:"title"`
+	Description      string            `json:"description"`
+	IncidentSeverity string            `json:"incident_severity"` // Critical, Warning, Info
+	Progress         string            `json:"progress"`          // Triggered, Processing, Closed
+	ChannelID        int               `json:"channel_id"`
+	ChannelName      string            `json:"channel_name"`
+	StartTime        int64             `json:"start_time"`
+	LastTime         int64             `json:"last_time"`
+	EndTime          int64             `json:"end_time,omitempty"`
+	AckTime          int64             `json:"ack_time,omitempty"`
+	CloseTime        int64             `json:"close_time,omitempty"`
+	CreatedAt        int64             `json:"created_at"`
+	UpdatedAt        int64             `json:"updated_at"`
+	Labels           map[string]string `json:"labels"`
+	AlertCnt         int               `json:"alert_cnt"`
+	Assignees        []Assignee        `json:"assignees,omitempty"`
+	Creator          string            `json:"creator,omitempty"`
 }
 
 // Assignee 故障负责人
@@ -105,14 +105,14 @@ type Assignee struct {
 
 // IncidentListRequest 故障列表请求
 type IncidentListRequest struct {
-	P             int      `json:"p,omitempty"`
-	Limit         int      `json:"limit,omitempty"`
-	Query         string   `json:"query,omitempty"`
-	Progresses    []string `json:"progresses,omitempty"` // Triggered, Processing, Closed
-	Severities    []string `json:"severities,omitempty"`
-	ChannelIDs    []int    `json:"channel_ids,omitempty"`
-	StartTime     int64    `json:"start_time"`
-	EndTime       int64    `json:"end_time"`
+	P          int      `json:"p,omitempty"`
+	Limit      int      `json:"limit,omitempty"`
+	Query      string   `json:"query,omitempty"`
+	Progresses []string `json:"progresses,omitempty"` // Triggered, Processing, Closed
+	Severities []string `json:"severities,omitempty"`
+	ChannelIDs []int    `json:"channel_ids,omitempty"`
+	StartTime  int64    `json:"start_time"`
+	EndTime    int64    `json:"end_time"`
 }
 
 // IncidentListResponse 故障列表响应
@@ -192,16 +192,16 @@ type SchedulePreviewResponse struct {
 
 // InsightRequest 分析看板请求
 type InsightRequest struct {
-	StartTime     int64    `json:"start_time"`
-	EndTime       int64    `json:"end_time"`
-	TeamIDs       []int    `json:"team_ids,omitempty"`
-	ChannelIDs    []int    `json:"channel_ids,omitempty"`
-	Severities    []string `json:"severities,omitempty"`
-	TimeZone      string   `json:"time_zone,omitempty"`
-	Query         string   `json:"query"`
+	StartTime     int64             `json:"start_time"`
+	EndTime       int64             `json:"end_time"`
+	TeamIDs       []int             `json:"team_ids,omitempty"`
+	ChannelIDs    []int             `json:"channel_ids,omitempty"`
+	Severities    []string          `json:"severities,omitempty"`
+	TimeZone      string            `json:"time_zone,omitempty"`
+	Query         string            `json:"query"`
 	Labels        map[string]string `json:"labels"`
 	Fields        map[string]string `json:"fields"`
-	AggregateUnit string   `json:"aggregate_unit,omitempty"` // day, week, month
+	AggregateUnit string            `json:"aggregate_unit,omitempty"` // day, week, month
 }
 
 // InsightMetrics 分析指标
@@ -257,12 +257,12 @@ type ChannelListResponse struct {
 
 // DashboardAlertSummary 仪表盘告警概况
 type DashboardAlertSummary struct {
-	ActiveAlerts   int `json:"activeAlerts"`
-	CriticalCount  int `json:"criticalCount"`
-	WarningCount   int `json:"warningCount"`
-	InfoCount      int `json:"infoCount"`
+	ActiveAlerts    int `json:"activeAlerts"`
+	CriticalCount   int `json:"criticalCount"`
+	WarningCount    int `json:"warningCount"`
+	InfoCount       int `json:"infoCount"`
 	ActiveIncidents int `json:"activeIncidents"`
-	TriggeredCount int `json:"triggeredCount"`
+	TriggeredCount  int `json:"triggeredCount"`
 	ProcessingCount int `json:"processingCount"`
 }
 
@@ -278,21 +278,21 @@ type OnCallInfo struct {
 
 // SREMetrics SRE 指标汇总
 type SREMetrics struct {
-	MTTA               float64          `json:"mtta"`              // 平均认领耗时(秒)
-	MTTR               float64          `json:"mttr"`              // 平均关闭耗时(秒)
-	NoiseReductionPct  float64          `json:"noiseReductionPct"` // 降噪率
-	AckPct             float64          `json:"ackPct"`            // 响应率
-	TotalIncidents     int              `json:"totalIncidents"`
-	TotalAlerts        int              `json:"totalAlerts"`
-	TotalAlertEvents   int              `json:"totalAlertEvents"`
-	TrendData          []TrendDataPoint `json:"trendData,omitempty"`
+	MTTA              float64          `json:"mtta"`              // 平均认领耗时(秒)
+	MTTR              float64          `json:"mttr"`              // 平均关闭耗时(秒)
+	NoiseReductionPct float64          `json:"noiseReductionPct"` // 降噪率
+	AckPct            float64          `json:"ackPct"`            // 响应率
+	TotalIncidents    int              `json:"totalIncidents"`
+	TotalAlerts       int              `json:"totalAlerts"`
+	TotalAlertEvents  int              `json:"totalAlertEvents"`
+	TrendData         []TrendDataPoint `json:"trendData,omitempty"`
 }
 
 // TrendDataPoint 趋势数据点
 type TrendDataPoint struct {
-	Timestamp      int64   `json:"timestamp"`
-	IncidentCount  int     `json:"incidentCount"`
-	AlertCount     int     `json:"alertCount"`
-	MTTA           float64 `json:"mtta"`
-	MTTR           float64 `json:"mttr"`
+	Timestamp     int64   `json:"timestamp"`
+	IncidentCount int     `json:"incidentCount"`
+	AlertCount    int     `json:"alertCount"`
+	MTTA          float64 `json:"mtta"`
+	MTTR          float64 `json:"mttr"`
 }

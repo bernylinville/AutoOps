@@ -24,7 +24,6 @@ import (
 	"github.com/shirou/gopsutil/v3/process"
 )
 
-
 // Config 结构体定义
 type Config struct {
 	Processes []struct {
@@ -265,7 +264,7 @@ func getLocalIP() string {
 		return ""
 	}
 	defer conn.Close()
-	
+
 	localAddr := conn.LocalAddr().(*net.UDPAddr)
 	return localAddr.IP.String()
 }
@@ -282,14 +281,14 @@ type HeartbeatData struct {
 func sendHeartbeat(serverURL, token string) {
 	// 获取当前进程ID
 	pid := os.Getpid()
-	
+
 	// 获取本机IP
 	localIP := getLocalIP()
 	if localIP == "" {
 		log.Println("Warning: Could not determine local IP address")
 		return
 	}
-	
+
 	// 构造心跳数据
 	heartbeat := HeartbeatData{
 		PID:   pid,
@@ -297,14 +296,14 @@ func sendHeartbeat(serverURL, token string) {
 		Port:  9100, // Agent默认端口
 		Token: token,
 	}
-	
+
 	// 序列化为JSON
 	jsonData, err := json.Marshal(heartbeat)
 	if err != nil {
 		log.Printf("Error marshaling heartbeat data: %v", err)
 		return
 	}
-	
+
 	// 发送HTTP POST请求
 	client := &http.Client{Timeout: 10 * time.Second}
 	resp, err := client.Post(serverURL, "application/json", bytes.NewBuffer(jsonData))
@@ -313,7 +312,7 @@ func sendHeartbeat(serverURL, token string) {
 		return
 	}
 	defer resp.Body.Close()
-	
+
 	if resp.StatusCode == 200 {
 		log.Printf("Heartbeat sent successfully - PID: %d, IP: %s, Port: %d, Token: %s", pid, localIP, 9100, token)
 	} else {
@@ -329,7 +328,6 @@ func init() {
 
 	// 指标已在全局变量中初始化，这里不需要重复创建
 }
-
 
 func monitorSystemMetrics(intervalSeconds float64) {
 	// 采集CPU指标
@@ -608,7 +606,7 @@ func StartAgentWithConfig(config *Config) error {
 	if config.Heartbeat.ServerURL == "" {
 		config.Heartbeat.ServerURL = "http://127.0.0.1:8000/api/v1/monitor/agent/heartbeat"
 	}
-	
+
 	// 支持通过环境变量覆盖配置
 	if url := os.Getenv("PUSHGATEWAY_URL"); url != "" {
 		config.Pushgateway.URL = url
@@ -661,7 +659,7 @@ func StartAgentWithConfig(config *Config) error {
 				monitorProcesses(config)
 				monitorEndpoints(config)
 				monitorPing("8.8.8.8") // 默认ping Google DNS
-				monitorTCPPorts() // TCP端口监控
+				monitorTCPPorts()      // TCP端口监控
 			}()
 			time.Sleep(collectInterval)
 		}
@@ -781,14 +779,14 @@ avg by (core) (system_cpu_usage_percent)
 					log.Printf("Recovered from panic in heartbeat goroutine: %v", r)
 				}
 			}()
-			
+
 			// 立即发送一次心跳
 			sendHeartbeat(config.Heartbeat.ServerURL, config.Heartbeat.Token)
-			
+
 			// 定时发送心跳
 			ticker := time.NewTicker(heartbeatInterval)
 			defer ticker.Stop()
-			
+
 			for range ticker.C {
 				sendHeartbeat(config.Heartbeat.ServerURL, config.Heartbeat.Token)
 			}
@@ -812,7 +810,6 @@ avg by (core) (system_cpu_usage_percent)
 	log.Println("Agent started successfully on port 9100")
 	return nil
 }
-
 
 // findProjectRoot 查找包含go.mod的项目根目录
 func findProjectRoot() string {

@@ -84,7 +84,9 @@ func DeleteSysAdminById(c *gin.Context) {
 }
 
 // @Tags System系统管理
+//
 //	用户状态启用/停用
+//
 // @Summary 用户状态启用/停用接口
 // @Produce json
 // @Description 用户状态启用/停用接口

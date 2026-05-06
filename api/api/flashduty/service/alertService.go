@@ -26,9 +26,9 @@ func (s *AlertService) GetActiveAlerts(ctx context.Context, limit int) (*model.A
 	now := time.Now().Unix()
 	isActive := true
 	req := model.AlertListRequest{
-		P:        1,
-		Limit:    limit,
-		IsActive: &isActive,
+		P:         1,
+		Limit:     limit,
+		IsActive:  &isActive,
 		StartTime: now - 86400*30, // 最近 30 天
 		EndTime:   now,
 	}
@@ -50,9 +50,9 @@ func (s *AlertService) GetAlertsByHost(ctx context.Context, ident string, limit 
 	}
 	now := time.Now().Unix()
 	req := model.AlertListRequest{
-		P:     1,
-		Limit: limit,
-		Query: ident, // 全文搜索主机 IP
+		P:         1,
+		Limit:     limit,
+		Query:     ident,          // 全文搜索主机 IP
 		StartTime: now - 86400*30, // 最近 30 天（API 限制 31 天）
 		EndTime:   now,
 	}

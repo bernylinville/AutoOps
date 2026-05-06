@@ -41,7 +41,7 @@ func (s *CmdbHostCloudServiceImpl) CreateAliyunHost(c *gin.Context, dto *model.C
 	go func() {
 		// 初始化DAO
 		hostDao := cmdbDao.NewCmdbHostDao()
-		
+
 		hosts, err := s.createAliyunHosts(dto)
 		if err != nil {
 			fmt.Printf("[ERROR] 阿里云主机导入失败: %v\n", err)
@@ -66,16 +66,16 @@ func (s *CmdbHostCloudServiceImpl) CreateAliyunHost(c *gin.Context, dto *model.C
 		}
 
 		// 记录最终结果
-		fmt.Printf("[INFO] 阿里云主机导入完成: 成功 %d 台, 失败 %d 台\n", 
+		fmt.Printf("[INFO] 阿里云主机导入完成: 成功 %d 台, 失败 %d 台\n",
 			successCount, len(hosts)-successCount)
-		
+
 		// 这里可以添加将结果写入Redis或数据库的逻辑，供前端查询
 	}()
 }
 
 func (s *CmdbHostCloudServiceImpl) createAliyunHosts(dto *model.CreateCmdbHostCloudDto) ([]model.CmdbHost, error) {
 	aliyunService := util.NewAliyunCloudService(dto.AccessKey, dto.SecretKey, dto.Region)
-	
+
 	instances, err := aliyunService.GetInstances()
 	if err != nil {
 		return nil, fmt.Errorf("获取阿里云实例失败: %v", err)
@@ -155,7 +155,7 @@ func (s *CmdbHostCloudServiceImpl) CreateTencentHost(c *gin.Context, dto *model.
 	go func() {
 		// 初始化DAO
 		hostDao := cmdbDao.NewCmdbHostDao()
-		
+
 		hosts, err := s.createTencentHosts(dto)
 		if err != nil {
 			fmt.Printf("[ERROR] 腾讯云主机导入失败: %v\n", err)
@@ -174,7 +174,7 @@ func (s *CmdbHostCloudServiceImpl) CreateTencentHost(c *gin.Context, dto *model.
 
 func (s *CmdbHostCloudServiceImpl) createTencentHosts(dto *model.CreateCmdbHostCloudDto) ([]model.CmdbHost, error) {
 	tencentService := util.NewTencentCloudService(dto.AccessKey, dto.SecretKey)
-	
+
 	instances, err := tencentService.GetInstances()
 	if err != nil {
 		return nil, fmt.Errorf("获取腾讯云实例失败: %v", err)

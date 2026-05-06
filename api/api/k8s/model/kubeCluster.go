@@ -6,20 +6,20 @@ import (
 
 // KubeCluster K8s集群表
 type KubeCluster struct {
-	ID          uint      `gorm:"primaryKey;comment:'主键ID'" json:"id"`
-	Name        string    `gorm:"size:100;not null;uniqueIndex;comment:'集群名称'" json:"name"`
-	Version     string    `gorm:"size:50;not null;comment:'集群版本'" json:"version"`
-	Status      int       `gorm:"not null;default:1;comment:'集群状态:1-创建中,2-运行中,3-离线'" json:"status"`
-	Credential  string    `gorm:"type:text;comment:'集群凭证(kubeconfig)'" json:"credential"`
-	Description string    `gorm:"type:text;comment:'集群描述'" json:"description"`
-	ClusterType int       `gorm:"not null;default:1;comment:'集群类型:1-自建,2-导入'" json:"clusterType"`
-	NodeCount   int       `gorm:"default:0;comment:'节点数量'" json:"nodeCount"`
-	ReadyNodes  int       `gorm:"default:0;comment:'就绪节点数'" json:"readyNodes"`
-	MasterNodes int       `gorm:"default:0;comment:'Master节点数'" json:"masterNodes"`
-	WorkerNodes int       `gorm:"default:0;comment:'Worker节点数'" json:"workerNodes"`
+	ID          uint       `gorm:"primaryKey;comment:'主键ID'" json:"id"`
+	Name        string     `gorm:"size:100;not null;uniqueIndex;comment:'集群名称'" json:"name"`
+	Version     string     `gorm:"size:50;not null;comment:'集群版本'" json:"version"`
+	Status      int        `gorm:"not null;default:1;comment:'集群状态:1-创建中,2-运行中,3-离线'" json:"status"`
+	Credential  string     `gorm:"type:text;comment:'集群凭证(kubeconfig)'" json:"credential"`
+	Description string     `gorm:"type:text;comment:'集群描述'" json:"description"`
+	ClusterType int        `gorm:"not null;default:1;comment:'集群类型:1-自建,2-导入'" json:"clusterType"`
+	NodeCount   int        `gorm:"default:0;comment:'节点数量'" json:"nodeCount"`
+	ReadyNodes  int        `gorm:"default:0;comment:'就绪节点数'" json:"readyNodes"`
+	MasterNodes int        `gorm:"default:0;comment:'Master节点数'" json:"masterNodes"`
+	WorkerNodes int        `gorm:"default:0;comment:'Worker节点数'" json:"workerNodes"`
 	LastSyncAt  *time.Time `gorm:"comment:'最后同步时间'" json:"lastSyncAt"`
-	CreatedAt   time.Time `gorm:"autoCreateTime" json:"createdAt"`
-	UpdatedAt   time.Time `gorm:"autoUpdateTime" json:"updatedAt"`
+	CreatedAt   time.Time  `gorm:"autoCreateTime" json:"createdAt"`
+	UpdatedAt   time.Time  `gorm:"autoUpdateTime" json:"updatedAt"`
 }
 
 // KubeClusterStatus 集群状态枚举
@@ -56,16 +56,16 @@ func (c *KubeCluster) GetStatusText() string {
 
 // NodeInfo 从K8s API获取的节点信息
 type NodeInfo struct {
-	Name         string            `json:"name"`
-	Role         string            `json:"role"`         // master/worker/etcd
-	Status       string            `json:"status"`       // Ready/NotReady
-	InternalIP   string            `json:"internalIP"`
-	ExternalIP   string            `json:"externalIP"`
-	Version      string            `json:"version"`
-	OS           string            `json:"os"`
-	Capacity     map[string]string `json:"capacity"`     // CPU、内存等资源容量
-	Allocatable  map[string]string `json:"allocatable"`  // 可分配资源
-	Conditions   []NodeCondition   `json:"conditions"`   // 节点状态条件
+	Name        string            `json:"name"`
+	Role        string            `json:"role"`   // master/worker/etcd
+	Status      string            `json:"status"` // Ready/NotReady
+	InternalIP  string            `json:"internalIP"`
+	ExternalIP  string            `json:"externalIP"`
+	Version     string            `json:"version"`
+	OS          string            `json:"os"`
+	Capacity    map[string]string `json:"capacity"`    // CPU、内存等资源容量
+	Allocatable map[string]string `json:"allocatable"` // 可分配资源
+	Conditions  []NodeCondition   `json:"conditions"`  // 节点状态条件
 }
 
 // NodeCondition 节点状态条件
@@ -77,23 +77,23 @@ type NodeCondition struct {
 
 // ClusterDetailResponse 集群详情响应
 type ClusterDetailResponse struct {
-	Cluster     KubeCluster      `json:"cluster"`
-	Nodes       []NodeInfo       `json:"nodes"`
-	Summary     ClusterSummary   `json:"summary"`
-	Components  []ComponentInfo  `json:"components"`  // 安装的组件
-	Workloads   WorkloadSummary  `json:"workloads"`   // 工作负载统计
-	Network     NetworkInfo      `json:"network"`     // 网络配置
-	Events      []ClusterEvent   `json:"events"`      // 集群事件
-	Monitoring  MonitoringInfo   `json:"monitoring"`  // 监控信息
-	Runtime     RuntimeSummary   `json:"runtime"`     // 运行时信息
+	Cluster    KubeCluster     `json:"cluster"`
+	Nodes      []NodeInfo      `json:"nodes"`
+	Summary    ClusterSummary  `json:"summary"`
+	Components []ComponentInfo `json:"components"` // 安装的组件
+	Workloads  WorkloadSummary `json:"workloads"`  // 工作负载统计
+	Network    NetworkInfo     `json:"network"`    // 网络配置
+	Events     []ClusterEvent  `json:"events"`     // 集群事件
+	Monitoring MonitoringInfo  `json:"monitoring"` // 监控信息
+	Runtime    RuntimeSummary  `json:"runtime"`    // 运行时信息
 }
 
 // ClusterSummary 集群概要信息
 type ClusterSummary struct {
-	TotalNodes    int `json:"totalNodes"`
-	ReadyNodes    int `json:"readyNodes"`
-	MasterNodes   int `json:"masterNodes"`
-	WorkerNodes   int `json:"workerNodes"`
+	TotalNodes  int `json:"totalNodes"`
+	ReadyNodes  int `json:"readyNodes"`
+	MasterNodes int `json:"masterNodes"`
+	WorkerNodes int `json:"workerNodes"`
 }
 
 // ComponentInfo 组件信息
@@ -118,23 +118,23 @@ type WorkloadSummary struct {
 
 // NetworkInfo 网络配置信息
 type NetworkInfo struct {
-	ServiceCIDR     string `json:"serviceCIDR"`     // Service CIDR
-	PodCIDR         string `json:"podCIDR"`         // Pod CIDR
-	DNSService      string `json:"dnsService"`      // DNS服务
-	NetworkPlugin   string `json:"networkPlugin"`   // 网络插件
-	ProxyMode       string `json:"proxyMode"`       // 服务转发模式
+	ServiceCIDR       string `json:"serviceCIDR"`       // Service CIDR
+	PodCIDR           string `json:"podCIDR"`           // Pod CIDR
+	DNSService        string `json:"dnsService"`        // DNS服务
+	NetworkPlugin     string `json:"networkPlugin"`     // 网络插件
+	ProxyMode         string `json:"proxyMode"`         // 服务转发模式
 	APIServerEndpoint string `json:"apiServerEndpoint"` // API Server内网端点
 }
 
 // ClusterEvent 集群事件
 type ClusterEvent struct {
-	Type          string `json:"type"`          // 事件类型
-	Reason        string `json:"reason"`        // 原因
-	Message       string `json:"message"`       // 消息
-	Source        string `json:"source"`        // 事件源
-	FirstTime     string `json:"firstTime"`     // 首次时间
-	LastTime      string `json:"lastTime"`      // 最后时间
-	Count         int32  `json:"count"`         // 发生次数
+	Type           string `json:"type"`           // 事件类型
+	Reason         string `json:"reason"`         // 原因
+	Message        string `json:"message"`        // 消息
+	Source         string `json:"source"`         // 事件源
+	FirstTime      string `json:"firstTime"`      // 首次时间
+	LastTime       string `json:"lastTime"`       // 最后时间
+	Count          int32  `json:"count"`          // 发生次数
 	InvolvedObject string `json:"involvedObject"` // 相关对象
 }
 
@@ -165,42 +165,42 @@ type NetworkMetrics struct {
 
 // StorageMetrics 存储监控指标
 type StorageMetrics struct {
-	TotalPVs      int    `json:"totalPVs"`      // PV总数
-	BoundPVs      int    `json:"boundPVs"`      // 已绑定PV数
-	TotalPVCs     int    `json:"totalPVCs"`     // PVC总数
+	TotalPVs       int      `json:"totalPVs"`       // PV总数
+	BoundPVs       int      `json:"boundPVs"`       // 已绑定PV数
+	TotalPVCs      int      `json:"totalPVCs"`      // PVC总数
 	StorageClasses []string `json:"storageClasses"` // 存储类列表
 }
 
 // RuntimeSummary 运行时概要信息
 type RuntimeSummary struct {
-	KubernetesVersion    string `json:"kubernetesVersion"`    // Kubernetes版本
-	ContainerRuntime     string `json:"containerRuntime"`     // 容器运行时
-	APIServerVersion     string `json:"apiServerVersion"`     // API Server版本
-	EtcdVersion          string `json:"etcdVersion"`          // etcd版本
-	CoreDNSVersion       string `json:"coreDNSVersion"`       // CoreDNS版本
-	KubeProxyVersion     string `json:"kubeProxyVersion"`     // kube-proxy版本
-	UpTime               string `json:"upTime"`               // 集群运行时间
+	KubernetesVersion string `json:"kubernetesVersion"` // Kubernetes版本
+	ContainerRuntime  string `json:"containerRuntime"`  // 容器运行时
+	APIServerVersion  string `json:"apiServerVersion"`  // API Server版本
+	EtcdVersion       string `json:"etcdVersion"`       // etcd版本
+	CoreDNSVersion    string `json:"coreDNSVersion"`    // CoreDNS版本
+	KubeProxyVersion  string `json:"kubeProxyVersion"`  // kube-proxy版本
+	UpTime            string `json:"upTime"`            // 集群运行时间
 }
 
 // CreateKubeClusterRequest 创建K8s集群请求
 type CreateKubeClusterRequest struct {
-	Name        string `json:"name" binding:"required"`        // 集群名称
-	Description string `json:"description"`                    // 集群描述
-	ClusterType int    `json:"clusterType"`                    // 集群类型:1-自建,2-导入(默认为自建)
-	
+	Name        string `json:"name" binding:"required"` // 集群名称
+	Description string `json:"description"`             // 集群描述
+	ClusterType int    `json:"clusterType"`             // 集群类型:1-自建,2-导入(默认为自建)
+
 	// 自建集群参数
-	Version           string     `json:"version"`           // K8s版本
-	NodeConfig        *NodeConfig `json:"nodeConfig"`      // 节点配置
-	AutoDeploy        bool       `json:"autoDeploy"`       // 是否自动部署
-	DeploymentMode    int        `json:"deploymentMode"`   // 部署模式:1-单Master,2-多Master
-	EnabledComponents []string       `json:"enabledComponents"` // 启用组件
-	PrivateRegistry   string         `json:"privateRegistry"`   // 私有镜像仓库地址（兼容旧版本）
-	RegistryUsername  string         `json:"registryUsername"`  // 镜像仓库用户名（兼容旧版本）
-	RegistryPassword  string         `json:"registryPassword"`  // 镜像仓库密码（兼容旧版本）
+	Version           string          `json:"version"`           // K8s版本
+	NodeConfig        *NodeConfig     `json:"nodeConfig"`        // 节点配置
+	AutoDeploy        bool            `json:"autoDeploy"`        // 是否自动部署
+	DeploymentMode    int             `json:"deploymentMode"`    // 部署模式:1-单Master,2-多Master
+	EnabledComponents []string        `json:"enabledComponents"` // 启用组件
+	PrivateRegistry   string          `json:"privateRegistry"`   // 私有镜像仓库地址（兼容旧版本）
+	RegistryUsername  string          `json:"registryUsername"`  // 镜像仓库用户名（兼容旧版本）
+	RegistryPassword  string          `json:"registryPassword"`  // 镜像仓库密码（兼容旧版本）
 	RegistryConfig    *RegistryConfig `json:"registryConfig"`    // 镜像仓库配置（新版本）
-	TaskName          string         `json:"taskName"`          // 任务名称
-	TaskDescription   string         `json:"taskDescription"`   // 任务描述
-	
+	TaskName          string          `json:"taskName"`          // 任务名称
+	TaskDescription   string          `json:"taskDescription"`   // 任务描述
+
 	// 导入集群参数
 	Kubeconfig string `json:"kubeconfig"` // K8s凭证(kubeconfig内容)
 }
@@ -208,7 +208,7 @@ type CreateKubeClusterRequest struct {
 // NodeConfig 节点配置
 type NodeConfig struct {
 	MasterHostIDs []uint `json:"masterHostIds" binding:"required"` // Master节点主机ID
-	WorkerHostIDs []uint `json:"workerHostIds"`                    // Worker节点主机ID  
+	WorkerHostIDs []uint `json:"workerHostIds"`                    // Worker节点主机ID
 	EtcdHostIDs   []uint `json:"etcdHostIds" binding:"required"`   // ETCD节点主机ID
 }
 
@@ -236,28 +236,28 @@ type UpdateKubeClusterRequest struct {
 
 // K8sNode K8s节点信息（扩展版本）
 type K8sNode struct {
-	Name          string                `json:"name"`          // 节点名称
-	InternalIP    string               `json:"internalIP"`    // 内部IP地址
-	ExternalIP    string               `json:"externalIP"`    // 外部IP地址
-	Status        string               `json:"status"`        // 节点状态 Ready/NotReady
-	Roles         string               `json:"roles"`         // 节点角色 control-plane,master 或 worker
-	Conditions    []NodeCondition      `json:"conditions"`    // 节点状态详细条件
-	Configuration NodeConfiguration    `json:"configuration"` // 节点配置信息
-	PodMetrics    PodMetrics          `json:"podMetrics"`    // 容器组统计
-	Resources     NodeResources       `json:"resources"`     // CPU和内存资源
-	Runtime       RuntimeInfo         `json:"runtime"`       // 运行时和版本信息
-	Scheduling    NodeSchedulingInfo  `json:"scheduling"`    // 调度相关信息（污点、是否可调度等）
-	CreatedAt     string              `json:"createdAt"`     // 创建时间
+	Name          string             `json:"name"`          // 节点名称
+	InternalIP    string             `json:"internalIP"`    // 内部IP地址
+	ExternalIP    string             `json:"externalIP"`    // 外部IP地址
+	Status        string             `json:"status"`        // 节点状态 Ready/NotReady
+	Roles         string             `json:"roles"`         // 节点角色 control-plane,master 或 worker
+	Conditions    []NodeCondition    `json:"conditions"`    // 节点状态详细条件
+	Configuration NodeConfiguration  `json:"configuration"` // 节点配置信息
+	PodMetrics    PodMetrics         `json:"podMetrics"`    // 容器组统计
+	Resources     NodeResources      `json:"resources"`     // CPU和内存资源
+	Runtime       RuntimeInfo        `json:"runtime"`       // 运行时和版本信息
+	Scheduling    NodeSchedulingInfo `json:"scheduling"`    // 调度相关信息（污点、是否可调度等）
+	CreatedAt     string             `json:"createdAt"`     // 创建时间
 }
 
 // NodeConfiguration 节点配置信息
 type NodeConfiguration struct {
-	Role           string `json:"role"`           // 节点角色 master/worker
-	Architecture   string `json:"architecture"`   // 系统架构
-	KernelVersion  string `json:"kernelVersion"`  // 内核版本
-	OSImage        string `json:"osImage"`        // 操作系统镜像
-	Labels         map[string]string `json:"labels"`    // 节点标签
-	Annotations    map[string]string `json:"annotations"` // 节点注释
+	Role          string            `json:"role"`          // 节点角色 master/worker
+	Architecture  string            `json:"architecture"`  // 系统架构
+	KernelVersion string            `json:"kernelVersion"` // 内核版本
+	OSImage       string            `json:"osImage"`       // 操作系统镜像
+	Labels        map[string]string `json:"labels"`        // 节点标签
+	Annotations   map[string]string `json:"annotations"`   // 节点注释
 }
 
 // PodMetrics 容器组统计信息
@@ -282,72 +282,72 @@ type ResourceInfo struct {
 
 // RuntimeInfo 运行时信息
 type RuntimeInfo struct {
-	KubeletVersion       string `json:"kubeletVersion"`       // Kubelet版本
+	KubeletVersion          string `json:"kubeletVersion"`          // Kubelet版本
 	ContainerRuntimeVersion string `json:"containerRuntimeVersion"` // 容器运行时版本
-	KubeProxyVersion     string `json:"kubeProxyVersion"`     // KubeProxy版本
-	OperatingSystem      string `json:"operatingSystem"`      // 操作系统
-	OSImage              string `json:"osImage"`              // 操作系统镜像
+	KubeProxyVersion        string `json:"kubeProxyVersion"`        // KubeProxy版本
+	OperatingSystem         string `json:"operatingSystem"`         // 操作系统
+	OSImage                 string `json:"osImage"`                 // 操作系统镜像
 }
 
 // K8sNodeDetail 节点详细信息
 type K8sNodeDetail struct {
 	K8sNode
-	Pods     []PodInfo `json:"pods"`     // 节点上运行的Pod列表
-	Events   []EventInfo `json:"events"`   // 相关事件
-	Metrics  NodeMetrics `json:"metrics"`  // 详细监控指标
+	Pods    []PodInfo   `json:"pods"`    // 节点上运行的Pod列表
+	Events  []EventInfo `json:"events"`  // 相关事件
+	Metrics NodeMetrics `json:"metrics"` // 详细监控指标
 }
 
 // NodeDetailResponse 节点详细信息响应
 type NodeDetailResponse struct {
 	// 基本信息
-	Name         string            `json:"name"`         // 节点名称
-	CreatedAt    string            `json:"createdAt"`    // 创建时间
-	UID          string            `json:"uid"`          // UID
-	ProviderID   string            `json:"providerID"`   // 提供者ID
+	Name       string `json:"name"`       // 节点名称
+	CreatedAt  string `json:"createdAt"`  // 创建时间
+	UID        string `json:"uid"`        // UID
+	ProviderID string `json:"providerID"` // 提供者ID
 
 	// IP地址信息
-	InternalIP   string            `json:"internalIP"`   // 内部IP
-	ExternalIP   string            `json:"externalIP"`   // 外部IP
-	Hostname     string            `json:"hostname"`     // 主机名
+	InternalIP string `json:"internalIP"` // 内部IP
+	ExternalIP string `json:"externalIP"` // 外部IP
+	Hostname   string `json:"hostname"`   // 主机名
 
 	// 系统信息
-	OSImage      string            `json:"osImage"`      // 系统镜像
-	KernelVersion string           `json:"kernelVersion"` // 内核版本
-	Architecture string            `json:"architecture"` // 架构
-	OperatingSystem string         `json:"operatingSystem"` // 操作系统
-	MachineID    string            `json:"machineID"`    // 机器ID
-	SystemUUID   string            `json:"systemUUID"`   // 系统UUID
-	BootID       string            `json:"bootID"`       // 启动ID
+	OSImage         string `json:"osImage"`         // 系统镜像
+	KernelVersion   string `json:"kernelVersion"`   // 内核版本
+	Architecture    string `json:"architecture"`    // 架构
+	OperatingSystem string `json:"operatingSystem"` // 操作系统
+	MachineID       string `json:"machineID"`       // 机器ID
+	SystemUUID      string `json:"systemUUID"`      // 系统UUID
+	BootID          string `json:"bootID"`          // 启动ID
 
 	// K8s组件版本
-	KubeletVersion       string `json:"kubeletVersion"`       // Kubelet版本
-	KubeProxyVersion     string `json:"kubeProxyVersion"`     // Kube-Proxy版本
+	KubeletVersion          string `json:"kubeletVersion"`          // Kubelet版本
+	KubeProxyVersion        string `json:"kubeProxyVersion"`        // Kube-Proxy版本
 	ContainerRuntimeVersion string `json:"containerRuntimeVersion"` // 容器运行时版本
 
 	// 资源信息
-	Capacity     map[string]string `json:"capacity"`     // 总容量
-	Allocatable  map[string]string `json:"allocatable"`  // 可分配资源
+	Capacity    map[string]string `json:"capacity"`    // 总容量
+	Allocatable map[string]string `json:"allocatable"` // 可分配资源
 
 	// 调度信息
 	Unschedulable bool              `json:"unschedulable"` // 是否不可调度
-	Taints       []NodeTaint        `json:"taints"`        // 污点列表
-	Labels       map[string]string  `json:"labels"`        // 标签
-	Annotations  map[string]string  `json:"annotations"`   // 注释
+	Taints        []NodeTaint       `json:"taints"`        // 污点列表
+	Labels        map[string]string `json:"labels"`        // 标签
+	Annotations   map[string]string `json:"annotations"`   // 注释
 
 	// 状态信息
-	Status       string             `json:"status"`       // 节点状态
-	Conditions   []NodeCondition    `json:"conditions"`   // 状态条件
+	Status     string          `json:"status"`     // 节点状态
+	Conditions []NodeCondition `json:"conditions"` // 状态条件
 
 	// 监控信息
-	Monitoring   NodeMonitoringInfo `json:"monitoring"`   // 监控信息
+	Monitoring NodeMonitoringInfo `json:"monitoring"` // 监控信息
 
 	// Pod信息
-	PodInfo      NodePodInfo        `json:"podInfo"`      // Pod统计信息
-	PodList      []NodePodDetail    `json:"podList"`      // 节点上的Pod列表
+	PodInfo NodePodInfo     `json:"podInfo"` // Pod统计信息
+	PodList []NodePodDetail `json:"podList"` // 节点上的Pod列表
 
 	// CIDR信息
-	PodCIDR      string             `json:"podCIDR"`      // 容器组CIDR
-	PodCIDRs     []string           `json:"podCIDRs"`     // 容器组CIDR列表
+	PodCIDR  string   `json:"podCIDR"`  // 容器组CIDR
+	PodCIDRs []string `json:"podCIDRs"` // 容器组CIDR列表
 }
 
 // NodeMonitoringInfo 节点监控信息
@@ -371,35 +371,35 @@ type NodeResourceUsage struct {
 
 // NodeNetworkUsage 节点网络使用情况
 type NodeNetworkUsage struct {
-	InboundBytes   int64  `json:"inboundBytes"`   // 入站字节数
-	OutboundBytes  int64  `json:"outboundBytes"`  // 出站字节数
-	InboundPackets int64  `json:"inboundPackets"` // 入站包数
+	InboundBytes    int64 `json:"inboundBytes"`    // 入站字节数
+	OutboundBytes   int64 `json:"outboundBytes"`   // 出站字节数
+	InboundPackets  int64 `json:"inboundPackets"`  // 入站包数
 	OutboundPackets int64 `json:"outboundPackets"` // 出站包数
 }
 
 // NodePodInfo Pod统计信息
 type NodePodInfo struct {
-	TotalPods      int `json:"totalPods"`      // Pod总数
-	RunningPods    int `json:"runningPods"`    // 运行中的Pod数
-	PendingPods    int `json:"pendingPods"`    // 等待中的Pod数
-	FailedPods     int `json:"failedPods"`     // 失败的Pod数
-	SucceededPods  int `json:"succeededPods"`  // 成功的Pod数
+	TotalPods     int `json:"totalPods"`     // Pod总数
+	RunningPods   int `json:"runningPods"`   // 运行中的Pod数
+	PendingPods   int `json:"pendingPods"`   // 等待中的Pod数
+	FailedPods    int `json:"failedPods"`    // 失败的Pod数
+	SucceededPods int `json:"succeededPods"` // 成功的Pod数
 }
 
 // NodePodDetail 节点上Pod的详细信息
 type NodePodDetail struct {
-	Name          string            `json:"name"`          // Pod名称
-	Namespace     string            `json:"namespace"`     // 命名空间
-	Status        string            `json:"status"`        // 状态
-	Phase         string            `json:"phase"`         // 阶段
-	RestartCount  int32             `json:"restartCount"`  // 重启次数
-	CreatedAt     string            `json:"createdAt"`     // 创建时间
-	Labels        map[string]string `json:"labels"`        // 标签
-	CPURequests   string            `json:"cpuRequests"`   // CPU请求
-	CPULimits     string            `json:"cpuLimits"`     // CPU限制
-	MemoryRequests string           `json:"memoryRequests"` // 内存请求
-	MemoryLimits  string            `json:"memoryLimits"`  // 内存限制
-	Containers    []ContainerStatus `json:"containers"`    // 容器状态
+	Name           string            `json:"name"`           // Pod名称
+	Namespace      string            `json:"namespace"`      // 命名空间
+	Status         string            `json:"status"`         // 状态
+	Phase          string            `json:"phase"`          // 阶段
+	RestartCount   int32             `json:"restartCount"`   // 重启次数
+	CreatedAt      string            `json:"createdAt"`      // 创建时间
+	Labels         map[string]string `json:"labels"`         // 标签
+	CPURequests    string            `json:"cpuRequests"`    // CPU请求
+	CPULimits      string            `json:"cpuLimits"`      // CPU限制
+	MemoryRequests string            `json:"memoryRequests"` // 内存请求
+	MemoryLimits   string            `json:"memoryLimits"`   // 内存限制
+	Containers     []ContainerStatus `json:"containers"`     // 容器状态
 }
 
 // ContainerStatus 容器状态
@@ -484,19 +484,19 @@ type CordonNodeRequest struct {
 
 // DrainNodeRequest 驱逐节点请求
 type DrainNodeRequest struct {
-	Force              bool `json:"force"`               // 强制驱逐
-	DeleteLocalData    bool `json:"deleteLocalData"`     // 删除本地数据
-	IgnoreDaemonSets   bool `json:"ignoreDaemonSets"`    // 忽略DaemonSet
-	GracePeriodSeconds int  `json:"gracePeriodSeconds"`  // 优雅终止时间
+	Force              bool `json:"force"`              // 强制驱逐
+	DeleteLocalData    bool `json:"deleteLocalData"`    // 删除本地数据
+	IgnoreDaemonSets   bool `json:"ignoreDaemonSets"`   // 忽略DaemonSet
+	GracePeriodSeconds int  `json:"gracePeriodSeconds"` // 优雅终止时间
 }
 
 // NodeResourceAllocation 节点资源分配详情
 type NodeResourceAllocation struct {
-	NodeName string                    `json:"nodeName"`
-	Capacity map[string]string         `json:"capacity"`     // 节点总容量
-	Allocatable map[string]string      `json:"allocatable"`  // 可分配资源
-	Allocated map[string]string        `json:"allocated"`    // 已分配资源
-	PodList []PodResourceInfo         `json:"podList"`      // Pod资源使用详情
+	NodeName    string            `json:"nodeName"`
+	Capacity    map[string]string `json:"capacity"`    // 节点总容量
+	Allocatable map[string]string `json:"allocatable"` // 可分配资源
+	Allocated   map[string]string `json:"allocated"`   // 已分配资源
+	PodList     []PodResourceInfo `json:"podList"`     // Pod资源使用详情
 }
 
 // PodResourceInfo Pod资源信息
@@ -509,14 +509,14 @@ type PodResourceInfo struct {
 
 // K8sNamespace K8s命名空间信息
 type K8sNamespace struct {
-	Name          string             `json:"name"`          // 命名空间名称
-	Status        string             `json:"status"`        // 状态 Active/Terminating
-	Labels        map[string]string  `json:"labels"`        // 标签
-	Annotations   map[string]string  `json:"annotations"`   // 注释
-	ResourceQuotas []ResourceQuotaDetail `json:"resourceQuotas"` // 资源配额列表
-	LimitRanges   []LimitRangeDetail    `json:"limitRanges"`    // 默认资源限制列表
-	ResourceCount NamespaceResourceCount `json:"resourceCount"` // 资源统计
-	CreatedAt     string             `json:"createdAt"`     // 创建时间
+	Name           string                 `json:"name"`           // 命名空间名称
+	Status         string                 `json:"status"`         // 状态 Active/Terminating
+	Labels         map[string]string      `json:"labels"`         // 标签
+	Annotations    map[string]string      `json:"annotations"`    // 注释
+	ResourceQuotas []ResourceQuotaDetail  `json:"resourceQuotas"` // 资源配额列表
+	LimitRanges    []LimitRangeDetail     `json:"limitRanges"`    // 默认资源限制列表
+	ResourceCount  NamespaceResourceCount `json:"resourceCount"`  // 资源统计
+	CreatedAt      string                 `json:"createdAt"`      // 创建时间
 }
 
 // NamespaceResourceCount 命名空间资源统计
@@ -529,13 +529,13 @@ type NamespaceResourceCount struct {
 
 // ResourceQuotaDetail 详细资源配额信息
 type ResourceQuotaDetail struct {
-	Name        string            `json:"name"`        // ResourceQuota名称
-	Hard        map[string]string `json:"hard"`        // 硬限制
-	Used        map[string]string `json:"used"`        // 已使用
-	CPUQuota    QuotaInfo         `json:"cpuQuota"`    // CPU配额详情
-	MemoryQuota QuotaInfo         `json:"memoryQuota"` // 内存配额详情
-	StorageQuota QuotaInfo        `json:"storageQuota"` // 存储配额详情
-	CreatedAt   string            `json:"createdAt"`   // 创建时间
+	Name         string            `json:"name"`         // ResourceQuota名称
+	Hard         map[string]string `json:"hard"`         // 硬限制
+	Used         map[string]string `json:"used"`         // 已使用
+	CPUQuota     QuotaInfo         `json:"cpuQuota"`     // CPU配额详情
+	MemoryQuota  QuotaInfo         `json:"memoryQuota"`  // 内存配额详情
+	StorageQuota QuotaInfo         `json:"storageQuota"` // 存储配额详情
+	CreatedAt    string            `json:"createdAt"`    // 创建时间
 }
 
 // QuotaInfo 配额详细信息
@@ -546,26 +546,26 @@ type QuotaInfo struct {
 
 // LimitRangeDetail 默认资源限制详情
 type LimitRangeDetail struct {
-	Name      string            `json:"name"`      // LimitRange名称
-	Limits    []LimitRangeItem  `json:"limits"`    // 限制项列表
-	CreatedAt string            `json:"createdAt"` // 创建时间
+	Name      string           `json:"name"`      // LimitRange名称
+	Limits    []LimitRangeItem `json:"limits"`    // 限制项列表
+	CreatedAt string           `json:"createdAt"` // 创建时间
 }
 
 // LimitRangeItem 限制项
 type LimitRangeItem struct {
-	Type                 string            `json:"type"`                 // 限制类型 Container/Pod/PersistentVolumeClaim
-	Max                  map[string]string `json:"max,omitempty"`        // 最大限制
-	Min                  map[string]string `json:"min,omitempty"`        // 最小限制
-	Default              map[string]string `json:"default,omitempty"`    // 默认值
-	DefaultRequest       map[string]string `json:"defaultRequest,omitempty"` // 默认请求值
+	Type                 string            `json:"type"`                           // 限制类型 Container/Pod/PersistentVolumeClaim
+	Max                  map[string]string `json:"max,omitempty"`                  // 最大限制
+	Min                  map[string]string `json:"min,omitempty"`                  // 最小限制
+	Default              map[string]string `json:"default,omitempty"`              // 默认值
+	DefaultRequest       map[string]string `json:"defaultRequest,omitempty"`       // 默认请求值
 	MaxLimitRequestRatio map[string]string `json:"maxLimitRequestRatio,omitempty"` // 最大限制与请求比率
 }
 
 // CreateNamespaceRequest 创建命名空间请求
 type CreateNamespaceRequest struct {
-	Name        string            `json:"name" binding:"required"`        // 命名空间名称
-	Labels      map[string]string `json:"labels"`                         // 标签
-	Annotations map[string]string `json:"annotations"`                    // 注释
+	Name        string            `json:"name" binding:"required"` // 命名空间名称
+	Labels      map[string]string `json:"labels"`                  // 标签
+	Annotations map[string]string `json:"annotations"`             // 注释
 }
 
 // UpdateNamespaceRequest 更新命名空间请求
@@ -582,23 +582,23 @@ type NamespaceListResponse struct {
 
 // CreateResourceQuotaRequest 创建资源配额请求
 type CreateResourceQuotaRequest struct {
-	Name        string            `json:"name" binding:"required"`        // ResourceQuota名称
-	Hard        map[string]string `json:"hard" binding:"required"`        // 硬限制
-	Scopes      []string          `json:"scopes,omitempty"`               // 作用域
-	ScopeSelector map[string]interface{} `json:"scopeSelector,omitempty"`   // 作用域选择器
+	Name          string                 `json:"name" binding:"required"` // ResourceQuota名称
+	Hard          map[string]string      `json:"hard" binding:"required"` // 硬限制
+	Scopes        []string               `json:"scopes,omitempty"`        // 作用域
+	ScopeSelector map[string]interface{} `json:"scopeSelector,omitempty"` // 作用域选择器
 }
 
 // UpdateResourceQuotaRequest 更新资源配额请求
 type UpdateResourceQuotaRequest struct {
-	Hard        map[string]string `json:"hard" binding:"required"`        // 硬限制
-	Scopes      []string          `json:"scopes,omitempty"`               // 作用域
-	ScopeSelector map[string]interface{} `json:"scopeSelector,omitempty"`   // 作用域选择器
+	Hard          map[string]string      `json:"hard" binding:"required"` // 硬限制
+	Scopes        []string               `json:"scopes,omitempty"`        // 作用域
+	ScopeSelector map[string]interface{} `json:"scopeSelector,omitempty"` // 作用域选择器
 }
 
 // CreateLimitRangeRequest 创建限制范围请求
 type CreateLimitRangeRequest struct {
-	Name string                   `json:"name" binding:"required"` // LimitRange名称
-	Spec LimitRangeRequestSpec    `json:"spec" binding:"required"` // LimitRange规格
+	Name string                `json:"name" binding:"required"` // LimitRange名称
+	Spec LimitRangeRequestSpec `json:"spec" binding:"required"` // LimitRange规格
 }
 
 // LimitRangeRequestSpec LimitRange规格
@@ -639,17 +639,17 @@ const (
 
 // K8sWorkload K8s工作负载基础信息
 type K8sWorkload struct {
-	Name         string                 `json:"name"`         // 名称
-	Type         WorkloadType          `json:"type"`         // 类型
-	Namespace    string                 `json:"namespace"`    // 命名空间
-	Labels       map[string]string      `json:"labels"`       // 标签
-	Replicas     int32                  `json:"replicas"`     // 副本数
-	ReadyReplicas int32                 `json:"readyReplicas"` // 就绪副本数
-	Resources    WorkloadResources      `json:"resources"`    // 资源配置
-	Images       []string              `json:"images"`       // 镜像列表
-	Status       string                `json:"status"`       // 状态
-	CreatedAt    string                `json:"createdAt"`    // 创建时间
-	UpdatedAt    string                `json:"updatedAt"`    // 更新时间
+	Name          string            `json:"name"`          // 名称
+	Type          WorkloadType      `json:"type"`          // 类型
+	Namespace     string            `json:"namespace"`     // 命名空间
+	Labels        map[string]string `json:"labels"`        // 标签
+	Replicas      int32             `json:"replicas"`      // 副本数
+	ReadyReplicas int32             `json:"readyReplicas"` // 就绪副本数
+	Resources     WorkloadResources `json:"resources"`     // 资源配置
+	Images        []string          `json:"images"`        // 镜像列表
+	Status        string            `json:"status"`        // 状态
+	CreatedAt     string            `json:"createdAt"`     // 创建时间
+	UpdatedAt     string            `json:"updatedAt"`     // 更新时间
 }
 
 // WorkloadResources 工作负载资源配置
@@ -667,47 +667,47 @@ type ResourceSpec struct {
 // K8sWorkloadDetail 工作负载详情
 type K8sWorkloadDetail struct {
 	K8sWorkload
-	Pods       []K8sPodInfo     `json:"pods"`       // Pod列表
+	Pods       []K8sPodInfo        `json:"pods"`       // Pod列表
 	Conditions []WorkloadCondition `json:"conditions"` // 状态条件
-	Events     []K8sEvent       `json:"events"`     // 相关事件
-	Spec       interface{}      `json:"spec"`       // 完整规格配置
+	Events     []K8sEvent          `json:"events"`     // 相关事件
+	Spec       interface{}         `json:"spec"`       // 完整规格配置
 }
 
 // K8sPodInfo Pod基础信息
 type K8sPodInfo struct {
-	Name          string            `json:"name"`          // 实例名称
-	Status        string            `json:"status"`        // 状态
-	Phase         string            `json:"phase"`         // 阶段
-	RestartCount  int32             `json:"restartCount"`  // 重启次数
-	NodeName      string            `json:"nodeName"`      // 节点名称
-	PodIP         string            `json:"podIP"`         // Pod IP
-	HostIP        string            `json:"hostIP"`        // 主机IP
-	Resources     WorkloadResources `json:"resources"`     // 资源配置
-	RunningTime   string            `json:"runningTime"`   // 运行时间
-	CreatedAt     string            `json:"createdAt"`     // 创建时间
-	Labels        map[string]string `json:"labels"`        // 标签
-	Containers    []ContainerInfo   `json:"containers"`    // 容器信息
+	Name         string            `json:"name"`         // 实例名称
+	Status       string            `json:"status"`       // 状态
+	Phase        string            `json:"phase"`        // 阶段
+	RestartCount int32             `json:"restartCount"` // 重启次数
+	NodeName     string            `json:"nodeName"`     // 节点名称
+	PodIP        string            `json:"podIP"`        // Pod IP
+	HostIP       string            `json:"hostIP"`       // 主机IP
+	Resources    WorkloadResources `json:"resources"`    // 资源配置
+	RunningTime  string            `json:"runningTime"`  // 运行时间
+	CreatedAt    string            `json:"createdAt"`    // 创建时间
+	Labels       map[string]string `json:"labels"`       // 标签
+	Containers   []ContainerInfo   `json:"containers"`   // 容器信息
 }
 
 // K8sPodDetail Pod详情
 type K8sPodDetail struct {
 	K8sPodInfo
-	Conditions []PodCondition    `json:"conditions"`    // Pod状态条件
-	Events     []K8sEvent        `json:"events"`        // 相关事件
-	Volumes    []VolumeInfo      `json:"volumes"`       // 挂载卷信息
-	Spec       interface{}       `json:"spec"`          // 完整规格配置
+	Conditions []PodCondition `json:"conditions"` // Pod状态条件
+	Events     []K8sEvent     `json:"events"`     // 相关事件
+	Volumes    []VolumeInfo   `json:"volumes"`    // 挂载卷信息
+	Spec       interface{}    `json:"spec"`       // 完整规格配置
 }
 
 // ContainerInfo 容器信息
 type ContainerInfo struct {
-	Name         string        `json:"name"`         // 容器名称
-	Image        string        `json:"image"`        // 镜像
-	State        string        `json:"state"`        // 状态
-	Ready        bool          `json:"ready"`        // 就绪状态
-	RestartCount int32         `json:"restartCount"` // 重启次数
-	Resources    WorkloadResources `json:"resources"` // 资源配置
-	Ports        []ContainerPort   `json:"ports"`     // 端口配置
-	Env          []EnvVar      `json:"env"`          // 环境变量
+	Name         string            `json:"name"`         // 容器名称
+	Image        string            `json:"image"`        // 镜像
+	State        string            `json:"state"`        // 状态
+	Ready        bool              `json:"ready"`        // 就绪状态
+	RestartCount int32             `json:"restartCount"` // 重启次数
+	Resources    WorkloadResources `json:"resources"`    // 资源配置
+	Ports        []ContainerPort   `json:"ports"`        // 端口配置
+	Env          []EnvVar          `json:"env"`          // 环境变量
 }
 
 // ContainerPort 容器端口
@@ -770,93 +770,93 @@ type WorkloadListResponse struct {
 
 // EventListResponse 事件列表响应
 type EventListResponse struct {
-	Events    []K8sEvent        `json:"events"`    // 事件列表
-	Total     int               `json:"total"`     // 事件总数
+	Events    []K8sEvent        `json:"events"`              // 事件列表
+	Total     int               `json:"total"`               // 事件总数
 	Namespace string            `json:"namespace,omitempty"` // 命名空间（如果是命名空间级别的查询）
-	Filter    map[string]string `json:"filter"`    // 过滤条件
+	Filter    map[string]string `json:"filter"`              // 过滤条件
 }
 
 // CreateDeploymentRequest 创建Deployment请求
 type CreateDeploymentRequest struct {
-	Name      string                 `json:"name" binding:"required"`      // Deployment名称
-	Replicas  int32                  `json:"replicas"`                    // 副本数，默认1
-	Labels    map[string]string      `json:"labels"`                      // 标签
-	Template  PodTemplateSpec        `json:"template" binding:"required"` // Pod模板
-	Strategy  DeploymentStrategy     `json:"strategy"`                    // 部署策略
+	Name     string             `json:"name" binding:"required"`     // Deployment名称
+	Replicas int32              `json:"replicas"`                    // 副本数，默认1
+	Labels   map[string]string  `json:"labels"`                      // 标签
+	Template PodTemplateSpec    `json:"template" binding:"required"` // Pod模板
+	Strategy DeploymentStrategy `json:"strategy"`                    // 部署策略
 }
 
 // CreateStatefulSetRequest 创建StatefulSet请求
 type CreateStatefulSetRequest struct {
-	Name        string                 `json:"name" binding:"required"`        // StatefulSet名称
-	Replicas    int32                  `json:"replicas"`                      // 副本数
-	Labels      map[string]string      `json:"labels"`                        // 标签
-	Template    PodTemplateSpec        `json:"template" binding:"required"`   // Pod模板
-	ServiceName string                 `json:"serviceName" binding:"required"` // 关联Service名称
+	Name        string            `json:"name" binding:"required"`        // StatefulSet名称
+	Replicas    int32             `json:"replicas"`                       // 副本数
+	Labels      map[string]string `json:"labels"`                         // 标签
+	Template    PodTemplateSpec   `json:"template" binding:"required"`    // Pod模板
+	ServiceName string            `json:"serviceName" binding:"required"` // 关联Service名称
 }
 
 // CreateDaemonSetRequest 创建DaemonSet请求
 type CreateDaemonSetRequest struct {
-	Name     string                 `json:"name" binding:"required"`     // DaemonSet名称
-	Labels   map[string]string      `json:"labels"`                     // 标签
-	Template PodTemplateSpec        `json:"template" binding:"required"` // Pod模板
+	Name     string            `json:"name" binding:"required"`     // DaemonSet名称
+	Labels   map[string]string `json:"labels"`                      // 标签
+	Template PodTemplateSpec   `json:"template" binding:"required"` // Pod模板
 }
 
 // CreateJobRequest 创建Job请求
 type CreateJobRequest struct {
-	Name        string                 `json:"name" binding:"required"`        // Job名称
-	Labels      map[string]string      `json:"labels"`                        // 标签
-	Template    PodTemplateSpec        `json:"template" binding:"required"`   // Pod模板
-	Completions int32                  `json:"completions"`                   // 完成数量
-	Parallelism int32                  `json:"parallelism"`                   // 并行数量
+	Name        string            `json:"name" binding:"required"`     // Job名称
+	Labels      map[string]string `json:"labels"`                      // 标签
+	Template    PodTemplateSpec   `json:"template" binding:"required"` // Pod模板
+	Completions int32             `json:"completions"`                 // 完成数量
+	Parallelism int32             `json:"parallelism"`                 // 并行数量
 }
 
 // CreateCronJobRequest 创建CronJob请求
 type CreateCronJobRequest struct {
-	Name     string                 `json:"name" binding:"required"`     // CronJob名称
-	Labels   map[string]string      `json:"labels"`                     // 标签
-	Schedule string                 `json:"schedule" binding:"required"` // Cron表达式
-	JobTemplate JobTemplateSpec     `json:"jobTemplate" binding:"required"` // Job模板
+	Name        string            `json:"name" binding:"required"`        // CronJob名称
+	Labels      map[string]string `json:"labels"`                         // 标签
+	Schedule    string            `json:"schedule" binding:"required"`    // Cron表达式
+	JobTemplate JobTemplateSpec   `json:"jobTemplate" binding:"required"` // Job模板
 }
 
 // PodTemplateSpec Pod模板规格
 type PodTemplateSpec struct {
-	Labels     map[string]string `json:"labels"`     // Pod标签
-	Containers []ContainerSpec   `json:"containers" binding:"required"` // 容器规格
-	Volumes    []VolumeSpec      `json:"volumes"`    // 存储卷规格
-	NodeSelector map[string]string `json:"nodeSelector"` // 节点选择器
-	Tolerations []Toleration     `json:"tolerations"` // 容忍度
+	Labels       map[string]string `json:"labels"`                        // Pod标签
+	Containers   []ContainerSpec   `json:"containers" binding:"required"` // 容器规格
+	Volumes      []VolumeSpec      `json:"volumes"`                       // 存储卷规格
+	NodeSelector map[string]string `json:"nodeSelector"`                  // 节点选择器
+	Tolerations  []Toleration      `json:"tolerations"`                   // 容忍度
 }
 
 // ContainerSpec 容器规格
 type ContainerSpec struct {
 	Name         string            `json:"name" binding:"required"`  // 容器名称
 	Image        string            `json:"image" binding:"required"` // 镜像
-	Ports        []ContainerPort   `json:"ports"`                   // 端口配置
-	Env          []EnvVar          `json:"env"`                     // 环境变量
-	Resources    WorkloadResources `json:"resources"`               // 资源配置
-	VolumeMounts []VolumeMount     `json:"volumeMounts"`            // 存储卷挂载
-	Command      []string          `json:"command"`                 // 启动命令
-	Args         []string          `json:"args"`                    // 启动参数
+	Ports        []ContainerPort   `json:"ports"`                    // 端口配置
+	Env          []EnvVar          `json:"env"`                      // 环境变量
+	Resources    WorkloadResources `json:"resources"`                // 资源配置
+	VolumeMounts []VolumeMount     `json:"volumeMounts"`             // 存储卷挂载
+	Command      []string          `json:"command"`                  // 启动命令
+	Args         []string          `json:"args"`                     // 启动参数
 }
 
 // VolumeSpec 存储卷规格
 type VolumeSpec struct {
 	Name   string                 `json:"name" binding:"required"` // 卷名称
 	Type   string                 `json:"type" binding:"required"` // 卷类型
-	Config map[string]interface{} `json:"config"`                 // 卷配置
+	Config map[string]interface{} `json:"config"`                  // 卷配置
 }
 
 // VolumeMount 存储卷挂载
 type VolumeMount struct {
 	Name      string `json:"name" binding:"required"`      // 卷名称
 	MountPath string `json:"mountPath" binding:"required"` // 挂载路径
-	ReadOnly  bool   `json:"readOnly"`                    // 只读模式
+	ReadOnly  bool   `json:"readOnly"`                     // 只读模式
 }
 
 // DeploymentStrategy 部署策略
 type DeploymentStrategy struct {
-	Type          string                     `json:"type"`          // 策略类型
-	RollingUpdate RollingUpdateDeployment   `json:"rollingUpdate"` // 滚动更新配置
+	Type          string                  `json:"type"`          // 策略类型
+	RollingUpdate RollingUpdateDeployment `json:"rollingUpdate"` // 滚动更新配置
 }
 
 // RollingUpdateDeployment 滚动更新部署配置
@@ -867,10 +867,10 @@ type RollingUpdateDeployment struct {
 
 // JobTemplateSpec Job模板规格
 type JobTemplateSpec struct {
-	Labels      map[string]string `json:"labels"`      // Job标签
+	Labels      map[string]string `json:"labels"`                      // Job标签
 	Template    PodTemplateSpec   `json:"template" binding:"required"` // Pod模板
-	Completions int32             `json:"completions"` // 完成数量
-	Parallelism int32             `json:"parallelism"` // 并行数量
+	Completions int32             `json:"completions"`                 // 完成数量
+	Parallelism int32             `json:"parallelism"`                 // 并行数量
 }
 
 // Toleration 容忍度
@@ -890,9 +890,9 @@ type ScaleWorkloadRequest struct {
 
 // UpdateWorkloadRequest 更新工作负载请求
 type UpdateWorkloadRequest struct {
-	Labels    map[string]string `json:"labels"`    // 标签
-	Template  PodTemplateSpec   `json:"template"`  // Pod模板
-	Strategy  interface{}       `json:"strategy"`  // 部署策略
+	Labels   map[string]string `json:"labels"`   // 标签
+	Template PodTemplateSpec   `json:"template"` // Pod模板
+	Strategy interface{}       `json:"strategy"` // 部署策略
 }
 
 // RestartWorkloadRequest 重启工作负载请求
@@ -904,14 +904,14 @@ type RestartWorkloadRequest struct {
 
 // PodMetricsInfo Pod监控信息
 type PodMetricsInfo struct {
-	PodName      string                       `json:"podName"`      // Pod名称
-	Namespace    string                       `json:"namespace"`    // 命名空间
-	NodeName     string                       `json:"nodeName"`     // 节点名称
-	Timestamp    string                       `json:"timestamp"`    // 采集时间
-	Containers   []ContainerMetricsInfo       `json:"containers"`   // 容器监控信息列表
-	TotalUsage   ResourceUsage                `json:"totalUsage"`   // 总使用量
-	ResourceQuota PodResourceQuota            `json:"resourceQuota"` // 资源配额信息
-	UsageRate    ResourceUsageRate            `json:"usageRate"`    // 使用率信息
+	PodName       string                 `json:"podName"`       // Pod名称
+	Namespace     string                 `json:"namespace"`     // 命名空间
+	NodeName      string                 `json:"nodeName"`      // 节点名称
+	Timestamp     string                 `json:"timestamp"`     // 采集时间
+	Containers    []ContainerMetricsInfo `json:"containers"`    // 容器监控信息列表
+	TotalUsage    ResourceUsage          `json:"totalUsage"`    // 总使用量
+	ResourceQuota PodResourceQuota       `json:"resourceQuota"` // 资源配额信息
+	UsageRate     ResourceUsageRate      `json:"usageRate"`     // 使用率信息
 }
 
 // ContainerMetricsInfo 容器监控信息
@@ -919,7 +919,7 @@ type ContainerMetricsInfo struct {
 	Name         string            `json:"name"`         // 容器名称
 	Usage        ResourceUsage     `json:"usage"`        // 资源使用量
 	Requests     ResourceUsage     `json:"requests"`     // 资源请求量
-	Limits       ResourceUsage     `json:"limits"`       // 资源限制量  
+	Limits       ResourceUsage     `json:"limits"`       // 资源限制量
 	UsageRate    ResourceUsageRate `json:"usageRate"`    // 使用率
 	State        string            `json:"state"`        // 容器状态
 	RestartCount int32             `json:"restartCount"` // 重启次数
@@ -927,15 +927,15 @@ type ContainerMetricsInfo struct {
 
 // NodeMetricsInfo 节点监控信息
 type NodeMetricsInfo struct {
-	NodeName      string                     `json:"nodeName"`      // 节点名称
-	Timestamp     string                     `json:"timestamp"`     // 采集时间
-	Usage         ResourceUsage              `json:"usage"`         // 资源使用量
-	Capacity      ResourceUsage              `json:"capacity"`      // 总容量
-	Allocatable   ResourceUsage              `json:"allocatable"`   // 可分配量
-	UsageRate     ResourceUsageRate          `json:"usageRate"`     // 使用率
-	PodCount      int                        `json:"podCount"`      // Pod数量
-	PodMetrics    []PodMetricsSummary        `json:"podMetrics"`    // Pod监控摘要
-	SystemInfo    NodeSystemInfo             `json:"systemInfo"`    // 系统信息
+	NodeName    string              `json:"nodeName"`    // 节点名称
+	Timestamp   string              `json:"timestamp"`   // 采集时间
+	Usage       ResourceUsage       `json:"usage"`       // 资源使用量
+	Capacity    ResourceUsage       `json:"capacity"`    // 总容量
+	Allocatable ResourceUsage       `json:"allocatable"` // 可分配量
+	UsageRate   ResourceUsageRate   `json:"usageRate"`   // 使用率
+	PodCount    int                 `json:"podCount"`    // Pod数量
+	PodMetrics  []PodMetricsSummary `json:"podMetrics"`  // Pod监控摘要
+	SystemInfo  NodeSystemInfo      `json:"systemInfo"`  // 系统信息
 }
 
 // PodMetricsSummary Pod监控摘要
@@ -1010,15 +1010,15 @@ type MetricsQueryRequest struct {
 
 // CreatePodFromYAMLRequest 通过YAML创建Pod请求
 type CreatePodFromYAMLRequest struct {
-	YAMLContent  string `json:"yamlContent" binding:"required"`  // YAML内容
-	DryRun       bool   `json:"dryRun"`                          // 是否只进行校验不实际创建
-	ValidateOnly bool   `json:"validateOnly"`                    // 是否只校验YAML格式
+	YAMLContent  string `json:"yamlContent" binding:"required"` // YAML内容
+	DryRun       bool   `json:"dryRun"`                         // 是否只进行校验不实际创建
+	ValidateOnly bool   `json:"validateOnly"`                   // 是否只校验YAML格式
 }
 
 // ValidateYAMLRequest YAML校验请求
 type ValidateYAMLRequest struct {
-	YAMLContent  string `json:"yamlContent" binding:"required"`  // YAML内容
-	ResourceType string `json:"resourceType"`                    // 资源类型，如pod、deployment等
+	YAMLContent  string `json:"yamlContent" binding:"required"` // YAML内容
+	ResourceType string `json:"resourceType"`                   // 资源类型，如pod、deployment等
 }
 
 // ValidateYAMLResponse YAML校验响应
@@ -1032,32 +1032,32 @@ type ValidateYAMLResponse struct {
 
 // CreatePodFromYAMLResponse 通过YAML创建Pod响应
 type CreatePodFromYAMLResponse struct {
-	Success      bool                   `json:"success"`      // 是否创建成功
-	PodName      string                 `json:"podName"`      // 创建的Pod名称
-	Namespace    string                 `json:"namespace"`    // Pod所在的命名空间
-	Message      string                 `json:"message"`      // 响应消息
-	ValidationResult *ValidateYAMLResponse `json:"validationResult,omitempty"` // 校验结果（DryRun时返回）
-	ParsedObject map[string]interface{} `json:"parsedObject,omitempty"` // 解析的对象信息
+	Success          bool                   `json:"success"`                    // 是否创建成功
+	PodName          string                 `json:"podName"`                    // 创建的Pod名称
+	Namespace        string                 `json:"namespace"`                  // Pod所在的命名空间
+	Message          string                 `json:"message"`                    // 响应消息
+	ValidationResult *ValidateYAMLResponse  `json:"validationResult,omitempty"` // 校验结果（DryRun时返回）
+	ParsedObject     map[string]interface{} `json:"parsedObject,omitempty"`     // 解析的对象信息
 }
 
 // UpdatePodYAMLRequest 通过YAML更新Pod请求
 type UpdatePodYAMLRequest struct {
-	YAMLContent  string `json:"yamlContent" binding:"required"`  // YAML内容
-	DryRun       bool   `json:"dryRun"`                          // 是否只进行校验不实际更新
-	ValidateOnly bool   `json:"validateOnly"`                    // 是否只校验YAML格式
-	Force        bool   `json:"force"`                           // 是否强制更新（删除重建）
+	YAMLContent  string `json:"yamlContent" binding:"required"` // YAML内容
+	DryRun       bool   `json:"dryRun"`                         // 是否只进行校验不实际更新
+	ValidateOnly bool   `json:"validateOnly"`                   // 是否只校验YAML格式
+	Force        bool   `json:"force"`                          // 是否强制更新（删除重建）
 }
 
 // UpdatePodYAMLResponse 通过YAML更新Pod响应
 type UpdatePodYAMLResponse struct {
-	Success          bool                   `json:"success"`          // 是否更新成功
-	PodName          string                 `json:"podName"`          // 更新的Pod名称
-	Namespace        string                 `json:"namespace"`        // Pod所在的命名空间
-	Message          string                 `json:"message"`          // 响应消息
-	UpdateStrategy   string                 `json:"updateStrategy"`   // 更新策略 (patch/recreate)
-	ValidationResult *ValidateYAMLResponse  `json:"validationResult,omitempty"` // 校验结果（DryRun时返回）
-	Changes          []string               `json:"changes,omitempty"`          // 变更说明
-	Warnings         []string               `json:"warnings,omitempty"`         // 警告信息
+	Success          bool                  `json:"success"`                    // 是否更新成功
+	PodName          string                `json:"podName"`                    // 更新的Pod名称
+	Namespace        string                `json:"namespace"`                  // Pod所在的命名空间
+	Message          string                `json:"message"`                    // 响应消息
+	UpdateStrategy   string                `json:"updateStrategy"`             // 更新策略 (patch/recreate)
+	ValidationResult *ValidateYAMLResponse `json:"validationResult,omitempty"` // 校验结果（DryRun时返回）
+	Changes          []string              `json:"changes,omitempty"`          // 变更说明
+	Warnings         []string              `json:"warnings,omitempty"`         // 警告信息
 }
 
 // ================== 通用工作负载YAML管理相关结构体 ==================
@@ -1080,16 +1080,16 @@ type UpdateWorkloadYAMLRequest struct {
 
 // UpdateWorkloadYAMLResponse 通用工作负载YAML更新响应
 type UpdateWorkloadYAMLResponse struct {
-	Success          bool                   `json:"success"`          // 是否更新成功
-	WorkloadType     string                 `json:"workloadType"`     // 工作负载类型
-	WorkloadName     string                 `json:"workloadName"`     // 工作负载名称
-	Namespace        string                 `json:"namespace"`        // 命名空间
-	Message          string                 `json:"message"`          // 响应消息
-	UpdateStrategy   string                 `json:"updateStrategy"`   // 更新策略 (patch/update/rolling)
-	ValidationResult *ValidateYAMLResponse  `json:"validationResult,omitempty"` // 校验结果（DryRun时返回）
-	Changes          []string               `json:"changes,omitempty"`          // 变更说明
-	Warnings         []string               `json:"warnings,omitempty"`         // 警告信息
-	AppliedAt        string                 `json:"appliedAt,omitempty"`        // 应用时间
+	Success          bool                  `json:"success"`                    // 是否更新成功
+	WorkloadType     string                `json:"workloadType"`               // 工作负载类型
+	WorkloadName     string                `json:"workloadName"`               // 工作负载名称
+	Namespace        string                `json:"namespace"`                  // 命名空间
+	Message          string                `json:"message"`                    // 响应消息
+	UpdateStrategy   string                `json:"updateStrategy"`             // 更新策略 (patch/update/rolling)
+	ValidationResult *ValidateYAMLResponse `json:"validationResult,omitempty"` // 校验结果（DryRun时返回）
+	Changes          []string              `json:"changes,omitempty"`          // 变更说明
+	Warnings         []string              `json:"warnings,omitempty"`         // 警告信息
+	AppliedAt        string                `json:"appliedAt,omitempty"`        // 应用时间
 }
 
 // GetWorkloadYAMLResponse 获取工作负载YAML响应
@@ -1106,13 +1106,13 @@ type GetWorkloadYAMLResponse struct {
 
 // DeploymentRevision Deployment版本信息
 type DeploymentRevision struct {
-	Revision       int64             `json:"revision"`       // 版本号
-	CreationTime   string            `json:"creationTime"`   // 创建时间
-	ChangeReason   string            `json:"changeReason"`   // 变更原因
-	Images         []string          `json:"images"`         // 镜像列表
-	Labels         map[string]string `json:"labels"`         // 标签
-	Annotations    map[string]string `json:"annotations"`    // 注释
-	Status         string            `json:"status"`         // 版本状态 (current/historical)
+	Revision        int64             `json:"revision"`        // 版本号
+	CreationTime    string            `json:"creationTime"`    // 创建时间
+	ChangeReason    string            `json:"changeReason"`    // 变更原因
+	Images          []string          `json:"images"`          // 镜像列表
+	Labels          map[string]string `json:"labels"`          // 标签
+	Annotations     map[string]string `json:"annotations"`     // 注释
+	Status          string            `json:"status"`          // 版本状态 (current/historical)
 	ReplicasSummary ReplicasSummary   `json:"replicasSummary"` // 副本统计
 }
 
@@ -1127,11 +1127,11 @@ type ReplicasSummary struct {
 
 // DeploymentRolloutHistoryResponse Deployment版本历史响应
 type DeploymentRolloutHistoryResponse struct {
-	DeploymentName string               `json:"deploymentName"` // Deployment名称
-	Namespace      string               `json:"namespace"`      // 命名空间
-	CurrentRevision int64               `json:"currentRevision"` // 当前版本号
-	TotalRevisions  int                 `json:"totalRevisions"` // 总版本数
-	Revisions      []DeploymentRevision `json:"revisions"`      // 版本列表
+	DeploymentName  string               `json:"deploymentName"`  // Deployment名称
+	Namespace       string               `json:"namespace"`       // 命名空间
+	CurrentRevision int64                `json:"currentRevision"` // 当前版本号
+	TotalRevisions  int                  `json:"totalRevisions"`  // 总版本数
+	Revisions       []DeploymentRevision `json:"revisions"`       // 版本列表
 }
 
 // GetDeploymentRevisionRequest 获取Deployment版本详情请求
@@ -1142,21 +1142,21 @@ type GetDeploymentRevisionRequest struct {
 // DeploymentRevisionDetail Deployment版本详情
 type DeploymentRevisionDetail struct {
 	DeploymentRevision
-	PodTemplate    PodTemplateSpec       `json:"podTemplate"`    // Pod模板
-	Strategy       DeploymentStrategy    `json:"strategy"`       // 部署策略
-	Conditions     []WorkloadCondition   `json:"conditions"`     // 状态条件
-	Events         []K8sEvent           `json:"events"`         // 相关事件
-	ReplicaSets    []ReplicaSetInfo     `json:"replicaSets"`    // 关联的ReplicaSet信息
+	PodTemplate PodTemplateSpec     `json:"podTemplate"` // Pod模板
+	Strategy    DeploymentStrategy  `json:"strategy"`    // 部署策略
+	Conditions  []WorkloadCondition `json:"conditions"`  // 状态条件
+	Events      []K8sEvent          `json:"events"`      // 相关事件
+	ReplicaSets []ReplicaSetInfo    `json:"replicaSets"` // 关联的ReplicaSet信息
 }
 
 // ReplicaSetInfo ReplicaSet信息
 type ReplicaSetInfo struct {
-	Name         string  `json:"name"`         // ReplicaSet名称
-	Revision     int64   `json:"revision"`     // 版本号
-	Replicas     int32   `json:"replicas"`     // 副本数
+	Name          string `json:"name"`          // ReplicaSet名称
+	Revision      int64  `json:"revision"`      // 版本号
+	Replicas      int32  `json:"replicas"`      // 副本数
 	ReadyReplicas int32  `json:"readyReplicas"` // 就绪副本数
-	Status       string  `json:"status"`       // 状态
-	CreatedAt    string  `json:"createdAt"`    // 创建时间
+	Status        string `json:"status"`        // 状态
+	CreatedAt     string `json:"createdAt"`     // 创建时间
 }
 
 // RollbackDeploymentRequest Deployment回滚请求
@@ -1166,13 +1166,13 @@ type RollbackDeploymentRequest struct {
 
 // RollbackDeploymentResponse Deployment回滚响应
 type RollbackDeploymentResponse struct {
-	Success         bool   `json:"success"`         // 是否回滚成功
-	Message         string `json:"message"`         // 响应消息
-	FromRevision    int64  `json:"fromRevision"`    // 回滚前版本号
-	ToRevision      int64  `json:"toRevision"`      // 回滚后版本号
-	DeploymentName  string `json:"deploymentName"`  // Deployment名称
-	Namespace       string `json:"namespace"`       // 命名空间
-	RolloutStatus   string `json:"rolloutStatus"`   // 滚动发布状态
+	Success        bool   `json:"success"`        // 是否回滚成功
+	Message        string `json:"message"`        // 响应消息
+	FromRevision   int64  `json:"fromRevision"`   // 回滚前版本号
+	ToRevision     int64  `json:"toRevision"`     // 回滚后版本号
+	DeploymentName string `json:"deploymentName"` // Deployment名称
+	Namespace      string `json:"namespace"`      // 命名空间
+	RolloutStatus  string `json:"rolloutStatus"`  // 滚动发布状态
 }
 
 // PauseDeploymentResponse 暂停Deployment响应
@@ -1195,36 +1195,36 @@ type ResumeDeploymentResponse struct {
 
 // DeploymentRolloutStatusResponse Deployment滚动发布状态响应
 type DeploymentRolloutStatusResponse struct {
-	DeploymentName  string               `json:"deploymentName"`  // Deployment名称
-	Namespace       string               `json:"namespace"`       // 命名空间
-	CurrentRevision int64                `json:"currentRevision"` // 当前版本号
-	UpdatedReplicas int32                `json:"updatedReplicas"` // 已更新副本数
-	ReadyReplicas   int32                `json:"readyReplicas"`   // 就绪副本数
-	AvailableReplicas int32              `json:"availableReplicas"` // 可用副本数
-	ObservedGeneration int64             `json:"observedGeneration"` // 观察到的代数
-	Conditions      []WorkloadCondition  `json:"conditions"`      // 状态条件
-	Strategy        DeploymentStrategy   `json:"strategy"`        // 部署策略
-	Paused          bool                 `json:"paused"`          // 是否已暂停
-	ProgressDeadline int32               `json:"progressDeadline"` // 进度截止时间
-	RolloutComplete  bool                `json:"rolloutComplete"` // 是否滚动发布完成
-	Status          string               `json:"status"`          // 总体状态 (Progressing/Complete/Failed/Paused)
+	DeploymentName     string              `json:"deploymentName"`     // Deployment名称
+	Namespace          string              `json:"namespace"`          // 命名空间
+	CurrentRevision    int64               `json:"currentRevision"`    // 当前版本号
+	UpdatedReplicas    int32               `json:"updatedReplicas"`    // 已更新副本数
+	ReadyReplicas      int32               `json:"readyReplicas"`      // 就绪副本数
+	AvailableReplicas  int32               `json:"availableReplicas"`  // 可用副本数
+	ObservedGeneration int64               `json:"observedGeneration"` // 观察到的代数
+	Conditions         []WorkloadCondition `json:"conditions"`         // 状态条件
+	Strategy           DeploymentStrategy  `json:"strategy"`           // 部署策略
+	Paused             bool                `json:"paused"`             // 是否已暂停
+	ProgressDeadline   int32               `json:"progressDeadline"`   // 进度截止时间
+	RolloutComplete    bool                `json:"rolloutComplete"`    // 是否滚动发布完成
+	Status             string              `json:"status"`             // 总体状态 (Progressing/Complete/Failed/Paused)
 }
 
 // ================== Service 相关结构体 ==================
 
 // K8sService K8s Service信息
 type K8sService struct {
-	Name         string                 `json:"name"`         // 服务名称
-	Namespace    string                 `json:"namespace"`    // 命名空间
-	Labels       map[string]string      `json:"labels"`       // 标签
-	Type         string                 `json:"type"`         // 服务类型 ClusterIP/NodePort/LoadBalancer/ExternalName
-	Selector     map[string]string      `json:"selector"`     // 选择器
-	ClusterIP    string                 `json:"clusterIP"`    // 集群IP
-	ExternalIPs  []string               `json:"externalIPs"`  // 外部IP列表
-	Ports        []ServicePort          `json:"ports"`        // 端口配置
-	Endpoints    []ServiceEndpoint      `json:"endpoints"`    // 端点信息
-	CreatedAt    string                 `json:"createdAt"`    // 创建时间
-	Status       string                 `json:"status"`       // 状态
+	Name        string            `json:"name"`        // 服务名称
+	Namespace   string            `json:"namespace"`   // 命名空间
+	Labels      map[string]string `json:"labels"`      // 标签
+	Type        string            `json:"type"`        // 服务类型 ClusterIP/NodePort/LoadBalancer/ExternalName
+	Selector    map[string]string `json:"selector"`    // 选择器
+	ClusterIP   string            `json:"clusterIP"`   // 集群IP
+	ExternalIPs []string          `json:"externalIPs"` // 外部IP列表
+	Ports       []ServicePort     `json:"ports"`       // 端口配置
+	Endpoints   []ServiceEndpoint `json:"endpoints"`   // 端点信息
+	CreatedAt   string            `json:"createdAt"`   // 创建时间
+	Status      string            `json:"status"`      // 状态
 }
 
 // ServicePort 服务端口配置
@@ -1238,11 +1238,11 @@ type ServicePort struct {
 
 // ServiceEndpoint 服务端点
 type ServiceEndpoint struct {
-	IP       string          `json:"ip"`       // 端点IP
-	Hostname string          `json:"hostname"` // 主机名
-	NodeName string          `json:"nodeName"` // 节点名称
-	Ready    bool            `json:"ready"`    // 就绪状态
-	Ports    []EndpointPort  `json:"ports"`    // 端口信息
+	IP       string         `json:"ip"`       // 端点IP
+	Hostname string         `json:"hostname"` // 主机名
+	NodeName string         `json:"nodeName"` // 节点名称
+	Ready    bool           `json:"ready"`    // 就绪状态
+	Ports    []EndpointPort `json:"ports"`    // 端口信息
 }
 
 // EndpointPort 端点端口
@@ -1255,19 +1255,19 @@ type EndpointPort struct {
 // ServiceDetail Service详情
 type ServiceDetail struct {
 	K8sService
-	Events     []K8sEvent       `json:"events"`     // 相关事件
-	Pods       []K8sPodInfo     `json:"pods"`       // 关联的Pod列表
-	Spec       interface{}      `json:"spec"`       // 完整规格配置
+	Events []K8sEvent   `json:"events"` // 相关事件
+	Pods   []K8sPodInfo `json:"pods"`   // 关联的Pod列表
+	Spec   interface{}  `json:"spec"`   // 完整规格配置
 }
 
 // CreateServiceRequest 创建Service请求
 type CreateServiceRequest struct {
-	Name        string            `json:"name" binding:"required"`        // 服务名称
-	Labels      map[string]string `json:"labels"`                         // 标签
-	Type        string            `json:"type" binding:"required"`        // 服务类型
-	Selector    map[string]string `json:"selector" binding:"required"`    // 选择器
-	Ports       []ServicePortSpec `json:"ports" binding:"required"`       // 端口配置
-	ExternalIPs []string          `json:"externalIPs"`                    // 外部IP列表
+	Name        string            `json:"name" binding:"required"`     // 服务名称
+	Labels      map[string]string `json:"labels"`                      // 标签
+	Type        string            `json:"type" binding:"required"`     // 服务类型
+	Selector    map[string]string `json:"selector" binding:"required"` // 选择器
+	Ports       []ServicePortSpec `json:"ports" binding:"required"`    // 端口配置
+	ExternalIPs []string          `json:"externalIPs"`                 // 外部IP列表
 }
 
 // ServicePortSpec 服务端口规格
@@ -1298,19 +1298,19 @@ type ServiceListResponse struct {
 
 // K8sIngress K8s Ingress信息
 type K8sIngress struct {
-	Name              string                 `json:"name"`              // Ingress名称
-	Namespace         string                 `json:"namespace"`         // 命名空间
-	Labels            map[string]string      `json:"labels"`            // 标签
-	Class             string                 `json:"class"`             // Ingress类/控制器类型
-	ControllerName    string                 `json:"controllerName"`    // Controller名称
-	ControllerVersion string                 `json:"controllerVersion"` // Controller版本
-	Type              string                 `json:"type"`              // Ingress类型：公网Nginx/内网Nginx等
-	Rules             []IngressRule          `json:"rules"`             // 路由规则
-	TLS               []IngressTLS           `json:"tls"`               // TLS配置
-	LoadBalancer      IngressLoadBalancer    `json:"loadBalancer"`      // 负载均衡器信息
-	Endpoints         []string               `json:"endpoints"`         // 访问端点
-	CreatedAt         string                 `json:"createdAt"`         // 创建时间
-	Status            string                 `json:"status"`            // 状态
+	Name              string              `json:"name"`              // Ingress名称
+	Namespace         string              `json:"namespace"`         // 命名空间
+	Labels            map[string]string   `json:"labels"`            // 标签
+	Class             string              `json:"class"`             // Ingress类/控制器类型
+	ControllerName    string              `json:"controllerName"`    // Controller名称
+	ControllerVersion string              `json:"controllerVersion"` // Controller版本
+	Type              string              `json:"type"`              // Ingress类型：公网Nginx/内网Nginx等
+	Rules             []IngressRule       `json:"rules"`             // 路由规则
+	TLS               []IngressTLS        `json:"tls"`               // TLS配置
+	LoadBalancer      IngressLoadBalancer `json:"loadBalancer"`      // 负载均衡器信息
+	Endpoints         []string            `json:"endpoints"`         // 访问端点
+	CreatedAt         string              `json:"createdAt"`         // 创建时间
+	Status            string              `json:"status"`            // 状态
 }
 
 // IngressRule Ingress路由规则
@@ -1326,9 +1326,9 @@ type IngressRuleValue struct {
 
 // IngressPath Ingress路径规则
 type IngressPath struct {
-	Path     string             `json:"path"`     // 路径
-	PathType string             `json:"pathType"` // 路径类型 Exact/Prefix/ImplementationSpecific
-	Backend  IngressBackend     `json:"backend"`  // 后端服务
+	Path     string         `json:"path"`     // 路径
+	PathType string         `json:"pathType"` // 路径类型 Exact/Prefix/ImplementationSpecific
+	Backend  IngressBackend `json:"backend"`  // 后端服务
 }
 
 // IngressBackend Ingress后端服务
@@ -1361,9 +1361,9 @@ type IngressLoadBalancer struct {
 
 // IngressLoadBalancerIngress 负载均衡器入口信息
 type IngressLoadBalancerIngress struct {
-	IP       string                       `json:"ip"`       // IP地址
-	Hostname string                       `json:"hostname"` // 主机名
-	Ports    []IngressLoadBalancerPort    `json:"ports"`    // 端口信息
+	IP       string                    `json:"ip"`       // IP地址
+	Hostname string                    `json:"hostname"` // 主机名
+	Ports    []IngressLoadBalancerPort `json:"ports"`    // 端口信息
 }
 
 // IngressLoadBalancerPort 负载均衡器端口信息
@@ -1381,26 +1381,26 @@ type IngressDetail struct {
 
 // CreateIngressRequest 创建Ingress请求
 type CreateIngressRequest struct {
-	Name        string                 `json:"name" binding:"required"`        // Ingress名称
-	Labels      map[string]string      `json:"labels"`                         // 标签
-	Class       string                 `json:"class"`                          // Ingress类
-	Rules       []IngressRuleSpec      `json:"rules" binding:"required"`       // 路由规则
-	TLS         []IngressTLSSpec       `json:"tls"`                            // TLS配置
-	Annotations map[string]string      `json:"annotations"`                    // 注释
+	Name        string            `json:"name" binding:"required"`  // Ingress名称
+	Labels      map[string]string `json:"labels"`                   // 标签
+	Class       string            `json:"class"`                    // Ingress类
+	Rules       []IngressRuleSpec `json:"rules" binding:"required"` // 路由规则
+	TLS         []IngressTLSSpec  `json:"tls"`                      // TLS配置
+	Annotations map[string]string `json:"annotations"`              // 注释
 }
 
 // IngressRuleSpec Ingress规则规格
 type IngressRuleSpec struct {
-	Host  string                  `json:"host" binding:"required"` // 主机名
-	Paths []IngressPathSpec       `json:"paths" binding:"required"` // 路径规则
+	Host  string            `json:"host" binding:"required"`  // 主机名
+	Paths []IngressPathSpec `json:"paths" binding:"required"` // 路径规则
 }
 
 // IngressPathSpec Ingress路径规格
 type IngressPathSpec struct {
-	Path        string                    `json:"path" binding:"required"`     // 路径
-	PathType    string                    `json:"pathType" binding:"required"` // 路径类型
-	ServiceName string                    `json:"serviceName" binding:"required"` // 服务名称
-	ServicePort int32                     `json:"servicePort" binding:"required"` // 服务端口
+	Path        string `json:"path" binding:"required"`        // 路径
+	PathType    string `json:"pathType" binding:"required"`    // 路径类型
+	ServiceName string `json:"serviceName" binding:"required"` // 服务名称
+	ServicePort int32  `json:"servicePort" binding:"required"` // 服务端口
 }
 
 // IngressTLSSpec Ingress TLS规格
@@ -1411,11 +1411,11 @@ type IngressTLSSpec struct {
 
 // UpdateIngressRequest 更新Ingress请求
 type UpdateIngressRequest struct {
-	Labels      map[string]string      `json:"labels"`      // 标签
-	Class       string                 `json:"class"`       // Ingress类
-	Rules       []IngressRuleSpec      `json:"rules"`       // 路由规则
-	TLS         []IngressTLSSpec       `json:"tls"`         // TLS配置
-	Annotations map[string]string      `json:"annotations"` // 注释
+	Labels      map[string]string `json:"labels"`      // 标签
+	Class       string            `json:"class"`       // Ingress类
+	Rules       []IngressRuleSpec `json:"rules"`       // 路由规则
+	TLS         []IngressTLSSpec  `json:"tls"`         // TLS配置
+	Annotations map[string]string `json:"annotations"` // 注释
 }
 
 // IngressListResponse Ingress列表响应
@@ -1449,13 +1449,13 @@ type PVCDetail struct {
 
 // CreatePVCRequest 创建PVC请求
 type CreatePVCRequest struct {
-	Name         string            `json:"name" binding:"required"`         // PVC名称
-	Labels       map[string]string `json:"labels"`                          // 标签
-	StorageClass string            `json:"storageClass"`                    // 存储类名称
-	AccessModes  []string          `json:"accessModes" binding:"required"`  // 访问模式
-	Resources    PVCResourcesSpec  `json:"resources" binding:"required"`    // 资源配置
-	VolumeMode   string            `json:"volumeMode"`                      // 卷模式
-	Selector     *PVCSelectorSpec  `json:"selector"`                        // 标签选择器
+	Name         string            `json:"name" binding:"required"`        // PVC名称
+	Labels       map[string]string `json:"labels"`                         // 标签
+	StorageClass string            `json:"storageClass"`                   // 存储类名称
+	AccessModes  []string          `json:"accessModes" binding:"required"` // 访问模式
+	Resources    PVCResourcesSpec  `json:"resources" binding:"required"`   // 资源配置
+	VolumeMode   string            `json:"volumeMode"`                     // 卷模式
+	Selector     *PVCSelectorSpec  `json:"selector"`                       // 标签选择器
 }
 
 // PVCResourcesSpec PVC资源规格
@@ -1491,19 +1491,19 @@ type PVCListResponse struct {
 
 // K8sPersistentVolume PV持久卷信息
 type K8sPersistentVolume struct {
-	Name                     string            `json:"name"`                     // PV名称
-	Labels                   map[string]string `json:"labels"`                   // 标签
-	Capacity                 string            `json:"capacity"`                 // 总量
-	AccessModes              []string          `json:"accessModes"`              // 访问模式
-	ReclaimPolicy            string            `json:"reclaimPolicy"`            // 回收策略 Retain/Delete/Recycle
-	Status                   string            `json:"status"`                   // 状态 Available/Bound/Released/Failed
-	StorageClass             string            `json:"storageClass"`             // 存储类型
-	VolumeMode               string            `json:"volumeMode"`               // 卷模式
-	ClaimRef                 *PVClaimRef       `json:"claimRef"`                 // 绑定存储声明
-	PersistentVolumeSource   PVSource          `json:"persistentVolumeSource"`   // 存储源
-	NodeAffinity             *PVNodeAffinity   `json:"nodeAffinity"`             // 节点亲和性
-	MountOptions             []string          `json:"mountOptions"`             // 挂载选项
-	CreatedAt                string            `json:"createdAt"`                // 创建时间
+	Name                   string            `json:"name"`                   // PV名称
+	Labels                 map[string]string `json:"labels"`                 // 标签
+	Capacity               string            `json:"capacity"`               // 总量
+	AccessModes            []string          `json:"accessModes"`            // 访问模式
+	ReclaimPolicy          string            `json:"reclaimPolicy"`          // 回收策略 Retain/Delete/Recycle
+	Status                 string            `json:"status"`                 // 状态 Available/Bound/Released/Failed
+	StorageClass           string            `json:"storageClass"`           // 存储类型
+	VolumeMode             string            `json:"volumeMode"`             // 卷模式
+	ClaimRef               *PVClaimRef       `json:"claimRef"`               // 绑定存储声明
+	PersistentVolumeSource PVSource          `json:"persistentVolumeSource"` // 存储源
+	NodeAffinity           *PVNodeAffinity   `json:"nodeAffinity"`           // 节点亲和性
+	MountOptions           []string          `json:"mountOptions"`           // 挂载选项
+	CreatedAt              string            `json:"createdAt"`              // 创建时间
 }
 
 // PVClaimRef PV声明引用
@@ -1517,11 +1517,11 @@ type PVClaimRef struct {
 
 // PVSource PV存储源
 type PVSource struct {
-	HostPath          *PVHostPathVolumeSource          `json:"hostPath,omitempty"`          // HostPath存储源
-	NFS               *PVNFSVolumeSource               `json:"nfs,omitempty"`               // NFS存储源
-	ISCSI             *PVISCSIVolumeSource             `json:"iscsi,omitempty"`             // iSCSI存储源
-	CSI               *PVCSIVolumeSource               `json:"csi,omitempty"`               // CSI存储源
-	Local             *PVLocalVolumeSource             `json:"local,omitempty"`             // Local存储源
+	HostPath             *PVHostPathVolumeSource             `json:"hostPath,omitempty"`             // HostPath存储源
+	NFS                  *PVNFSVolumeSource                  `json:"nfs,omitempty"`                  // NFS存储源
+	ISCSI                *PVISCSIVolumeSource                `json:"iscsi,omitempty"`                // iSCSI存储源
+	CSI                  *PVCSIVolumeSource                  `json:"csi,omitempty"`                  // CSI存储源
+	Local                *PVLocalVolumeSource                `json:"local,omitempty"`                // Local存储源
 	AWSElasticBlockStore *PVAWSElasticBlockStoreVolumeSource `json:"awsElasticBlockStore,omitempty"` // AWS EBS
 	// 可以根据需要添加更多存储源类型
 }
@@ -1541,27 +1541,27 @@ type PVNFSVolumeSource struct {
 
 // PVISCSIVolumeSource iSCSI存储源
 type PVISCSIVolumeSource struct {
-	TargetPortal string   `json:"targetPortal"` // 目标门户
-	IQN          string   `json:"iqn"`          // IQN
-	Lun          int32    `json:"lun"`          // LUN
-	ISCSIInterface string `json:"iscsiInterface"` // iSCSI接口
-	FSType       string   `json:"fsType"`       // 文件系统类型
-	ReadOnly     bool     `json:"readOnly"`     // 只读
-	Portals      []string `json:"portals"`      // 门户列表
+	TargetPortal   string   `json:"targetPortal"`   // 目标门户
+	IQN            string   `json:"iqn"`            // IQN
+	Lun            int32    `json:"lun"`            // LUN
+	ISCSIInterface string   `json:"iscsiInterface"` // iSCSI接口
+	FSType         string   `json:"fsType"`         // 文件系统类型
+	ReadOnly       bool     `json:"readOnly"`       // 只读
+	Portals        []string `json:"portals"`        // 门户列表
 }
 
 // PVCSIVolumeSource CSI存储源
 type PVCSIVolumeSource struct {
-	Driver       string            `json:"driver"`       // 驱动名称
-	VolumeHandle string            `json:"volumeHandle"` // 卷句柄
-	ReadOnly     bool              `json:"readOnly"`     // 只读
-	FSType       string            `json:"fsType"`       // 文件系统类型
+	Driver           string            `json:"driver"`           // 驱动名称
+	VolumeHandle     string            `json:"volumeHandle"`     // 卷句柄
+	ReadOnly         bool              `json:"readOnly"`         // 只读
+	FSType           string            `json:"fsType"`           // 文件系统类型
 	VolumeAttributes map[string]string `json:"volumeAttributes"` // 卷属性
 }
 
 // PVLocalVolumeSource Local存储源
 type PVLocalVolumeSource struct {
-	Path string `json:"path"` // 本地路径
+	Path   string `json:"path"`   // 本地路径
 	FSType string `json:"fsType"` // 文件系统类型
 }
 
@@ -1619,11 +1619,11 @@ type CreatePVRequest struct {
 
 // PVSourceSpec PV存储源规格
 type PVSourceSpec struct {
-	HostPath *PVHostPathVolumeSource `json:"hostPath,omitempty"` // HostPath存储源
-	NFS      *PVNFSVolumeSource      `json:"nfs,omitempty"`      // NFS存储源
-	ISCSI    *PVISCSIVolumeSource    `json:"iscsi,omitempty"`    // iSCSI存储源
-	CSI      *PVCSIVolumeSource      `json:"csi,omitempty"`      // CSI存储源
-	Local    *PVLocalVolumeSource    `json:"local,omitempty"`    // Local存储源
+	HostPath             *PVHostPathVolumeSource             `json:"hostPath,omitempty"`             // HostPath存储源
+	NFS                  *PVNFSVolumeSource                  `json:"nfs,omitempty"`                  // NFS存储源
+	ISCSI                *PVISCSIVolumeSource                `json:"iscsi,omitempty"`                // iSCSI存储源
+	CSI                  *PVCSIVolumeSource                  `json:"csi,omitempty"`                  // CSI存储源
+	Local                *PVLocalVolumeSource                `json:"local,omitempty"`                // Local存储源
 	AWSElasticBlockStore *PVAWSElasticBlockStoreVolumeSource `json:"awsElasticBlockStore,omitempty"` // AWS EBS
 }
 
@@ -1674,15 +1674,15 @@ type StorageClassDetail struct {
 
 // CreateStorageClassRequest 创建存储类请求
 type CreateStorageClassRequest struct {
-	Name                 string                    `json:"name" binding:"required"`                 // 存储类名称
-	Labels               map[string]string         `json:"labels"`                                  // 标签
-	Provisioner          string                    `json:"provisioner" binding:"required"`          // 提供者
-	Parameters           map[string]string         `json:"parameters"`                              // 参数
-	ReclaimPolicy        string                    `json:"reclaimPolicy"`                           // 回收策略
-	VolumeBindingMode    string                    `json:"volumeBindingMode"`                       // 卷绑定模式
-	AllowVolumeExpansion bool                      `json:"allowVolumeExpansion"`                    // 允许卷扩展
-	MountOptions         []string                  `json:"mountOptions"`                            // 挂载选项
-	AllowedTopologies    []StorageClassTopology    `json:"allowedTopologies"`                       // 允许的拓扑
+	Name                 string                 `json:"name" binding:"required"`        // 存储类名称
+	Labels               map[string]string      `json:"labels"`                         // 标签
+	Provisioner          string                 `json:"provisioner" binding:"required"` // 提供者
+	Parameters           map[string]string      `json:"parameters"`                     // 参数
+	ReclaimPolicy        string                 `json:"reclaimPolicy"`                  // 回收策略
+	VolumeBindingMode    string                 `json:"volumeBindingMode"`              // 卷绑定模式
+	AllowVolumeExpansion bool                   `json:"allowVolumeExpansion"`           // 允许卷扩展
+	MountOptions         []string               `json:"mountOptions"`                   // 挂载选项
+	AllowedTopologies    []StorageClassTopology `json:"allowedTopologies"`              // 允许的拓扑
 }
 
 // UpdateStorageClassRequest 更新存储类请求

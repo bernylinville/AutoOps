@@ -1,10 +1,10 @@
 package controller
 
 import (
-	"fmt"
 	"dodevops-api/api/cmdb/service"
 	"dodevops-api/common/result"
 	"dodevops-api/pkg/jwt"
+	"fmt"
 	"log"
 	"net"
 	"net/http"
@@ -99,7 +99,7 @@ func (c *CmdbHostSSHController) ConnectTerminal(ctx *gin.Context) {
 	upgrader := websocket.Upgrader{
 		ReadBufferSize:  1024,
 		WriteBufferSize: 1024,
-		CheckOrigin: checkOriginAllowlist,
+		CheckOrigin:     checkOriginAllowlist,
 	}
 
 	// 优先从URL参数获取token
@@ -269,7 +269,7 @@ func (c *CmdbHostSSHController) UploadFile(ctx *gin.Context) {
 		result.Failed(ctx, http.StatusInternalServerError, "文件保存验证失败: "+err.Error())
 		return
 	} else {
-		log.Printf("文件保存成功: %s (大小: %d bytes, 权限: %v)", 
+		log.Printf("文件保存成功: %s (大小: %d bytes, 权限: %v)",
 			tempFilePath, fi.Size(), fi.Mode())
 	}
 
@@ -321,8 +321,8 @@ func (c *CmdbHostSSHController) UploadFile(ctx *gin.Context) {
 	// 临时文件由 defer os.RemoveAll(tempDir) 自动清理
 
 	result.Success(ctx, gin.H{
-		"hostId":    hostID,
-		"fileName":  file.Filename,
+		"hostId":   hostID,
+		"fileName": file.Filename,
 		"destPath": destPath,
 		"message":  "文件上传成功",
 	})

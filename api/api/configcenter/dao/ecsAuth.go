@@ -26,12 +26,12 @@ func (d *EcsAuthDao) GetEcsAuthList() []model.EcsAuth {
 func (d *EcsAuthDao) GetEcsAuthListWithPage(page, pageSize int) ([]model.EcsAuth, int64) {
 	var list []model.EcsAuth
 	var total int64
-	
+
 	offset := (page - 1) * pageSize
-	
+
 	d.db.Model(&model.EcsAuth{}).Count(&total)
 	d.db.Offset(offset).Limit(pageSize).Find(&list)
-	
+
 	return list, total
 }
 

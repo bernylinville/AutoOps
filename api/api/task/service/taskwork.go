@@ -1,13 +1,13 @@
 package service
 
 import (
-	"fmt"
 	cmdbmodel "dodevops-api/api/cmdb/model"
 	configcentermodel "dodevops-api/api/configcenter/model"
 	"dodevops-api/api/task/dao"
 	"dodevops-api/api/task/model"
 	"dodevops-api/common"
 	"dodevops-api/common/util"
+	"fmt"
 	"os"
 	"path/filepath"
 	"strings"
@@ -18,15 +18,15 @@ import (
 )
 
 type ITaskWorkService interface {
-	StartJob(taskID uint) error  // 启动任务
-	StopJob(taskID, templateID uint) error  // 停止任务
-	GetJobLog(taskID, templateID uint) (string, error) // 获取任务日志
+	StartJob(taskID uint) error                                          // 启动任务
+	StopJob(taskID, templateID uint) error                               // 停止任务
+	GetJobLog(taskID, templateID uint) (string, error)                   // 获取任务日志
 	GetJobStatus(taskID, templateID uint) (*model.TaskWorkStatus, error) // 获取任务状态
-	ScheduleJob(job *model.TaskWork) error // 添加任务
+	ScheduleJob(job *model.TaskWork) error                               // 添加任务
 }
 
 type TaskWorkServiceImpl struct {
-	dao dao.TaskWorkDaoInterface
+	dao            dao.TaskWorkDaoInterface
 	taskJobService TaskJobService
 }
 
@@ -161,7 +161,7 @@ func (s *TaskWorkServiceImpl) executeJob(job *model.TaskWork) error {
 				return fmt.Errorf("SSH连接失败且状态更新失败: %v (原错误: %v)", updateErr, sshErr)
 			}
 			s.dao.UpdateLog(job.ID, fmt.Sprintf("SSH连接失败: %v", sshErr))
-			
+
 			// === 异常推送 FlashDuty ===
 			flashdutyService.PushStandardEvent(
 				fmt.Sprintf("AutoOps主机任务失败 - 节点 %s", host.Name),
@@ -172,7 +172,7 @@ func (s *TaskWorkServiceImpl) executeJob(job *model.TaskWork) error {
 		} else {
 			// 命令执行问题不标记为异常，但记录详细日志
 			logContent = fmt.Sprintf("命令执行出错: %v\n%s", sshErr, logContent)
-			
+
 			// === 异常推送 FlashDuty ===
 			flashdutyService.PushStandardEvent(
 				fmt.Sprintf("AutoOps命令执行失败 - 节点 %s", host.Name),
@@ -421,7 +421,7 @@ func (s *TaskWorkServiceImpl) ScheduleJob(job *model.TaskWork) error {
 
 		// 验证执行时间格式
 		if job.ScheduledTime.Before(time.Now()) {
-			return fmt.Errorf("定时任务执行时间(%v)不能早于当前时间(%v)", 
+			return fmt.Errorf("定时任务执行时间(%v)不能早于当前时间(%v)",
 				job.ScheduledTime.Format("2006-01-02 15:04:05"),
 				time.Now().Format("2006-01-02 15:04:05"))
 		}
@@ -489,14 +489,14 @@ func (s *TaskWorkServiceImpl) getJobDetails(job *model.TaskWork) (*model.TaskTem
 
 	return &template, &host, nil
 }
-// 
+
 func isSSHConnectionError(err error) bool {
 	// 判断是否为SSH连接错误(包括超时)
 	return err != nil && (strings.Contains(err.Error(), "connection") ||
 		strings.Contains(err.Error(), "authentication") ||
 		strings.Contains(err.Error(), "timeout"))
 }
-// 
+
 func (s *TaskWorkServiceImpl) executeSSHTask(job *model.TaskWork, template *model.TaskTemplate, host *cmdbmodel.CmdbHost) (string, error) {
 	// 1. 获取认证凭证
 	var ecsAuth configcentermodel.EcsAuth
@@ -616,6 +616,7 @@ func (s *TaskWorkServiceImpl) executeSSHTask(job *model.TaskWork, template *mode
 
 	return finalOutput, nil
 }
+
 // 杀死远程进程
 func (s *TaskWorkServiceImpl) killRemoteProcess(job *model.TaskWork) error {
 	// 1. 获取主机信息和SSH认证
@@ -744,7 +745,7 @@ func getJobType(jobType int) string {
 // 创建任务服务实例
 func NewTaskWorkService() ITaskWorkService {
 	return &TaskWorkServiceImpl{
-		dao: dao.TaskWorkDao(),
+		dao:            dao.TaskWorkDao(),
 		taskJobService: NewTaskService(common.GetDB()),
 	}
 }

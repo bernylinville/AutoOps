@@ -8,6 +8,7 @@ import (
 	"dodevops-api/common/result"
 	"github.com/gin-gonic/gin"
 )
+
 // @Tags System系统管理
 // @Summary 验证码接口
 // @Produce json

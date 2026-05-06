@@ -22,3 +22,5 @@
 [37mDEBU[0m[2026/04/21 - 18:33:19] Logger initialized with TextFormatter.       
 [37mDEBU[0m[2026/04/21 - 18:46:53] Logger initialized with TextFormatter.       
 [36mINFO[0m[2026/04/21 - 18:46:53] triggered Harbor scan: server=1 project=library repository=nginx/demo digest=sha256:poll 
+[37mDEBU[0m[2026/05/06 - 11:56:15] Logger initialized with TextFormatter.       
+[36mINFO[0m[2026/05/06 - 11:56:15] triggered Harbor scan: server=1 project=library repository=nginx/demo digest=sha256:poll 

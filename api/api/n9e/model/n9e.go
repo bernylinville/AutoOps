@@ -37,15 +37,15 @@ func (N9EBusiGroup) TableName() string {
 
 // N9EDataSource N9E 数据源（同步自 N9E）
 type N9EDataSource struct {
-	ID           uint       `gorm:"column:id;primaryKey;NOT NULL" json:"id"`
-	N9ESourceID  int64      `gorm:"column:n9e_source_id;uniqueIndex;NOT NULL;comment:'N9E 数据源 ID'" json:"n9eSourceId"`
-	Name         string     `gorm:"column:name;type:varchar(200);NOT NULL;comment:'数据源名称'" json:"name"`
-	PluginType   string     `gorm:"column:plugin_type;type:varchar(50);comment:'插件类型'" json:"pluginType"`
-	Category     string     `gorm:"column:category;type:varchar(50);comment:'分类'" json:"category"`
-	URL          string     `gorm:"column:url;type:varchar(500);comment:'HTTP URL'" json:"url"`
-	Status       string     `gorm:"column:status;type:varchar(20);comment:'状态'" json:"status"`
-	CreateTime   util.HTime `gorm:"column:create_time;NOT NULL;comment:'创建时间'" json:"createTime"`
-	UpdateTime   util.HTime `gorm:"column:update_time;NOT NULL;comment:'更新时间'" json:"updateTime"`
+	ID          uint       `gorm:"column:id;primaryKey;NOT NULL" json:"id"`
+	N9ESourceID int64      `gorm:"column:n9e_source_id;uniqueIndex;NOT NULL;comment:'N9E 数据源 ID'" json:"n9eSourceId"`
+	Name        string     `gorm:"column:name;type:varchar(200);NOT NULL;comment:'数据源名称'" json:"name"`
+	PluginType  string     `gorm:"column:plugin_type;type:varchar(50);comment:'插件类型'" json:"pluginType"`
+	Category    string     `gorm:"column:category;type:varchar(50);comment:'分类'" json:"category"`
+	URL         string     `gorm:"column:url;type:varchar(500);comment:'HTTP URL'" json:"url"`
+	Status      string     `gorm:"column:status;type:varchar(20);comment:'状态'" json:"status"`
+	CreateTime  util.HTime `gorm:"column:create_time;NOT NULL;comment:'创建时间'" json:"createTime"`
+	UpdateTime  util.HTime `gorm:"column:update_time;NOT NULL;comment:'更新时间'" json:"updateTime"`
 }
 
 func (N9EDataSource) TableName() string {
@@ -70,13 +70,13 @@ type TestConnectionDto struct {
 
 // N9ESyncLog 同步日志记录
 type N9ESyncLog struct {
-	ID         uint   `gorm:"column:id;primaryKey" json:"id"`
-	SyncType   string `gorm:"column:sync_type;type:varchar(20);default:'full'" json:"syncType"`
-	Status     string `gorm:"column:status;type:varchar(20);default:'success'" json:"status"`
-	ResultJSON string `gorm:"column:result_json;type:text" json:"resultJson"`
-	ErrorMsg   string `gorm:"column:error_msg;type:text" json:"errorMsg"`
-	DurationMs int    `gorm:"column:duration_ms" json:"durationMs"`
-	TriggerBy  string `gorm:"column:trigger_by;type:varchar(20);default:'manual'" json:"triggerBy"`
+	ID         uint       `gorm:"column:id;primaryKey" json:"id"`
+	SyncType   string     `gorm:"column:sync_type;type:varchar(20);default:'full'" json:"syncType"`
+	Status     string     `gorm:"column:status;type:varchar(20);default:'success'" json:"status"`
+	ResultJSON string     `gorm:"column:result_json;type:text" json:"resultJson"`
+	ErrorMsg   string     `gorm:"column:error_msg;type:text" json:"errorMsg"`
+	DurationMs int        `gorm:"column:duration_ms" json:"durationMs"`
+	TriggerBy  string     `gorm:"column:trigger_by;type:varchar(20);default:'manual'" json:"triggerBy"`
 	CreatedAt  util.HTime `gorm:"column:created_at" json:"createdAt"`
 }
 

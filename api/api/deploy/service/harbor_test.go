@@ -250,10 +250,10 @@ func (f *fakeAccountAuthDao) GetByID(id uint) (*ccmodel.AccountAuth, error) {
 func newTestHarborAdapter(t *testing.T, host string, allowInsecure bool) *HarborAdapter {
 	t.Helper()
 	adapter := NewHarborAdapter(HarborAdapterOptions{
-		AccountDao:        fakeHarborAccountStore(t, host),
-		HTTPClient:        http.DefaultClient,
-		AllowInsecureHTTP: allowInsecure,
-		PollInterval:      10 * time.Millisecond,
+		AccountDao:         fakeHarborAccountStore(t, host),
+		HTTPClient:         http.DefaultClient,
+		AllowInsecureHTTP:  allowInsecure,
+		PollInterval:       10 * time.Millisecond,
 		DefaultScanTimeout: 500 * time.Millisecond,
 	}).(*HarborAdapter)
 	adapter.httpClient = &http.Client{}

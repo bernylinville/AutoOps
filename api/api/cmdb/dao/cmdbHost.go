@@ -146,17 +146,17 @@ func (d *CmdbHostDao) GetCmdbHostsByGroupId(groupId uint) []model.CmdbHost {
 func (d *CmdbHostDao) GetCmdbHostsByGroupIdWithPage(groupId uint, page, pageSize int) ([]model.CmdbHost, int64) {
 	var list []model.CmdbHost
 	var count int64
-	
+
 	// 获取当前分组及所有子分组的ID
 	groupIds := d.getAllChildGroupIds(groupId)
-	
+
 	// 计算总数
 	d.db.Model(&model.CmdbHost{}).Where("group_id IN ?", groupIds).Count(&count)
-	
+
 	// 分页查询
 	offset := (page - 1) * pageSize
 	d.db.Preload("Group").Where("group_id IN ?", groupIds).Offset(offset).Limit(pageSize).Find(&list)
-	
+
 	return list, count
 }
 

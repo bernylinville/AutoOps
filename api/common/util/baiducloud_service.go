@@ -28,15 +28,15 @@ type BaiduInstanceInfo struct {
 	PrivateIPs  []string `json:"private_ips"`
 	PublicIPs   []string `json:"public_ips"`
 	CPU         int      `json:"cpu"`
-	Memory      int      `json:"memory"` // 单位: GB
+	Memory      int      `json:"memory"`      // 单位: GB
 	SystemDisk  int      `json:"system_disk"` // 单位: GB
-	DataDisks   []int    `json:"data_disks"` // 单位: GB
+	DataDisks   []int    `json:"data_disks"`  // 单位: GB
 	BillingType string   `json:"billing_type"`
 	OSName      string   `json:"os_name"`
 	CreateTime  string   `json:"create_time"`
 	ExpireTime  string   `json:"expire_time"`
 	Region      string   `json:"region"` // 实例所在区域
-	Zone        string   `json:"zone"` // 可用区
+	Zone        string   `json:"zone"`   // 可用区
 	Status      string   `json:"status"` // 实例状态
 }
 
@@ -44,14 +44,14 @@ type BaiduInstanceInfo struct {
 func (s *BaiduCloudService) GetInstances() ([]BaiduInstanceInfo, error) {
 	// 百度云支持的所有区域
 	regions := []string{
-		"bj",      // 北京
-		"gz",      // 广州
-		"su",      // 苏州
-		"hkg",     // 香港
-		"fwh",     // 武汉
-		"bd",      // 保定
-		"sin",     // 新加坡
-		"fsh",     // 上海
+		"bj",  // 北京
+		"gz",  // 广州
+		"su",  // 苏州
+		"hkg", // 香港
+		"fwh", // 武汉
+		"bd",  // 保定
+		"sin", // 新加坡
+		"fsh", // 上海
 	}
 
 	var allInstances []BaiduInstanceInfo
@@ -144,13 +144,13 @@ func (s *BaiduCloudService) GetInstancesJSON() ([]byte, error) {
 // GetAllRegions 获取百度云支持的所有区域列表
 func (s *BaiduCloudService) GetAllRegions() []string {
 	return []string{
-		"bj",      // 北京
-		"gz",      // 广州
-		"su",      // 苏州
-		"hkg",     // 香港
-		"fwh",     // 武汉
-		"bd",      // 保定
-		"sin",     // 新加坡
-		"fsh",     // 上海
+		"bj",  // 北京
+		"gz",  // 广州
+		"su",  // 苏州
+		"hkg", // 香港
+		"fwh", // 武汉
+		"bd",  // 保定
+		"sin", // 新加坡
+		"fsh", // 上海
 	}
 }

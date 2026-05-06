@@ -140,10 +140,12 @@ func (h *HarborAdapter) GetArtifact(ctx context.Context, serverID uint, project,
 	}
 
 	var raw struct {
-		Digest       string                     `json:"digest"`
-		Size         int64                      `json:"size"`
-		PushTime     time.Time                  `json:"push_time"`
-		Tags         []struct{ Name string `json:"name"` } `json:"tags"`
+		Digest   string    `json:"digest"`
+		Size     int64     `json:"size"`
+		PushTime time.Time `json:"push_time"`
+		Tags     []struct {
+			Name string `json:"name"`
+		} `json:"tags"`
 		ScanOverview map[string]json.RawMessage `json:"scan_overview"`
 	}
 

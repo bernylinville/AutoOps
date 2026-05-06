@@ -1,10 +1,10 @@
 package controller
 
 import (
-	"fmt"
 	"dodevops-api/api/configcenter/model"
 	"dodevops-api/api/configcenter/service"
 	"dodevops-api/common/result"
+	"fmt"
 	"github.com/gin-gonic/gin"
 )
 

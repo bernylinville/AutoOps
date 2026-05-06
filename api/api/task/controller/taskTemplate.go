@@ -1,20 +1,20 @@
 package controller
 
 import (
-	"net/http"
-	"strconv"
 	cmdbService "dodevops-api/api/cmdb/service"
+	"dodevops-api/api/task/dao"
 	"dodevops-api/api/task/model"
 	"dodevops-api/api/task/service"
-	"dodevops-api/api/task/dao"
 	"dodevops-api/common"
 	"dodevops-api/common/result"
 	"github.com/gin-gonic/gin"
+	"net/http"
+	"strconv"
 )
 
 var (
-	hostSSHService = func() cmdbService.CmdbHostSSHServiceInterface { return nil }
-	taskTemplateDao = func() dao.TaskTemplateDaoInterface { return nil }
+	hostSSHService      = func() cmdbService.CmdbHostSSHServiceInterface { return nil }
+	taskTemplateDao     = func() dao.TaskTemplateDaoInterface { return nil }
 	taskTemplateService *service.TaskService
 )
 

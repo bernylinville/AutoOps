@@ -15,8 +15,8 @@ import (
 	"strconv"
 	"time"
 
-	"github.com/gosnmp/gosnmp"
 	"github.com/gin-gonic/gin"
+	"github.com/gosnmp/gosnmp"
 )
 
 type NetworkDeviceController struct {

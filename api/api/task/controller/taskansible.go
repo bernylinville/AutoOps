@@ -347,7 +347,6 @@ func (c *TaskAnsibleController) GetTasksByType(ctx *gin.Context) {
 	c.service.GetTasksByType(ctx, taskType)
 }
 
-
 // CreateK8sTask 创建K8s部署任务
 // @Summary 创建K8s部署任务
 // @Description 创建K8s集群部署任务
@@ -412,19 +411,19 @@ func (c *TaskAnsibleController) CreateK8sTask(ctx *gin.Context) {
 
 	// 解析主机ID数组
 	var masterHostIDs, workerHostIDs, etcdHostIDs []uint
-	
+
 	if err := json.Unmarshal([]byte(masterHostIDsJSON), &masterHostIDs); err != nil {
 		result.Failed(ctx, http.StatusBadRequest, "Master节点主机ID格式错误")
 		return
 	}
-	
+
 	if workerHostIDsJSON != "" {
 		if err := json.Unmarshal([]byte(workerHostIDsJSON), &workerHostIDs); err != nil {
 			result.Failed(ctx, http.StatusBadRequest, "Worker节点主机ID格式错误")
 			return
 		}
 	}
-	
+
 	if err := json.Unmarshal([]byte(etcdHostIDsJSON), &etcdHostIDs); err != nil {
 		result.Failed(ctx, http.StatusBadRequest, "ETCD节点主机ID格式错误")
 		return
@@ -444,18 +443,18 @@ func (c *TaskAnsibleController) CreateK8sTask(ctx *gin.Context) {
 
 	// 构建K8s任务请求
 	req := &service.CreateK8sTaskRequest{
-		Name:             name,
-		Description:      description,
-		ClusterName:      clusterName,
-		ClusterVersion:   clusterVersion,
-		DeploymentMode:   deploymentMode,
-		MasterHostIDs:    masterHostIDs,
-		WorkerHostIDs:    workerHostIDs,
-		EtcdHostIDs:      etcdHostIDs,
+		Name:              name,
+		Description:       description,
+		ClusterName:       clusterName,
+		ClusterVersion:    clusterVersion,
+		DeploymentMode:    deploymentMode,
+		MasterHostIDs:     masterHostIDs,
+		WorkerHostIDs:     workerHostIDs,
+		EtcdHostIDs:       etcdHostIDs,
 		EnabledComponents: enabledComponents,
-		PrivateRegistry:  privateRegistry,
-		RegistryUsername: registryUsername,
-		RegistryPassword: registryPassword,
+		PrivateRegistry:   privateRegistry,
+		RegistryUsername:  registryUsername,
+		RegistryPassword:  registryPassword,
 	}
 
 	// 调用服务层

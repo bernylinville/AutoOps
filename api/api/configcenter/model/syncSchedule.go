@@ -7,16 +7,16 @@ import (
 // SyncSchedule 定时同步配置表
 type SyncSchedule struct {
 	ID          uint        `gorm:"primaryKey" json:"id"`
-	Name        string      `gorm:"type:varchar(100);not null" json:"name"`        // 配置名称
-	CronExpr    string      `gorm:"type:varchar(100);not null" json:"cronExpr"`    // cron表达式
-	KeyTypes    string      `gorm:"type:text;not null" json:"keyTypes"`            // 要同步的云厂商类型（JSON数组格式：[1,2,3]）
-	Status      int         `gorm:"not null;default:1" json:"status"`              // 状态：1=启用，0=禁用
-	LastRunTime *util.HTime `json:"lastRunTime"`                                   // 上次执行时间
-	NextRunTime *util.HTime `json:"nextRunTime"`                                   // 下次执行时间
-	SyncLog     string      `gorm:"type:text" json:"syncLog"`                      // 最近一次同步日志
-	Remark      string      `gorm:"type:text" json:"remark"`                       // 备注信息
-	CreatedAt   util.HTime  `json:"createdAt"`                                     // 创建时间
-	UpdatedAt   util.HTime  `json:"updatedAt"`                                     // 更新时间
+	Name        string      `gorm:"type:varchar(100);not null" json:"name"`     // 配置名称
+	CronExpr    string      `gorm:"type:varchar(100);not null" json:"cronExpr"` // cron表达式
+	KeyTypes    string      `gorm:"type:text;not null" json:"keyTypes"`         // 要同步的云厂商类型（JSON数组格式：[1,2,3]）
+	Status      int         `gorm:"not null;default:1" json:"status"`           // 状态：1=启用，0=禁用
+	LastRunTime *util.HTime `json:"lastRunTime"`                                // 上次执行时间
+	NextRunTime *util.HTime `json:"nextRunTime"`                                // 下次执行时间
+	SyncLog     string      `gorm:"type:text" json:"syncLog"`                   // 最近一次同步日志
+	Remark      string      `gorm:"type:text" json:"remark"`                    // 备注信息
+	CreatedAt   util.HTime  `json:"createdAt"`                                  // 创建时间
+	UpdatedAt   util.HTime  `json:"updatedAt"`                                  // 更新时间
 }
 
 // TableName 表名

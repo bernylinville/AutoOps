@@ -69,15 +69,15 @@ type HostMetricsSnapshot struct {
 
 // ClusterOverview 集群监控总览
 type ClusterOverview struct {
-	HostCount     int     `json:"hostCount"`
-	AvgCPUUsage   float64 `json:"avgCpuUsage"`
-	AvgMemUsage   float64 `json:"avgMemUsage"`
-	MaxCPUUsage   float64 `json:"maxCpuUsage"`
-	MaxMemUsage   float64 `json:"maxMemUsage"`
-	MaxDiskUsage  float64 `json:"maxDiskUsage"`
-	TopCPUHosts   []HostMetricValue `json:"topCpuHosts"`
-	TopMemHosts   []HostMetricValue `json:"topMemHosts"`
-	TopDiskHosts  []HostMetricValue `json:"topDiskHosts"`
+	HostCount    int               `json:"hostCount"`
+	AvgCPUUsage  float64           `json:"avgCpuUsage"`
+	AvgMemUsage  float64           `json:"avgMemUsage"`
+	MaxCPUUsage  float64           `json:"maxCpuUsage"`
+	MaxMemUsage  float64           `json:"maxMemUsage"`
+	MaxDiskUsage float64           `json:"maxDiskUsage"`
+	TopCPUHosts  []HostMetricValue `json:"topCpuHosts"`
+	TopMemHosts  []HostMetricValue `json:"topMemHosts"`
+	TopDiskHosts []HostMetricValue `json:"topDiskHosts"`
 }
 
 // HostMetricValue 主机+指标值

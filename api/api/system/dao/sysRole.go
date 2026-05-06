@@ -123,7 +123,7 @@ func AssignPermissions(menu model.RoleMenu) (err error) {
 		if err := tx.Table("sys_role_menu").Where("role_id = ?", menu.Id).Delete(&model.SysRoleMenu{}).Error; err != nil {
 			return err
 		}
-		
+
 		// 批量插入新权限
 		if len(menu.MenuIds) > 0 {
 			var entities []model.SysRoleMenu

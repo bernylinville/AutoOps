@@ -94,7 +94,7 @@ func (s *SysRoleServiceImpl) QueryRoleMenuIdList(c *gin.Context, Id int) {
 func (s *SysRoleServiceImpl) AssignPermissions(c *gin.Context, menu model.RoleMenu) {
 	// 立即返回成功响应
 	result.Success(c, true)
-	
+
 	// 异步处理权限分配
 	go func() {
 		dao.AssignPermissions(menu)

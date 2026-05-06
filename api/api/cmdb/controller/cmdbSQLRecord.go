@@ -3,34 +3,34 @@ package controller
 import (
 	"context"
 	"database/sql"
+	"dodevops-api/api/cmdb/dao"
+	"dodevops-api/api/cmdb/model"
+	cmdbService "dodevops-api/api/cmdb/service"
+	configModel "dodevops-api/api/configcenter/model"
+	configService "dodevops-api/api/configcenter/service"
+	sysModel "dodevops-api/api/system/model"
+	"dodevops-api/common/constant"
+	"dodevops-api/common/result"
+	"dodevops-api/common/util"
 	"fmt"
+	"github.com/gin-gonic/gin"
+	_ "github.com/go-sql-driver/mysql"
+	"gorm.io/gorm"
 	"net"
 	"net/http"
 	"reflect"
 	"strings"
 	"time"
-	"dodevops-api/api/cmdb/dao"
-	"dodevops-api/api/cmdb/model"
-	cmdbService "dodevops-api/api/cmdb/service"
-	configService "dodevops-api/api/configcenter/service"
-	configModel "dodevops-api/api/configcenter/model"
-	"dodevops-api/common/util"
-	"dodevops-api/common/constant"
-	"dodevops-api/common/result"
-	"github.com/gin-gonic/gin"
-	"gorm.io/gorm"
-	_ "github.com/go-sql-driver/mysql"
-	sysModel "dodevops-api/api/system/model"
 )
 
 const (
-	ParamError = 1001
+	ParamError    = 1001
 	DatabaseError = 1002
 )
 
 type CmdbSQLRecordController struct {
 	recordService *cmdbService.CmdbSQLRecordService
-	sqlService   *cmdbService.CmdbSQLService
+	sqlService    *cmdbService.CmdbSQLService
 }
 
 var sqlRecordController *CmdbSQLRecordController
@@ -41,7 +41,7 @@ func InitCmdbSQLRecordController(db *gorm.DB) {
 	sqlService := cmdbService.NewCmdbSQLService(dao.NewCmdbSQLDao(db))
 	sqlRecordController = &CmdbSQLRecordController{
 		recordService: recordService,
-		sqlService:   sqlService,
+		sqlService:    sqlService,
 	}
 }
 
@@ -55,7 +55,7 @@ func NewCmdbSQLRecordController(db *gorm.DB) *CmdbSQLRecordController {
 	sqlService := cmdbService.NewCmdbSQLService(dao.NewCmdbSQLDao(db))
 	return &CmdbSQLRecordController{
 		recordService: recordService,
-		sqlService:   sqlService,
+		sqlService:    sqlService,
 	}
 }
 
@@ -70,7 +70,7 @@ type SQLRequest struct {
 func (c *CmdbSQLRecordController) getDBConnectionInfo(req SQLRequest) (*model.CmdbSQL, *configModel.AccountAuth, string, error) {
 	var dbInfo *model.CmdbSQL
 	var err error
-	
+
 	if req.DatabaseID > 0 {
 		dbInfo, err = c.sqlService.GetDatabase(req.DatabaseID)
 		if err != nil || dbInfo == nil {
@@ -187,9 +187,9 @@ func (c *CmdbSQLRecordController) ExecuteSelect(ctx *gin.Context) {
 	}
 
 	// 设置连接参数(先连接到默认数据库)
-	connStr := fmt.Sprintf("%s:%s@tcp(%s:%d)/?timeout=60s&readTimeout=60s&writeTimeout=60s&parseTime=true&interpolateParams=true", 
+	connStr := fmt.Sprintf("%s:%s@tcp(%s:%d)/?timeout=60s&readTimeout=60s&writeTimeout=60s&parseTime=true&interpolateParams=true",
 		account.Name, decrypted, account.Host, account.Port)
-	
+
 	// 测试网络连通性
 	conn, err := net.DialTimeout("tcp", fmt.Sprintf("%s:%d", account.Host, account.Port), 5*time.Second)
 	if err != nil {
@@ -209,24 +209,24 @@ func (c *CmdbSQLRecordController) ExecuteSelect(ctx *gin.Context) {
 	// 检查schema是否存在
 	ctxCheckSchema, cancelCheckSchema := context.WithTimeout(ctx.Request.Context(), 10*time.Second)
 	defer cancelCheckSchema()
-	
+
 	var schemaExists int
-	err = db.QueryRowContext(ctxCheckSchema, 
-		"SELECT COUNT(*) FROM information_schema.SCHEMATA WHERE SCHEMA_NAME = ?", 
+	err = db.QueryRowContext(ctxCheckSchema,
+		"SELECT COUNT(*) FROM information_schema.SCHEMATA WHERE SCHEMA_NAME = ?",
 		req.DatabaseName).Scan(&schemaExists)
-	
+
 	if err != nil {
 		result.FailedWithCode(ctx, DatabaseError, "检查schema存在性失败: "+err.Error())
 		return
 	}
-	
+
 	if schemaExists == 0 {
 		result.FailedWithCode(ctx, DatabaseError, fmt.Sprintf("schema '%s' 不存在", req.DatabaseName))
 		return
 	}
 
 	// 连接到指定schema
-	connStr = fmt.Sprintf("%s:%s@tcp(%s:%d)/%s?timeout=60s&readTimeout=60s&writeTimeout=60s", 
+	connStr = fmt.Sprintf("%s:%s@tcp(%s:%d)/%s?timeout=60s&readTimeout=60s&writeTimeout=60s",
 		account.Name, decrypted, account.Host, account.Port, req.DatabaseName)
 	db, err = sql.Open("mysql", connStr)
 	if err != nil {
@@ -329,9 +329,9 @@ func (c *CmdbSQLRecordController) ExecuteSelect(ctx *gin.Context) {
 	}
 
 	result.Success(ctx, gin.H{
-		"returnedRows": returnedRows,
+		"returnedRows":  returnedRows,
 		"executionTime": executionTime,
-		"results": results,
+		"results":       results,
 	})
 }
 
@@ -379,9 +379,9 @@ func (c *CmdbSQLRecordController) ExecuteUpdate(ctx *gin.Context) {
 	}
 
 	// 设置连接参数
-	connStr := fmt.Sprintf("%s:%s@tcp(%s:%d)/%s?timeout=60s&readTimeout=60s&writeTimeout=60s", 
+	connStr := fmt.Sprintf("%s:%s@tcp(%s:%d)/%s?timeout=60s&readTimeout=60s&writeTimeout=60s",
 		account.Name, decrypted, account.Host, account.Port, req.DatabaseName)
-	
+
 	// 建立数据库连接
 	db, err := sql.Open("mysql", connStr)
 	if err != nil {
@@ -451,7 +451,7 @@ func (c *CmdbSQLRecordController) ExecuteUpdate(ctx *gin.Context) {
 	}
 
 	result.Success(ctx, gin.H{
-		"affectedRows": affectedRows,
+		"affectedRows":  affectedRows,
 		"executionTime": executionTime,
 	})
 }
@@ -548,7 +548,7 @@ func (c *CmdbSQLRecordController) GetDatabaseList(ctx *gin.Context) {
 	}
 
 	// 连接到MySQL服务器(不指定数据库)
-	connStr := fmt.Sprintf("%s:%s@tcp(%s:%d)/?timeout=60s", 
+	connStr := fmt.Sprintf("%s:%s@tcp(%s:%d)/?timeout=60s",
 		account.Name, decrypted, account.Host, account.Port)
 	db, err := sql.Open("mysql", connStr)
 	if err != nil {

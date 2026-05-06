@@ -25,4 +25,3 @@ func GetDB() *gorm.DB {
 
 	return db.Db
 }
-

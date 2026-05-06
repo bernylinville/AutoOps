@@ -43,12 +43,12 @@ func (s CmdbGroupServiceImpl) CreateCmdbGroup(c *gin.Context, group model.CmdbGr
 func (s CmdbGroupServiceImpl) GetAllCmdbGroups(c *gin.Context) {
 	groupDao := dao.NewCmdbGroupDao()
 	hostDao := dao.NewCmdbHostDao()
-	
+
 	// 获取所有分组
 	groups := groupDao.GetCmdbGroupList()
 	// 获取所有主机
 	hosts := hostDao.GetCmdbHostList()
-	
+
 	result.Success(c, model.BuildCmdbGroupTreeWithHostCount(groups, hosts))
 }
 
@@ -64,29 +64,29 @@ func (s CmdbGroupServiceImpl) GetAllCmdbGroupsWithHosts(c *gin.Context) {
 	var hostVos []model.CmdbHostVo
 	for _, host := range hosts {
 		hostVos = append(hostVos, model.CmdbHostVo{
-			ID:         host.ID,
-			HostName:   host.HostName,
-			Name:       host.Name,
-			GroupID:    host.GroupID,
-			PrivateIP:  host.PrivateIP,
-			PublicIP:   host.PublicIP,
-			SSHIP:      host.SSHIP,
-			SSHName:    host.SSHName,
-			SSHKeyID:   host.SSHKeyID,
-			SSHPort:    host.SSHPort,
-			Remark:     host.Remark,
-			Vendor:     getVendorName(host.Vendor),
-			Region:     host.Region,
-			InstanceID: host.InstanceID,
-			OS:         host.OS,
-			Status:     host.Status,
-			CPU:        host.CPU,
-			Memory:     host.Memory,
-			Disk:       host.Disk,
+			ID:          host.ID,
+			HostName:    host.HostName,
+			Name:        host.Name,
+			GroupID:     host.GroupID,
+			PrivateIP:   host.PrivateIP,
+			PublicIP:    host.PublicIP,
+			SSHIP:       host.SSHIP,
+			SSHName:     host.SSHName,
+			SSHKeyID:    host.SSHKeyID,
+			SSHPort:     host.SSHPort,
+			Remark:      host.Remark,
+			Vendor:      getVendorName(host.Vendor),
+			Region:      host.Region,
+			InstanceID:  host.InstanceID,
+			OS:          host.OS,
+			Status:      host.Status,
+			CPU:         host.CPU,
+			Memory:      host.Memory,
+			Disk:        host.Disk,
 			BillingType: host.BillingType,
-			CreateTime: host.CreateTime,
-			ExpireTime: host.ExpireTime,
-			UpdateTime: host.UpdateTime,
+			CreateTime:  host.CreateTime,
+			ExpireTime:  host.ExpireTime,
+			UpdateTime:  host.UpdateTime,
 		})
 	}
 

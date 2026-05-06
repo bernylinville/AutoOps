@@ -1,11 +1,11 @@
 package main
 
 import (
-	"fmt"
 	"dodevops-api/common"
 	"dodevops-api/common/config"
 	"dodevops-api/pkg/db"
 	"dodevops-api/pkg/log"
+	"fmt"
 )
 
 func main() {

@@ -2,17 +2,17 @@ package service
 
 import (
 	"context"
-	"fmt"
 	"dodevops-api/api/k8s/dao"
 	"dodevops-api/api/k8s/model"
+	"fmt"
 	"time"
 
+	"gorm.io/gorm"
 	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/client-go/kubernetes"
 	"k8s.io/client-go/tools/clientcmd"
 	"sigs.k8s.io/yaml"
-	"gorm.io/gorm"
 )
 
 type K8sConfigService struct {
@@ -566,12 +566,12 @@ func (s *K8sConfigService) getConfigMapEvents(clientset *kubernetes.Clientset, n
 	var result []model.K8sEvent
 	for _, event := range events.Items {
 		result = append(result, model.K8sEvent{
-			Type:           event.Type,
-			Reason:         event.Reason,
-			Message:        event.Message,
+			Type:      event.Type,
+			Reason:    event.Reason,
+			Message:   event.Message,
 			FirstTime: event.FirstTimestamp.Format(time.RFC3339),
 			LastTime:  event.LastTimestamp.Format(time.RFC3339),
-			Count:          event.Count,
+			Count:     event.Count,
 		})
 	}
 
@@ -591,12 +591,12 @@ func (s *K8sConfigService) getSecretEvents(clientset *kubernetes.Clientset, name
 	var result []model.K8sEvent
 	for _, event := range events.Items {
 		result = append(result, model.K8sEvent{
-			Type:           event.Type,
-			Reason:         event.Reason,
-			Message:        event.Message,
+			Type:      event.Type,
+			Reason:    event.Reason,
+			Message:   event.Message,
 			FirstTime: event.FirstTimestamp.Format(time.RFC3339),
 			LastTime:  event.LastTimestamp.Format(time.RFC3339),
-			Count:          event.Count,
+			Count:     event.Count,
 		})
 	}
 

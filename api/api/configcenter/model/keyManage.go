@@ -5,13 +5,13 @@ import (
 )
 
 type KeyManage struct {
-	ID        uint      `gorm:"primaryKey" json:"id"`
-	KeyType   int       `gorm:"not null" json:"keyType"`             // 云厂商类型：1=阿里云，2=腾讯云，3=百度云，4=华为云，5=AWS云
-	KeyID     string    `gorm:"type:text;not null" json:"keyId"`     // 密钥ID(加密存储)
-	KeySecret string    `gorm:"type:text;not null" json:"keySecret"` // 密钥Secret(加密存储)
-	Remark    string    `gorm:"type:text" json:"remark"`             // 备注信息
-	CreatedAt util.HTime `json:"createdAt"`                          // 创建时间
-	UpdatedAt util.HTime `json:"updatedAt"`                          // 更新时间
+	ID        uint       `gorm:"primaryKey" json:"id"`
+	KeyType   int        `gorm:"not null" json:"keyType"`             // 云厂商类型：1=阿里云，2=腾讯云，3=百度云，4=华为云，5=AWS云
+	KeyID     string     `gorm:"type:text;not null" json:"keyId"`     // 密钥ID(加密存储)
+	KeySecret string     `gorm:"type:text;not null" json:"keySecret"` // 密钥Secret(加密存储)
+	Remark    string     `gorm:"type:text" json:"remark"`             // 备注信息
+	CreatedAt util.HTime `json:"createdAt"`                           // 创建时间
+	UpdatedAt util.HTime `json:"updatedAt"`                           // 更新时间
 }
 
 // TableName 表名

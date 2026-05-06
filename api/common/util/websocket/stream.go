@@ -1,18 +1,16 @@
-
-
 package websocket
 
 import (
 	"bytes"
 	"encoding/json"
 	"fmt"
-	"io"
 	"github.com/dnsjia/luban/common"
 	"github.com/dnsjia/luban/models"
 	"github.com/dnsjia/luban/models/cmdb"
 	"github.com/dnsjia/luban/pkg/asciicast2"
 	"github.com/dnsjia/luban/pkg/utils"
 	"github.com/gorilla/websocket"
+	"io"
 	"sync"
 	"time"
 )
@@ -128,7 +126,7 @@ func (r *WebSocketStream) Read(p []byte) (n int, err error) {
 
 	r.Lock()
 	defer r.Unlock()
-	
+
 	r.UpdatedAt = models.LocalTime{Time: time.Now()}
 	r.messageType = t
 	n = len(message)

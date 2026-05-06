@@ -1,11 +1,11 @@
 package service
 
 import (
-	"fmt"
 	"dodevops-api/api/dashboard/model1"
 	"dodevops-api/common"
-	"math"
+	"fmt"
 	"gorm.io/gorm"
+	"math"
 )
 
 type IDashboardService interface {
@@ -114,7 +114,7 @@ func (s *DashboardService) getK8sClusterStats() (*model.K8sClusterStats, error) 
 
 	// 统计健康集群数 (status=2表示运行中)
 	err = s.db.Table("k8s_cluster").
-		Where("status = ?", 2).  // ClusterStatusRunning = 2
+		Where("status = ?", 2). // ClusterStatusRunning = 2
 		Count(&healthy).Error
 	if err != nil {
 		return nil, err
@@ -196,7 +196,7 @@ func (s *DashboardService) getTaskStats() (*model.TaskStats, error) {
 
 	// 统计成功任务次数 (假设status=3表示成功)
 	err = s.db.Table("task_work").
-		Where("status = ?", 3).  // 假设3表示任务成功
+		Where("status = ?", 3). // 假设3表示任务成功
 		Count(&success).Error
 	if err != nil {
 		return nil, err
@@ -243,8 +243,6 @@ func (s *DashboardService) getServiceStats() (*model.ServiceStats, error) {
 		BusinessLines: int(businessLines),
 	}, nil
 }
-
-
 
 // getDatabaseStats 获取数据库统计
 func (s *DashboardService) getDatabaseStats() (*model.DatabaseStats, error) {
@@ -326,7 +324,6 @@ func (s *DashboardService) GetBusinessDistributionStats() (*model.BusinessDistri
 			BusinessLines: []model.BusinessLineStats{},
 		}, nil
 	}
-
 
 	// 获取业务分布统计数据
 	var businessStats []struct {

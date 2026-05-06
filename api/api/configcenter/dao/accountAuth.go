@@ -1,10 +1,10 @@
 package dao
 
 import (
-	"time"
 	"dodevops-api/api/configcenter/model"
 	"dodevops-api/common"
 	"dodevops-api/common/util"
+	"time"
 )
 
 type AccountAuthDao struct{}
@@ -28,15 +28,15 @@ func (d *AccountAuthDao) Update(account *model.AccountAuth) error {
 	}
 	// 设置当前时间为更新时间
 	account.UpdatedAt = util.HTime{Time: time.Now()}
-	
+
 	return common.GetDB().Model(account).Updates(map[string]interface{}{
-		"alias":     account.Alias,
-		"host":      account.Host,
-		"port":      account.Port,
-		"name":      account.Name,
-		"password":  account.Password,
-		"type":      account.Type,
-		"remark":    account.Remark,
+		"alias":      account.Alias,
+		"host":       account.Host,
+		"port":       account.Port,
+		"name":       account.Name,
+		"password":   account.Password,
+		"type":       account.Type,
+		"remark":     account.Remark,
 		"updated_at": account.UpdatedAt,
 	}).Error
 }
@@ -52,6 +52,7 @@ func (d *AccountAuthDao) GetByID(id uint) (*model.AccountAuth, error) {
 	err := common.GetDB().First(&account, id).Error
 	return &account, err
 }
+
 // List 获取账号列表
 func (d *AccountAuthDao) List() ([]model.AccountAuth, error) {
 	var accounts []model.AccountAuth
@@ -63,17 +64,18 @@ func (d *AccountAuthDao) List() ([]model.AccountAuth, error) {
 func (d *AccountAuthDao) ListWithPage(page, pageSize int) ([]model.AccountAuth, int64, error) {
 	var accounts []model.AccountAuth
 	var total int64
-	
+
 	offset := (page - 1) * pageSize
-	
+
 	db := common.GetDB()
 	if err := db.Model(&model.AccountAuth{}).Count(&total).Error; err != nil {
 		return nil, 0, err
 	}
-	
+
 	err := db.Offset(offset).Limit(pageSize).Find(&accounts).Error
 	return accounts, total, err
 }
+
 // GetByType 根据类型查询账号
 func (d *AccountAuthDao) GetByType(accountType string) ([]model.AccountAuth, error) {
 	var accounts []model.AccountAuth

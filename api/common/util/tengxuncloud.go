@@ -21,17 +21,17 @@ func NewTencentCloudService(accessKey, accessSecret string) *TencentCloudService
 }
 
 type TencentInstanceInfo struct {
-	InstanceID  string   `json:"instance_id"`
-	PrivateIPs  []string `json:"private_ips"`
-	PublicIPs   []string `json:"public_ips"`
-	CPU         int      `json:"cpu"`
-	Memory      int      `json:"memory"`
-	SystemDisk  int      `json:"system_disk"`
-	DataDisks   []int    `json:"data_disks"`
-	OSName      string   `json:"os_name"`
-	CreateTime  string   `json:"create_time"`
-	ExpireTime  string   `json:"expire_time"`
-	Region      string   `json:"region"`
+	InstanceID string   `json:"instance_id"`
+	PrivateIPs []string `json:"private_ips"`
+	PublicIPs  []string `json:"public_ips"`
+	CPU        int      `json:"cpu"`
+	Memory     int      `json:"memory"`
+	SystemDisk int      `json:"system_disk"`
+	DataDisks  []int    `json:"data_disks"`
+	OSName     string   `json:"os_name"`
+	CreateTime string   `json:"create_time"`
+	ExpireTime string   `json:"expire_time"`
+	Region     string   `json:"region"`
 }
 
 func (s *TencentCloudService) GetInstances() ([]TencentInstanceInfo, error) {
@@ -52,7 +52,7 @@ func (s *TencentCloudService) GetInstances() ([]TencentInstanceInfo, error) {
 	}
 
 	var allInstances []TencentInstanceInfo
-	
+
 	for _, regionInfo := range regionResponse.Response.RegionSet {
 		if regionInfo.Region == nil {
 			continue
@@ -72,7 +72,7 @@ func (s *TencentCloudService) GetInstances() ([]TencentInstanceInfo, error) {
 		for _, instance := range response.Response.InstanceSet {
 			privateIPs := make([]string, 0)
 			publicIPs := make([]string, 0)
-			
+
 			if instance.PrivateIpAddresses != nil {
 				for _, ip := range instance.PrivateIpAddresses {
 					if ip != nil {
@@ -105,11 +105,11 @@ func (s *TencentCloudService) GetInstances() ([]TencentInstanceInfo, error) {
 			}
 
 			instanceInfo := TencentInstanceInfo{
-				PrivateIPs:   privateIPs,
-				PublicIPs:    publicIPs,
-				Region:       regionName,
-				SystemDisk:   systemDiskSize,
-				DataDisks:    dataDiskSizes,
+				PrivateIPs: privateIPs,
+				PublicIPs:  publicIPs,
+				Region:     regionName,
+				SystemDisk: systemDiskSize,
+				DataDisks:  dataDiskSizes,
 			}
 
 			// 安全处理可能为nil的字段

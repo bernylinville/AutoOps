@@ -25,18 +25,18 @@ func (Tool) TableName() string {
 // AddToolDto 新增导航工具参数
 type AddToolDto struct {
 	Title string `json:"title" validate:"required,min=1,max=100"` // 导航标题
-	Icon  string `json:"icon"`                                     // 导航图标
+	Icon  string `json:"icon"`                                    // 导航图标
 	Link  string `json:"link" validate:"required,url,max=500"`    // 链接地址
-	Sort  int    `json:"sort"`                                     // 排序
+	Sort  int    `json:"sort"`                                    // 排序
 }
 
 // UpdateToolDto 更新导航工具参数
 type UpdateToolDto struct {
 	ID    uint   `json:"id" validate:"required"`                  // ID
 	Title string `json:"title" validate:"required,min=1,max=100"` // 导航标题
-	Icon  string `json:"icon"`                                     // 导航图标
+	Icon  string `json:"icon"`                                    // 导航图标
 	Link  string `json:"link" validate:"required,url,max=500"`    // 链接地址
-	Sort  int    `json:"sort"`                                     // 排序
+	Sort  int    `json:"sort"`                                    // 排序
 }
 
 // ToolQueryDto 查询参数
@@ -72,12 +72,12 @@ func (ServiceDeploy) TableName() string {
 
 // CreateDeployDto 创建部署任务DTO
 type CreateDeployDto struct {
-	ServiceID   string                 `json:"serviceId" validate:"required"`   // 服务ID (如: mysql)
-	Version     string                 `json:"version" validate:"required"`     // 版本 (如: 5.7)
-	HostID      uint                   `json:"hostId" validate:"required"`      // 主机ID
-	InstallDir  string                 `json:"installDir" validate:"required"`  // 安装目录
-	EnvVars     map[string]interface{} `json:"envVars"`                         // 环境变量
-	AutoStart   bool                   `json:"autoStart"`                       // 是否自动启动
+	ServiceID  string                 `json:"serviceId" validate:"required"`  // 服务ID (如: mysql)
+	Version    string                 `json:"version" validate:"required"`    // 版本 (如: 5.7)
+	HostID     uint                   `json:"hostId" validate:"required"`     // 主机ID
+	InstallDir string                 `json:"installDir" validate:"required"` // 安装目录
+	EnvVars    map[string]interface{} `json:"envVars"`                        // 环境变量
+	AutoStart  bool                   `json:"autoStart"`                      // 是否自动启动
 }
 
 // DeployQueryDto 部署记录查询DTO
@@ -111,26 +111,26 @@ type ServiceDeployVo struct {
 
 // ServiceInfo 服务信息（来自services.json）
 type ServiceInfo struct {
-	ID          string              `json:"id"`
-	Name        string              `json:"name"`
-	Category    string              `json:"category"`
-	Description string              `json:"description"`
-	Icon        string              `json:"icon"`
-	Versions    []ServiceVersion    `json:"versions"`
-	DefaultPort int                 `json:"default_port"`
-	EnvVars     []ServiceEnvVar     `json:"env_vars"`
-	MinMemory   string              `json:"min_memory,omitempty"`
-	MinCPU      string              `json:"min_cpu,omitempty"`
+	ID          string           `json:"id"`
+	Name        string           `json:"name"`
+	Category    string           `json:"category"`
+	Description string           `json:"description"`
+	Icon        string           `json:"icon"`
+	Versions    []ServiceVersion `json:"versions"`
+	DefaultPort int              `json:"default_port"`
+	EnvVars     []ServiceEnvVar  `json:"env_vars"`
+	MinMemory   string           `json:"min_memory,omitempty"`
+	MinCPU      string           `json:"min_cpu,omitempty"`
 }
 
 // ServiceVersion 服务版本信息
 type ServiceVersion struct {
-	ID          string            `json:"id"`
-	Name        string            `json:"name"`
-	File        string            `json:"file"`
-	Stable      bool              `json:"stable"`
-	Recommended bool              `json:"recommended"`
-	DeployType  string            `json:"deploy_type,omitempty"`  // 部署类型: container(容器) 或 binary(二进制)
+	ID           string            `json:"id"`
+	Name         string            `json:"name"`
+	File         string            `json:"file"`
+	Stable       bool              `json:"stable"`
+	Recommended  bool              `json:"recommended"`
+	DeployType   string            `json:"deploy_type,omitempty"`   // 部署类型: container(容器) 或 binary(二进制)
 	ExtractPaths map[string]string `json:"extract_paths,omitempty"` // 需要从镜像提取的路径映射
 }
 

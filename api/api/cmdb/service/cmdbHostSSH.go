@@ -2,13 +2,13 @@ package service
 
 import (
 	"bytes"
-	"errors"
-	"fmt"
 	"dodevops-api/api/cmdb/dao"
 	configModel "dodevops-api/api/configcenter/model"
 	"dodevops-api/common"
 	"dodevops-api/common/util"
 	"dodevops-api/common/util/websocket"
+	"errors"
+	"fmt"
 	"io"
 	"log"
 	"os"
@@ -98,7 +98,7 @@ func (s *CmdbHostSSHServiceImpl) ConnectTerminal(c *gin.Context, hostID uint) (*
 
 type CommandResponse struct {
 	Command string `json:"command"`
-	HostID  string `json:"hostId"` 
+	HostID  string `json:"hostId"`
 	Output  string `json:"output"`
 }
 

@@ -68,7 +68,7 @@ type LogMessage struct {
 // @Description 建立WebSocket连接实时推送任务执行日志
 // @Tags 任务作业
 // @Param id path int true "任务ID"
-// @Param work_id path int true "子任务ID"  
+// @Param work_id path int true "子任务ID"
 // @Param token query string false "认证token"
 // @Router /api/v1/ws/task/ansible/{id}/log/{work_id} [get]
 // @Security ApiKeyAuth
@@ -344,7 +344,7 @@ func (c *WebSocketController) getWorkInfo(taskID, workID uint) (*WorkInfo, error
 	if err != nil {
 		return nil, err
 	}
-	
+
 	return &WorkInfo{
 		ID:      work.ID,
 		TaskID:  work.TaskID,

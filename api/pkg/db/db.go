@@ -2,15 +2,15 @@
 package db
 
 import (
-	"fmt"
 	"dodevops-api/common/config"
+	"fmt"
+	"gorm.io/driver/postgres"
+	"gorm.io/gorm"
+	"gorm.io/gorm/logger"
 	"io"
 	"log"
 	"os"
 	"time"
-	"gorm.io/driver/postgres"
-	"gorm.io/gorm"
-	"gorm.io/gorm/logger"
 )
 
 var Db *gorm.DB
@@ -33,10 +33,10 @@ func NewGormLogger() logger.Interface {
 	return logger.New(
 		log.New(mw, "\r\n", log.LstdFlags), // io writer
 		logger.Config{
-			SlowThreshold:             time.Second,   // 慢 SQL 阈值
-			LogLevel:                  logger.Info,   // 日志级别
-			IgnoreRecordNotFoundError: false,         // 忽略ErrRecordNotFound（记录未找到）错误
-			Colorful:                  true,          // 彩色打印
+			SlowThreshold:             time.Second, // 慢 SQL 阈值
+			LogLevel:                  logger.Info, // 日志级别
+			IgnoreRecordNotFoundError: false,       // 忽略ErrRecordNotFound（记录未找到）错误
+			Colorful:                  true,        // 彩色打印
 		},
 	)
 }
@@ -78,4 +78,3 @@ func SetupDBLink() error {
 	sqlDB.SetMaxOpenConns(dbConfig.MaxOpen)
 	return nil
 }
-

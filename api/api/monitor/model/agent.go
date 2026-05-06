@@ -112,7 +112,7 @@ type AgentVO struct {
 	ID                  uint       `json:"id"`
 	HostID              uint       `json:"hostId"`
 	HostName            string     `json:"hostName"`
-	SSHIP               string     `json:"sshIp"`               // SSH连接IP
+	SSHIP               string     `json:"sshIp"` // SSH连接IP
 	Version             string     `json:"version"`
 	Status              int        `json:"status"`
 	StatusText          string     `json:"statusText"`

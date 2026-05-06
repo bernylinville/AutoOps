@@ -44,16 +44,16 @@ func (c *CITypeController) GetCITypeList(ctx *gin.Context) {
 	var vos []model.CITypeVo
 	for _, t := range list {
 		vos = append(vos, model.CITypeVo{
-			ID:             t.ID,
-			Name:           t.Name,
-			Code:           t.Code,
-			Icon:           t.Icon,
-			Category:       t.Category,
-			Description:    t.Description,
-			BuiltIn:        t.BuiltIn,
-			Enabled:        t.Enabled,
-			SortOrder:      t.SortOrder,
-			InstanceCount:  c.dao.GetInstanceCountByTypeID(t.ID),
+			ID:            t.ID,
+			Name:          t.Name,
+			Code:          t.Code,
+			Icon:          t.Icon,
+			Category:      t.Category,
+			Description:   t.Description,
+			BuiltIn:       t.BuiltIn,
+			Enabled:       t.Enabled,
+			SortOrder:     t.SortOrder,
+			InstanceCount: c.dao.GetInstanceCountByTypeID(t.ID),
 		})
 	}
 	result.Success(ctx, vos)
@@ -255,11 +255,11 @@ func (c *CITypeController) UpdateCITypeAttribute(ctx *gin.Context) {
 	}
 
 	data := map[string]interface{}{
-		"name":       dto.Name,
-		"data_type":  dto.DataType,
+		"name":          dto.Name,
+		"data_type":     dto.DataType,
 		"default_value": dto.DefaultValue,
-		"placeholder": dto.Placeholder,
-		"sort_order": dto.SortOrder,
+		"placeholder":   dto.Placeholder,
+		"sort_order":    dto.SortOrder,
 	}
 	if dto.Required != nil {
 		data["required"] = *dto.Required

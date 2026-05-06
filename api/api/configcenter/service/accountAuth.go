@@ -1,9 +1,9 @@
 package service
 
 import (
-	"fmt"
 	"dodevops-api/api/configcenter/dao"
 	"dodevops-api/api/configcenter/model"
+	"fmt"
 )
 
 type AccountAuthService struct {

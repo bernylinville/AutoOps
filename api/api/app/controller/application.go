@@ -254,7 +254,6 @@ func (ac *ApplicationController) GetAppJenkinsEnvs(c *gin.Context) {
 	ac.appService.GetAppJenkinsEnvs(c, uint(appID))
 }
 
-
 // GetJenkinsServers 获取Jenkins服务器列表
 // @Summary 获取Jenkins服务器列表
 // @Description 获取所有类型为Jenkins(type=4)的服务器配置信息，用于Jenkins环境配置选择

@@ -8,15 +8,15 @@ import (
 	"strings"
 	"time"
 
-	"dodevops-api/api/configcenter/dao"
-	"dodevops-api/api/configcenter/model"
 	cmdbDao "dodevops-api/api/cmdb/dao"
 	cmdbModel "dodevops-api/api/cmdb/model"
+	"dodevops-api/api/configcenter/dao"
+	"dodevops-api/api/configcenter/model"
 	"dodevops-api/common/result"
 	"dodevops-api/common/util"
 	aliyuncloud "dodevops-api/common/util"
-	tengxuncloud "dodevops-api/common/util"
 	baiducloud "dodevops-api/common/util"
+	tengxuncloud "dodevops-api/common/util"
 
 	"github.com/gin-gonic/gin"
 )
@@ -82,12 +82,12 @@ func (s *KeyManageService) GetDecryptedKeyForCloudAPI(id uint) (keyID string, ke
 	if err != nil {
 		return "", "", 0, err
 	}
-	
+
 	decryptedKeyID, decryptedKeySecret, err := keyManage.DecryptKeys()
 	if err != nil {
 		return "", "", 0, err
 	}
-	
+
 	return decryptedKeyID, decryptedKeySecret, keyManage.KeyType, nil
 }
 
@@ -98,17 +98,17 @@ func (s *KeyManageService) GetDecryptedKeyByType(keyType int) (keyID string, key
 	if err != nil {
 		return "", "", err
 	}
-	
+
 	if len(keyManages) == 0 {
 		return "", "", fmt.Errorf("未找到类型为 %d 的密钥配置", keyType)
 	}
-	
+
 	// 使用第一个找到的密钥
 	decryptedKeyID, decryptedKeySecret, err := keyManages[0].DecryptKeys()
 	if err != nil {
 		return "", "", err
 	}
-	
+
 	return decryptedKeyID, decryptedKeySecret, nil
 }
 
@@ -127,7 +127,7 @@ func (s *KeyManageService) SyncAliyunHosts(c *gin.Context, keyID uint, groupID u
 	// 异步处理同步
 	go func() {
 		hostDao := cmdbDao.NewCmdbHostDao()
-		
+
 		hosts, err := s.syncAliyunHosts(keyID, groupID, region)
 		if err != nil {
 			fmt.Printf("[ERROR] 阿里云主机同步失败: %v\n", err)
@@ -192,14 +192,14 @@ func (s *KeyManageService) syncAliyunHosts(keyID uint, groupID uint, region stri
 	if err != nil {
 		return nil, fmt.Errorf("获取密钥失败: %v", err)
 	}
-	
+
 	// 检查密钥类型是否为阿里云
 	if keyType != 1 {
 		return nil, fmt.Errorf("密钥类型不正确，期望阿里云(1)，实际为: %d", keyType)
 	}
 
 	aliyunService := aliyuncloud.NewAliyunCloudService(accessKey, secretKey, region)
-	
+
 	instances, err := aliyunService.GetInstances()
 	if err != nil {
 		return nil, fmt.Errorf("获取阿里云实例失败: %v", err)
@@ -288,7 +288,7 @@ func (s *KeyManageService) SyncTencentHosts(c *gin.Context, keyID uint, groupID 
 	// 异步处理同步
 	go func() {
 		hostDao := cmdbDao.NewCmdbHostDao()
-		
+
 		hosts, err := s.syncTencentHosts(keyID, groupID)
 		if err != nil {
 			fmt.Printf("[ERROR] 腾讯云主机同步失败: %v\n", err)
@@ -353,14 +353,14 @@ func (s *KeyManageService) syncTencentHosts(keyID uint, groupID uint) ([]cmdbMod
 	if err != nil {
 		return nil, fmt.Errorf("获取密钥失败: %v", err)
 	}
-	
+
 	// 检查密钥类型是否为腾讯云
 	if keyType != 2 {
 		return nil, fmt.Errorf("密钥类型不正确，期望腾讯云(2)，实际为: %d", keyType)
 	}
 
 	tencentService := tengxuncloud.NewTencentCloudService(accessKey, secretKey)
-	
+
 	instances, err := tencentService.GetInstances()
 	if err != nil {
 		return nil, fmt.Errorf("获取腾讯云实例失败: %v", err)

@@ -6,6 +6,9 @@ package websocket
 
 import (
 	"fmt"
+	"github.com/dnsjia/luban/common"
+	"github.com/dnsjia/luban/pkg/utils"
+	"golang.org/x/crypto/ssh"
 	"io"
 	"io/ioutil"
 	"net"
@@ -13,9 +16,6 @@ import (
 	"path/filepath"
 	"time"
 	"unicode/utf8"
-	"github.com/dnsjia/luban/common"
-	"github.com/dnsjia/luban/pkg/utils"
-	"golang.org/x/crypto/ssh"
 )
 
 type utf8Writer struct {
@@ -101,7 +101,7 @@ func (t *Terminal) GetSession() *ssh.Session {
 }
 func getTerm() (term string) {
 	if term = os.Getenv("TERM"); term == "" {
-		term = "xterm-256color"  // 使用标准终端类型
+		term = "xterm-256color" // 使用标准终端类型
 	}
 	return
 }
@@ -109,16 +109,16 @@ func (t *Terminal) Connect(stdin io.Reader, stdout io.Writer, stderr io.Writer) 
 	var err error
 	modes := ssh.TerminalModes{
 		ssh.ECHO:          0,     // 禁用回显
-		ssh.TTY_OP_ISPEED: 14400,  // input speed = 14.4kbaud
-		ssh.TTY_OP_OSPEED: 14400,  // output speed = 14.4kbaud
-		ssh.ONLCR:         1,      // 启用换行转换
-		ssh.OCRNL:         0,      // 禁止将回车转换为换行
-		ssh.INLCR:         0,      // 禁止将换行转换为回车
-		ssh.IGNCR:         0,      // 不忽略回车
-		ssh.ICRNL:         1,      // 启用回车转换
-		ssh.OPOST:         1,      // 启用输出处理
-		ssh.ONLRET:        0,      // 允许输出时执行回车
-		ssh.ONOCR:         0,      // 允许在列0时输出回车
+		ssh.TTY_OP_ISPEED: 14400, // input speed = 14.4kbaud
+		ssh.TTY_OP_OSPEED: 14400, // output speed = 14.4kbaud
+		ssh.ONLCR:         1,     // 启用换行转换
+		ssh.OCRNL:         0,     // 禁止将回车转换为换行
+		ssh.INLCR:         0,     // 禁止将换行转换为回车
+		ssh.IGNCR:         0,     // 不忽略回车
+		ssh.ICRNL:         1,     // 启用回车转换
+		ssh.OPOST:         1,     // 启用输出处理
+		ssh.ONLRET:        0,     // 允许输出时执行回车
+		ssh.ONOCR:         0,     // 允许在列0时输出回车
 	}
 
 	// 1. 获取stdin管道
@@ -158,18 +158,18 @@ func (t *Terminal) Connect(stdin io.Reader, stdout io.Writer, stderr io.Writer) 
 		_ = t.Close()
 	}()
 
-		// 6. 添加连接健康检查
-		go func() {
-			ticker := time.NewTicker(30 * time.Second)
-			defer ticker.Stop()
-			for range ticker.C {
-				if _, err := t.session.SendRequest("keepalive@golang.org", true, nil); err != nil {
-					common.LOG.Error(fmt.Sprintf("SSH keepalive failed: %v", err))
-					_ = t.Close()
-					return
-				}
+	// 6. 添加连接健康检查
+	go func() {
+		ticker := time.NewTicker(30 * time.Second)
+		defer ticker.Stop()
+		for range ticker.C {
+			if _, err := t.session.SendRequest("keepalive@golang.org", true, nil); err != nil {
+				common.LOG.Error(fmt.Sprintf("SSH keepalive failed: %v", err))
+				_ = t.Close()
+				return
 			}
-		}()
+		}
+	}()
 
 	return nil
 }
@@ -228,10 +228,10 @@ func NewTerminal(config Config) (*Terminal, error) {
 
 	// 设置默认窗口大小
 	if term.config.Width <= 0 {
-		term.config.Width = 120  // 增加默认宽度
+		term.config.Width = 120 // 增加默认宽度
 	}
 	if term.config.Height <= 0 {
-		term.config.Height = 40  // 增加默认高度
+		term.config.Height = 40 // 增加默认高度
 	}
 
 	return term, nil

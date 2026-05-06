@@ -13,17 +13,17 @@ import (
 
 // CIType 定义一种 CI 类别（如：服务器、数据库、中间件等）
 type CIType struct {
-	ID          uint            `gorm:"column:id;primaryKey;NOT NULL" json:"id"`
-	Name        string          `gorm:"column:name;type:varchar(100);NOT NULL;comment:'类型名称'" json:"name"`
-	Code        string          `gorm:"column:code;type:varchar(50);uniqueIndex;NOT NULL;comment:'类型代码(英文)'" json:"code"`
-	Icon        string          `gorm:"column:icon;type:varchar(100);comment:'图标名称'" json:"icon"`
-	Category    string          `gorm:"column:category;type:varchar(50);NOT NULL;comment:'分类:server/database/network/middleware/storage/cloud/custom'" json:"category"`
-	Description string          `gorm:"column:description;type:varchar(500);comment:'类型描述'" json:"description"`
-	BuiltIn     bool            `gorm:"column:built_in;default:false;comment:'是否内置类型'" json:"builtIn"`
-	Enabled     bool            `gorm:"column:enabled;default:true;comment:'是否启用'" json:"enabled"`
-	SortOrder   int             `gorm:"column:sort_order;default:0;comment:'排序'" json:"sortOrder"`
-	CreateTime  util.HTime      `gorm:"column:create_time;NOT NULL;comment:'创建时间'" json:"createTime"`
-	UpdateTime  util.HTime      `gorm:"column:update_time;comment:'更新时间'" json:"updateTime"`
+	ID          uint              `gorm:"column:id;primaryKey;NOT NULL" json:"id"`
+	Name        string            `gorm:"column:name;type:varchar(100);NOT NULL;comment:'类型名称'" json:"name"`
+	Code        string            `gorm:"column:code;type:varchar(50);uniqueIndex;NOT NULL;comment:'类型代码(英文)'" json:"code"`
+	Icon        string            `gorm:"column:icon;type:varchar(100);comment:'图标名称'" json:"icon"`
+	Category    string            `gorm:"column:category;type:varchar(50);NOT NULL;comment:'分类:server/database/network/middleware/storage/cloud/custom'" json:"category"`
+	Description string            `gorm:"column:description;type:varchar(500);comment:'类型描述'" json:"description"`
+	BuiltIn     bool              `gorm:"column:built_in;default:false;comment:'是否内置类型'" json:"builtIn"`
+	Enabled     bool              `gorm:"column:enabled;default:true;comment:'是否启用'" json:"enabled"`
+	SortOrder   int               `gorm:"column:sort_order;default:0;comment:'排序'" json:"sortOrder"`
+	CreateTime  util.HTime        `gorm:"column:create_time;NOT NULL;comment:'创建时间'" json:"createTime"`
+	UpdateTime  util.HTime        `gorm:"column:update_time;comment:'更新时间'" json:"updateTime"`
 	Attributes  []CITypeAttribute `gorm:"foreignKey:CITypeID" json:"attributes,omitempty"`
 }
 

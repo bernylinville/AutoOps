@@ -107,56 +107,55 @@ func (o *OtherResources) Scan(value interface{}) error {
 
 // Application 应用管理主表
 type Application struct {
-	ID          uint           `gorm:"primaryKey;autoIncrement" json:"id"`
-	Name        string         `gorm:"type:varchar(255);not null" json:"name"`                    // 应用名称
-	Code        string         `gorm:"type:varchar(255);not null;uniqueIndex" json:"code"`       // 应用编码
+	ID   uint   `gorm:"primaryKey;autoIncrement" json:"id"`
+	Name string `gorm:"type:varchar(255);not null" json:"name"`             // 应用名称
+	Code string `gorm:"type:varchar(255);not null;uniqueIndex" json:"code"` // 应用编码
 
 	// 基本信息
-	BusinessGroupID uint   `gorm:"not null" json:"business_group_id"`          // 业务组ID(关联cmdb_group)
-	BusinessDeptID  uint   `gorm:"not null" json:"business_dept_id"`           // 业务部门ID(关联sys_dept)
-	ProjectID       *uint  `gorm:"default:null" json:"project_id"`             // 关联项目ID(关联cmdb_project，可选)
-	Description     string `gorm:"type:text" json:"description"`               // 应用介绍
-	RepoURL         string `gorm:"type:varchar(500)" json:"repo_url"`          // 仓库地址
+	BusinessGroupID uint   `gorm:"not null" json:"business_group_id"` // 业务组ID(关联cmdb_group)
+	BusinessDeptID  uint   `gorm:"not null" json:"business_dept_id"`  // 业务部门ID(关联sys_dept)
+	ProjectID       *uint  `gorm:"default:null" json:"project_id"`    // 关联项目ID(关联cmdb_project，可选)
+	Description     string `gorm:"type:text" json:"description"`      // 应用介绍
+	RepoURL         string `gorm:"type:varchar(500)" json:"repo_url"` // 仓库地址
 
 	// 负责人信息 (多个用户ID，关联sys_admin表)
-	DevOwners   UserIDs `gorm:"type:json" json:"dev_owners"`   // 研发负责人
-	TestOwners  UserIDs `gorm:"type:json" json:"test_owners"`  // 测试负责人
-	OpsOwners   UserIDs `gorm:"type:json" json:"ops_owners"`   // 运维负责人
+	DevOwners  UserIDs `gorm:"type:json" json:"dev_owners"`  // 研发负责人
+	TestOwners UserIDs `gorm:"type:json" json:"test_owners"` // 测试负责人
+	OpsOwners  UserIDs `gorm:"type:json" json:"ops_owners"`  // 运维负责人
 
 	// 技术信息
-	ProgrammingLang string `gorm:"type:varchar(100)" json:"programming_lang"`  // 编程语言
-	StartCommand    string `gorm:"type:text" json:"start_command"`             // 启动命令
-	StopCommand     string `gorm:"type:text" json:"stop_command"`              // 停止命令
-	HealthAPI       string `gorm:"type:varchar(500)" json:"health_api"`        // 健康检查接口
+	ProgrammingLang string `gorm:"type:varchar(100)" json:"programming_lang"` // 编程语言
+	StartCommand    string `gorm:"type:text" json:"start_command"`            // 启动命令
+	StopCommand     string `gorm:"type:text" json:"stop_command"`             // 停止命令
+	HealthAPI       string `gorm:"type:varchar(500)" json:"health_api"`       // 健康检查接口
 
 	// 关联资源 (存储资源ID)
-	Domains     DomainsJSON    `gorm:"type:json" json:"domains"`     // 关联域名
-	Hosts       ResourceIDs    `gorm:"type:json" json:"hosts"`       // 关联主机(cmdb_host表ID)
-	Databases   ResourceIDs    `gorm:"type:json" json:"databases"`   // 关联数据库(cmdb_sql表ID)
-	OtherRes    OtherResources `gorm:"type:json" json:"other_res"`   // 关联其他资源
+	Domains   DomainsJSON    `gorm:"type:json" json:"domains"`   // 关联域名
+	Hosts     ResourceIDs    `gorm:"type:json" json:"hosts"`     // 关联主机(cmdb_host表ID)
+	Databases ResourceIDs    `gorm:"type:json" json:"databases"` // 关联数据库(cmdb_sql表ID)
+	OtherRes  OtherResources `gorm:"type:json" json:"other_res"` // 关联其他资源
 
-	Status      int            `gorm:"type:smallint;default:1" json:"status"`     // 状态
-	CreatedAt   time.Time      `json:"created_at"`
-	UpdatedAt   time.Time      `json:"updated_at"`
+	Status    int       `gorm:"type:smallint;default:1" json:"status"` // 状态
+	CreatedAt time.Time `json:"created_at"`
+	UpdatedAt time.Time `json:"updated_at"`
 
 	// 关联的Jenkins环境配置（级联删除）
 	JenkinsEnvs []JenkinsEnv `gorm:"foreignKey:AppID;constraint:OnDelete:CASCADE" json:"jenkins_envs,omitempty"`
 }
 
-
 // JenkinsEnv Jenkins环境配置表
 type JenkinsEnv struct {
-	ID               uint               `gorm:"primaryKey;autoIncrement" json:"id"`
-	AppID            uint               `gorm:"not null;index" json:"app_id"`                     // 应用ID
-	EnvName          string             `gorm:"type:varchar(50);not null" json:"env_name"`        // 环境名称
-	JenkinsServerID  *uint              `gorm:"default:null" json:"jenkins_server_id"`            // Jenkins服务器ID(关联account_auth)
-	JobName          string             `gorm:"type:varchar(255);default:''" json:"job_name"`     // Jenkins任务名称
+	ID              uint   `gorm:"primaryKey;autoIncrement" json:"id"`
+	AppID           uint   `gorm:"not null;index" json:"app_id"`                 // 应用ID
+	EnvName         string `gorm:"type:varchar(50);not null" json:"env_name"`    // 环境名称
+	JenkinsServerID *uint  `gorm:"default:null" json:"jenkins_server_id"`        // Jenkins服务器ID(关联account_auth)
+	JobName         string `gorm:"type:varchar(255);default:''" json:"job_name"` // Jenkins任务名称
 
-	CreatedAt        time.Time          `json:"created_at"`
-	UpdatedAt        time.Time          `json:"updated_at"`
+	CreatedAt time.Time `json:"created_at"`
+	UpdatedAt time.Time `json:"updated_at"`
 
 	// 关联
-	Application   Application `gorm:"foreignKey:AppID" json:"application,omitempty"`
+	Application Application `gorm:"foreignKey:AppID" json:"application,omitempty"`
 }
 
 // TableName 设置表名
@@ -173,10 +172,10 @@ func (JenkinsEnv) TableName() string {
 
 // CreateApplicationRequest 创建应用请求
 type CreateApplicationRequest struct {
-	Name        string `json:"name" binding:"required"`        // 应用名称
-	Code        string `json:"code"`                           // 应用编码(可选，不提供则根据名称自动生成)
-	Description string `json:"description"`                    // 应用介绍
-	RepoURL     string `json:"repo_url"`                       // 仓库地址
+	Name        string `json:"name" binding:"required"` // 应用名称
+	Code        string `json:"code"`                    // 应用编码(可选，不提供则根据名称自动生成)
+	Description string `json:"description"`             // 应用介绍
+	RepoURL     string `json:"repo_url"`                // 仓库地址
 
 	BusinessGroupID uint  `json:"business_group_id" binding:"required"` // 业务组ID
 	BusinessDeptID  uint  `json:"business_dept_id" binding:"required"`  // 业务部门ID
@@ -205,27 +204,27 @@ type CreateApplicationRequest struct {
 
 // DeploymentRequest 部署请求
 type DeploymentRequest struct {
-	AppID       uint                   `json:"app_id" binding:"required"`       // 应用ID
-	EnvName     string                 `json:"env_name" binding:"required"`     // 环境名称
-	Branch      string                 `json:"branch"`                          // 分支名称(可选，默认master)
-	Version     string                 `json:"version"`                         // 版本号(可选)
+	AppID   uint   `json:"app_id" binding:"required"`   // 应用ID
+	EnvName string `json:"env_name" binding:"required"` // 环境名称
+	Branch  string `json:"branch"`                      // 分支名称(可选，默认master)
+	Version string `json:"version"`                     // 版本号(可选)
 }
 
 // DeploymentResponse 部署响应
 type DeploymentResponse struct {
-	AppID         uint   `json:"app_id"`         // 应用ID
-	EnvName       string `json:"env_name"`       // 环境名称
+	AppID         uint   `json:"app_id"`          // 应用ID
+	EnvName       string `json:"env_name"`        // 环境名称
 	JenkinsJobURL string `json:"jenkins_job_url"` // Jenkins任务URL
-	BuildNumber   int    `json:"build_number"`   // 构建编号
-	Status        string `json:"status"`         // 部署状态
-	Message       string `json:"message"`        // 状态消息
+	BuildNumber   int    `json:"build_number"`    // 构建编号
+	Status        string `json:"status"`          // 部署状态
+	Message       string `json:"message"`         // 状态消息
 }
 
 // GetDeploymentStatusRequest 获取部署状态请求
 type GetDeploymentStatusRequest struct {
-	AppID       uint   `form:"app_id" binding:"required"`       // 应用ID
-	EnvName     string `form:"env_name" binding:"required"`     // 环境名称
-	BuildNumber *int   `form:"build_number"`                    // 构建编号(可选)
+	AppID       uint   `form:"app_id" binding:"required"`   // 应用ID
+	EnvName     string `form:"env_name" binding:"required"` // 环境名称
+	BuildNumber *int   `form:"build_number"`                // 构建编号(可选)
 }
 
 // DeploymentHistoryRequest 部署历史请求
@@ -244,20 +243,20 @@ type DeploymentHistoryResponse struct {
 
 // DeploymentHistory 部署历史记录
 type DeploymentHistory struct {
-	ID            uint                   `json:"id"`             // ID
-	AppID         uint                   `json:"app_id"`         // 应用ID
-	AppName       string                 `json:"app_name"`       // 应用名称
-	EnvName       string                 `json:"env_name"`       // 环境名称
-	Branch        string                 `json:"branch"`         // 分支
-	Version       string                 `json:"version"`        // 版本
-	BuildNumber   int                    `json:"build_number"`   // 构建编号
-	Status        string                 `json:"status"`         // 状态：building/success/failed
-	StartTime     time.Time              `json:"start_time"`     // 开始时间
-	EndTime       *time.Time             `json:"end_time"`       // 结束时间
-	Duration      int                    `json:"duration"`       // 耗时(秒)
-	Operator      string                 `json:"operator"`       // 操作人
-	JenkinsJobURL string                 `json:"jenkins_job_url"` // Jenkins任务URL
-	LogURL        string                 `json:"log_url"`        // 日志URL
+	ID            uint       `json:"id"`              // ID
+	AppID         uint       `json:"app_id"`          // 应用ID
+	AppName       string     `json:"app_name"`        // 应用名称
+	EnvName       string     `json:"env_name"`        // 环境名称
+	Branch        string     `json:"branch"`          // 分支
+	Version       string     `json:"version"`         // 版本
+	BuildNumber   int        `json:"build_number"`    // 构建编号
+	Status        string     `json:"status"`          // 状态：building/success/failed
+	StartTime     time.Time  `json:"start_time"`      // 开始时间
+	EndTime       *time.Time `json:"end_time"`        // 结束时间
+	Duration      int        `json:"duration"`        // 耗时(秒)
+	Operator      string     `json:"operator"`        // 操作人
+	JenkinsJobURL string     `json:"jenkins_job_url"` // Jenkins任务URL
+	LogURL        string     `json:"log_url"`         // 日志URL
 }
 
 // UpdateApplicationRequest 更新应用请求
@@ -313,18 +312,18 @@ type ApplicationListResponse struct {
 
 // CreateJenkinsEnvRequest 创建Jenkins环境配置请求
 type CreateJenkinsEnvRequest struct {
-	AppID           uint   `json:"app_id"`                              // 应用ID(由控制器自动设置)
-	EnvName         string `json:"env_name" binding:"required"`         // 环境名称
-	JenkinsServerID *uint  `json:"jenkins_server_id"`                   // Jenkins服务器ID(关联account_auth表)
-	JobName         string `json:"job_name"`                            // Jenkins任务名称
+	AppID           uint   `json:"app_id"`                      // 应用ID(由控制器自动设置)
+	EnvName         string `json:"env_name" binding:"required"` // 环境名称
+	JenkinsServerID *uint  `json:"jenkins_server_id"`           // Jenkins服务器ID(关联account_auth表)
+	JobName         string `json:"job_name"`                    // Jenkins任务名称
 }
 
 // UpdateJenkinsEnvRequest 更新Jenkins环境配置请求
 type UpdateJenkinsEnvRequest struct {
-	ID              *uint   `json:"id,omitempty"`     // 环境配置ID(可选，不提供则创建新的)
-	EnvName         *string `json:"env_name"`         // 环境名称
+	ID              *uint   `json:"id,omitempty"`      // 环境配置ID(可选，不提供则创建新的)
+	EnvName         *string `json:"env_name"`          // 环境名称
 	JenkinsServerID *uint   `json:"jenkins_server_id"` // Jenkins服务器ID(关联account_auth表)
-	JobName         *string `json:"job_name"`         // Jenkins任务名称
+	JobName         *string `json:"job_name"`          // Jenkins任务名称
 }
 
 // JenkinsEnvListRequest Jenkins环境配置列表请求
@@ -353,32 +352,32 @@ type ValidateJenkinsJobRequest struct {
 
 // ValidateJenkinsJobResponse 验证Jenkins任务存在性响应
 type ValidateJenkinsJobResponse struct {
-	Exists    bool   `json:"exists"`     // 任务是否存在
-	JobName   string `json:"job_name"`   // 任务名称
-	JobURL    string `json:"job_url"`    // 任务URL(如果存在)
-	Message   string `json:"message"`    // 验证消息
-	ServerID  uint   `json:"server_id"`  // 服务器ID
+	Exists   bool   `json:"exists"`    // 任务是否存在
+	JobName  string `json:"job_name"`  // 任务名称
+	JobURL   string `json:"job_url"`   // 任务URL(如果存在)
+	Message  string `json:"message"`   // 验证消息
+	ServerID uint   `json:"server_id"` // 服务器ID
 }
 
 // 快速发布相关模型
 
 // QuickDeployment 快速发布主表
 type QuickDeployment struct {
-	ID               uint                     `gorm:"primaryKey;autoIncrement" json:"id"`
-	Title            string                   `gorm:"type:varchar(255);not null" json:"title"`                 // 发布标题
-	BusinessGroupID  uint                     `gorm:"not null" json:"business_group_id"`                       // 业务组ID
-	BusinessDeptID   uint                     `gorm:"not null" json:"business_dept_id"`                        // 业务部门ID
-	Description      string                   `gorm:"type:text" json:"description"`                            // 发布描述
-	Status           int                      `gorm:"type:smallint;default:1" json:"status"`                    // 发布状态: 1=待发布 2=发布中 3=发布成功 4=发布失败 5=已取消
-	TaskCount        int                      `gorm:"not null;default:0" json:"task_count"`                    // 任务数量，记录用户提交的发布任务数量
-	ExecutionMode    int                      `gorm:"type:smallint;default:1" json:"execution_mode"`            // 执行模式: 1=并行 2=串行
-	CreatorID        uint                     `gorm:"not null" json:"creator_id"`                              // 创建人ID
-	CreatorName      string                   `gorm:"type:varchar(100)" json:"creator_name"`                   // 创建人姓名
-	StartTime        *time.Time               `json:"start_time"`                                               // 开始发布时间
-	EndTime          *time.Time               `json:"end_time"`                                                 // 结束发布时间
-	Duration         int                      `json:"duration"`                                                 // 发布耗时(秒)
-	CreatedAt        time.Time                `json:"created_at"`
-	UpdatedAt        time.Time                `json:"updated_at"`
+	ID              uint       `gorm:"primaryKey;autoIncrement" json:"id"`
+	Title           string     `gorm:"type:varchar(255);not null" json:"title"`       // 发布标题
+	BusinessGroupID uint       `gorm:"not null" json:"business_group_id"`             // 业务组ID
+	BusinessDeptID  uint       `gorm:"not null" json:"business_dept_id"`              // 业务部门ID
+	Description     string     `gorm:"type:text" json:"description"`                  // 发布描述
+	Status          int        `gorm:"type:smallint;default:1" json:"status"`         // 发布状态: 1=待发布 2=发布中 3=发布成功 4=发布失败 5=已取消
+	TaskCount       int        `gorm:"not null;default:0" json:"task_count"`          // 任务数量，记录用户提交的发布任务数量
+	ExecutionMode   int        `gorm:"type:smallint;default:1" json:"execution_mode"` // 执行模式: 1=并行 2=串行
+	CreatorID       uint       `gorm:"not null" json:"creator_id"`                    // 创建人ID
+	CreatorName     string     `gorm:"type:varchar(100)" json:"creator_name"`         // 创建人姓名
+	StartTime       *time.Time `json:"start_time"`                                    // 开始发布时间
+	EndTime         *time.Time `json:"end_time"`                                      // 结束发布时间
+	Duration        int        `json:"duration"`                                      // 发布耗时(秒)
+	CreatedAt       time.Time  `json:"created_at"`
+	UpdatedAt       time.Time  `json:"updated_at"`
 
 	// 关联的发布任务
 	Tasks []QuickDeploymentTask `gorm:"foreignKey:DeploymentID;constraint:OnDelete:CASCADE" json:"tasks,omitempty"`
@@ -387,21 +386,21 @@ type QuickDeployment struct {
 // QuickDeploymentTask 快速发布任务表
 type QuickDeploymentTask struct {
 	ID            uint       `gorm:"primaryKey;autoIncrement" json:"id"`
-	DeploymentID  uint       `gorm:"not null;index" json:"deployment_id"`                         // 发布ID
-	AppID         uint       `gorm:"not null" json:"app_id"`                                       // 应用ID
-	AppName       string     `gorm:"type:varchar(255)" json:"app_name"`                           // 应用名称
-	AppCode       string     `gorm:"type:varchar(255)" json:"app_code"`                           // 应用编码
-	Environment   string     `gorm:"type:varchar(50)" json:"environment"`                         // 环境名称
-	JenkinsEnvID  uint       `gorm:"not null" json:"jenkins_env_id"`                              // Jenkins环境配置ID
-	JenkinsJobURL string     `gorm:"type:varchar(500)" json:"jenkins_job_url"`                    // Jenkins任务URL
-	BuildNumber   int        `json:"build_number"`                                                 // 构建编号
-	Status        int        `gorm:"type:smallint;default:1" json:"status"`                        // 任务状态: 1=未部署 2=部署中 3=成功 4=异常
-	ExecuteOrder  int        `gorm:"not null" json:"execute_order"`                               // 执行顺序
-	StartTime     *time.Time `json:"start_time"`                                                   // 任务开始时间
-	EndTime       *time.Time `json:"end_time"`                                                     // 任务结束时间
-	Duration      int        `json:"duration"`                                                     // 任务耗时(秒)
-	ErrorMessage  string     `gorm:"type:text" json:"error_message"`                              // 错误信息
-	LogURL        string     `gorm:"type:varchar(500)" json:"log_url"`                            // 日志URL
+	DeploymentID  uint       `gorm:"not null;index" json:"deployment_id"`      // 发布ID
+	AppID         uint       `gorm:"not null" json:"app_id"`                   // 应用ID
+	AppName       string     `gorm:"type:varchar(255)" json:"app_name"`        // 应用名称
+	AppCode       string     `gorm:"type:varchar(255)" json:"app_code"`        // 应用编码
+	Environment   string     `gorm:"type:varchar(50)" json:"environment"`      // 环境名称
+	JenkinsEnvID  uint       `gorm:"not null" json:"jenkins_env_id"`           // Jenkins环境配置ID
+	JenkinsJobURL string     `gorm:"type:varchar(500)" json:"jenkins_job_url"` // Jenkins任务URL
+	BuildNumber   int        `json:"build_number"`                             // 构建编号
+	Status        int        `gorm:"type:smallint;default:1" json:"status"`    // 任务状态: 1=未部署 2=部署中 3=成功 4=异常
+	ExecuteOrder  int        `gorm:"not null" json:"execute_order"`            // 执行顺序
+	StartTime     *time.Time `json:"start_time"`                               // 任务开始时间
+	EndTime       *time.Time `json:"end_time"`                                 // 任务结束时间
+	Duration      int        `json:"duration"`                                 // 任务耗时(秒)
+	ErrorMessage  string     `gorm:"type:text" json:"error_message"`           // 错误信息
+	LogURL        string     `gorm:"type:varchar(500)" json:"log_url"`         // 日志URL
 	CreatedAt     time.Time  `json:"created_at"`
 	UpdatedAt     time.Time  `json:"updated_at"`
 
@@ -423,22 +422,22 @@ func (QuickDeploymentTask) TableName() string {
 
 // CreateQuickDeploymentRequest 创建快速发布请求
 type CreateQuickDeploymentRequest struct {
-	Title           string                         `json:"title" binding:"required"`            // 发布标题
-	BusinessGroupID uint                           `json:"business_group_id" binding:"required"` // 业务组ID
-	BusinessDeptID  uint                           `json:"business_dept_id" binding:"required"`  // 业务部门ID
-	Description     string                         `json:"description"`                          // 发布描述
-	Applications    []QuickDeploymentAppRequest    `json:"applications" binding:"required,dive"` // 应用列表
+	Title           string                      `json:"title" binding:"required"`             // 发布标题
+	BusinessGroupID uint                        `json:"business_group_id" binding:"required"` // 业务组ID
+	BusinessDeptID  uint                        `json:"business_dept_id" binding:"required"`  // 业务部门ID
+	Description     string                      `json:"description"`                          // 发布描述
+	Applications    []QuickDeploymentAppRequest `json:"applications" binding:"required,dive"` // 应用列表
 }
 
 // QuickDeploymentAppRequest 快速发布应用请求
 type QuickDeploymentAppRequest struct {
-	AppID       uint   `json:"app_id" binding:"required"`       // 应用ID（按数组顺序执行）
-	Environment string `json:"environment" binding:"required"`  // 应用发布环境
+	AppID       uint   `json:"app_id" binding:"required"`      // 应用ID（按数组顺序执行）
+	Environment string `json:"environment" binding:"required"` // 应用发布环境
 }
 
 // ExecuteQuickDeploymentRequest 执行快速发布请求
 type ExecuteQuickDeploymentRequest struct {
-	DeploymentID  uint `json:"deployment_id" binding:"required"`                       // 发布ID
+	DeploymentID  uint `json:"deployment_id" binding:"required"`                         // 发布ID
 	ExecutionMode *int `json:"execution_mode" binding:"omitempty,oneof=1 2" default:"1"` // 执行模式: 1=并行(默认) 2=串行
 }
 
@@ -475,14 +474,14 @@ type GetApplicationsForDeploymentRequest struct {
 
 // ApplicationForDeployment 可发布应用信息
 type ApplicationForDeployment struct {
-	ID          uint   `json:"id"`           // 应用ID
-	Name        string `json:"name"`         // 应用名称
-	Code        string `json:"code"`         // 应用编码
-	Environment string `json:"environment"`  // 环境名称
-	JenkinsEnvID uint  `json:"jenkins_env_id"` // Jenkins环境配置ID
-	JobName     string `json:"job_name"`     // Jenkins任务名称
-	CanDeploy   bool   `json:"can_deploy"`   // 是否可以部署
-	Reason      string `json:"reason"`       // 不能部署的原因
+	ID           uint   `json:"id"`             // 应用ID
+	Name         string `json:"name"`           // 应用名称
+	Code         string `json:"code"`           // 应用编码
+	Environment  string `json:"environment"`    // 环境名称
+	JenkinsEnvID uint   `json:"jenkins_env_id"` // Jenkins环境配置ID
+	JobName      string `json:"job_name"`       // Jenkins任务名称
+	CanDeploy    bool   `json:"can_deploy"`     // 是否可以部署
+	Reason       string `json:"reason"`         // 不能部署的原因
 }
 
 // 业务线服务树相关模型
@@ -496,72 +495,72 @@ type GetServiceTreeRequest struct {
 
 // GetAppEnvironmentRequest 获取应用环境配置请求
 type GetAppEnvironmentRequest struct {
-	AppID       uint   `form:"app_id" binding:"required"`       // 应用ID
-	Environment string `form:"environment" binding:"required"`  // 环境名称
+	AppID       uint   `form:"app_id" binding:"required"`      // 应用ID
+	Environment string `form:"environment" binding:"required"` // 环境名称
 }
 
 // AppEnvironmentResponse 应用环境配置响应
 type AppEnvironmentResponse struct {
-	AppID               uint   `json:"app_id"`               // 应用ID
-	AppName             string `json:"app_name"`             // 应用名称
-	AppCode             string `json:"app_code"`             // 应用编码
-	Environment         string `json:"environment"`          // 环境名称
-	IsConfigured        bool   `json:"is_configured"`        // 是否已配置
-	JenkinsServerID     *uint  `json:"jenkins_server_id"`    // Jenkins服务器ID
-	JenkinsServerName   string `json:"jenkins_server_name"`  // Jenkins服务器名称
-	JobName             string `json:"job_name"`             // Jenkins任务名称
-	JenkinsJobURL       string `json:"jenkins_job_url"`      // Jenkins任务URL
-	Status              int    `json:"status"`               // 应用状态
-	StatusText          string `json:"status_text"`          // 应用状态文本
-	BusinessGroupID     uint   `json:"business_group_id"`    // 业务组ID
-	BusinessDeptID      uint   `json:"business_dept_id"`     // 业务部门ID
-	ProgrammingLang     string `json:"programming_lang"`     // 编程语言
+	AppID             uint   `json:"app_id"`              // 应用ID
+	AppName           string `json:"app_name"`            // 应用名称
+	AppCode           string `json:"app_code"`            // 应用编码
+	Environment       string `json:"environment"`         // 环境名称
+	IsConfigured      bool   `json:"is_configured"`       // 是否已配置
+	JenkinsServerID   *uint  `json:"jenkins_server_id"`   // Jenkins服务器ID
+	JenkinsServerName string `json:"jenkins_server_name"` // Jenkins服务器名称
+	JobName           string `json:"job_name"`            // Jenkins任务名称
+	JenkinsJobURL     string `json:"jenkins_job_url"`     // Jenkins任务URL
+	Status            int    `json:"status"`              // 应用状态
+	StatusText        string `json:"status_text"`         // 应用状态文本
+	BusinessGroupID   uint   `json:"business_group_id"`   // 业务组ID
+	BusinessDeptID    uint   `json:"business_dept_id"`    // 业务部门ID
+	ProgrammingLang   string `json:"programming_lang"`    // 编程语言
 }
 
 // BusinessLineServiceTree 业务线服务树
 type BusinessLineServiceTree struct {
-	BusinessGroupID   uint                 `json:"business_group_id"`   // 业务组ID
-	BusinessGroupName string               `json:"business_group_name"` // 业务组名称
-	ServiceCount      int                  `json:"service_count"`       // 服务数量
-	Services          []ServiceTreeNode    `json:"services"`            // 服务列表
+	BusinessGroupID   uint              `json:"business_group_id"`   // 业务组ID
+	BusinessGroupName string            `json:"business_group_name"` // 业务组名称
+	ServiceCount      int               `json:"service_count"`       // 服务数量
+	Services          []ServiceTreeNode `json:"services"`            // 服务列表
 }
 
 // ServiceTreeNode 服务树节点
 type ServiceTreeNode struct {
-	ID                uint                    `json:"id"`                  // 应用ID
-	Name              string                  `json:"name"`                // 应用名称
-	Code              string                  `json:"code"`                // 应用编码
-	Status            int                     `json:"status"`              // 应用状态
-	StatusText        string                  `json:"status_text"`         // 状态文本
-	ProgrammingLang   string                  `json:"programming_lang"`    // 编程语言
-	BusinessDeptID    uint                    `json:"business_dept_id"`    // 业务部门ID
-	BusinessDeptName  string                  `json:"business_dept_name"`  // 业务部门名称
-	CreatedAt         string                  `json:"created_at"`          // 创建时间
-	JenkinsEnvs       []ServiceJenkinsEnv     `json:"jenkins_envs"`        // Jenkins环境配置
+	ID               uint                `json:"id"`                 // 应用ID
+	Name             string              `json:"name"`               // 应用名称
+	Code             string              `json:"code"`               // 应用编码
+	Status           int                 `json:"status"`             // 应用状态
+	StatusText       string              `json:"status_text"`        // 状态文本
+	ProgrammingLang  string              `json:"programming_lang"`   // 编程语言
+	BusinessDeptID   uint                `json:"business_dept_id"`   // 业务部门ID
+	BusinessDeptName string              `json:"business_dept_name"` // 业务部门名称
+	CreatedAt        string              `json:"created_at"`         // 创建时间
+	JenkinsEnvs      []ServiceJenkinsEnv `json:"jenkins_envs"`       // Jenkins环境配置
 }
 
 // ServiceJenkinsEnv 服务Jenkins环境配置
 type ServiceJenkinsEnv struct {
-	ID              uint   `json:"id"`               // 环境配置ID
-	EnvName         string `json:"env_name"`         // 环境名称
+	ID              uint   `json:"id"`                // 环境配置ID
+	EnvName         string `json:"env_name"`          // 环境名称
 	JenkinsServerID *uint  `json:"jenkins_server_id"` // Jenkins服务器ID
-	JobName         string `json:"job_name"`         // Jenkins任务名称
-	IsConfigured    bool   `json:"is_configured"`    // 是否已配置完整
+	JobName         string `json:"job_name"`          // Jenkins任务名称
+	IsConfigured    bool   `json:"is_configured"`     // 是否已配置完整
 }
 
 // TaskStatusResponse 任务状态响应
 type TaskStatusResponse struct {
-	TaskID       uint       `json:"task_id"`        // 任务ID
-	Status       int        `json:"status"`         // 任务状态: 1=未部署 2=部署中 3=成功 4=异常
-	StatusText   string     `json:"status_text"`    // 状态文本
-	AppName      string     `json:"app_name"`       // 应用名称
-	AppCode      string     `json:"app_code"`       // 应用编码
-	Environment  string     `json:"environment"`    // 环境名称
-	BuildNumber  int        `json:"build_number"`   // 构建编号
-	StartTime    *time.Time `json:"start_time"`     // 开始时间
-	EndTime      *time.Time `json:"end_time"`       // 结束时间
-	Duration     int        `json:"duration"`       // 耗时(秒)
-	ErrorMessage string     `json:"error_message"`  // 错误信息
-	LogURL       string     `json:"log_url"`        // 日志URL
-	Progress     int        `json:"progress"`       // 进度百分比(0-100)
+	TaskID       uint       `json:"task_id"`       // 任务ID
+	Status       int        `json:"status"`        // 任务状态: 1=未部署 2=部署中 3=成功 4=异常
+	StatusText   string     `json:"status_text"`   // 状态文本
+	AppName      string     `json:"app_name"`      // 应用名称
+	AppCode      string     `json:"app_code"`      // 应用编码
+	Environment  string     `json:"environment"`   // 环境名称
+	BuildNumber  int        `json:"build_number"`  // 构建编号
+	StartTime    *time.Time `json:"start_time"`    // 开始时间
+	EndTime      *time.Time `json:"end_time"`      // 结束时间
+	Duration     int        `json:"duration"`      // 耗时(秒)
+	ErrorMessage string     `json:"error_message"` // 错误信息
+	LogURL       string     `json:"log_url"`       // 日志URL
+	Progress     int        `json:"progress"`      // 进度百分比(0-100)
 }

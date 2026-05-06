@@ -52,18 +52,18 @@ func (w *RealTimeLogWriter) WriteWithTime(content string) error {
 
 // ITaskAnsibleService 定义Ansible任务服务接口
 type ITaskAnsibleService interface {
-	CreateTask(c *gin.Context, req *CreateTaskRequest)     // 创建任务
-	CreateK8sTask(c *gin.Context, req *CreateK8sTaskRequest) // 创建K8s任务
-	List(c *gin.Context, page, size int)                   // 获取任务列表
-	StartJob(c *gin.Context, taskID uint)                  // 启动任务
-	StopJob(c *gin.Context, taskID, workID uint)           // 停止任务
-	GetJobLog(c *gin.Context, taskID, workID uint)         // 实时获取任务日志(SSE)
-	GetJobStatus(c *gin.Context, taskID, workID uint)      // 获取任务状态
-	GetTaskDetail(c *gin.Context, taskID uint)             // 获取任务详情
+	CreateTask(c *gin.Context, req *CreateTaskRequest)               // 创建任务
+	CreateK8sTask(c *gin.Context, req *CreateK8sTaskRequest)         // 创建K8s任务
+	List(c *gin.Context, page, size int)                             // 获取任务列表
+	StartJob(c *gin.Context, taskID uint)                            // 启动任务
+	StopJob(c *gin.Context, taskID, workID uint)                     // 停止任务
+	GetJobLog(c *gin.Context, taskID, workID uint)                   // 实时获取任务日志(SSE)
+	GetJobStatus(c *gin.Context, taskID, workID uint)                // 获取任务状态
+	GetTaskDetail(c *gin.Context, taskID uint)                       // 获取任务详情
 	GetWorkByID(taskID, workID uint) (*model.TaskAnsibleWork, error) // 获取子任务详情
-	DeleteTask(c *gin.Context, taskID uint)                // 删除任务
-	GetTasksByName(c *gin.Context, name string)            // 根据名称模糊查询任务
-	GetTasksByType(c *gin.Context, taskType int)           // 根据类型查询任务
+	DeleteTask(c *gin.Context, taskID uint)                          // 删除任务
+	GetTasksByName(c *gin.Context, name string)                      // 根据名称模糊查询任务
+	GetTasksByType(c *gin.Context, taskType int)                     // 根据类型查询任务
 }
 
 // CreateTaskRequest 创建任务请求参数
@@ -79,18 +79,18 @@ type CreateTaskRequest struct {
 
 // CreateK8sTaskRequest 创建K8s任务请求参数
 type CreateK8sTaskRequest struct {
-	Name              string   `json:"name"`
-	Description       string   `json:"description"`
-	ClusterName       string   `json:"cluster_name"`
-	ClusterVersion    string   `json:"cluster_version"`
-	DeploymentMode    int      `json:"deployment_mode"`
-	MasterHostIDs     []uint   `json:"master_host_ids"`
-	WorkerHostIDs     []uint   `json:"worker_host_ids"`
-	EtcdHostIDs       []uint   `json:"etcd_host_ids"`
-	EnabledComponents []string `json:"enabled_components"`
-	PrivateRegistry   string         `json:"private_registry"`
-	RegistryUsername  string         `json:"registry_username"`
-	RegistryPassword  string         `json:"registry_password"`
+	Name              string          `json:"name"`
+	Description       string          `json:"description"`
+	ClusterName       string          `json:"cluster_name"`
+	ClusterVersion    string          `json:"cluster_version"`
+	DeploymentMode    int             `json:"deployment_mode"`
+	MasterHostIDs     []uint          `json:"master_host_ids"`
+	WorkerHostIDs     []uint          `json:"worker_host_ids"`
+	EtcdHostIDs       []uint          `json:"etcd_host_ids"`
+	EnabledComponents []string        `json:"enabled_components"`
+	PrivateRegistry   string          `json:"private_registry"`
+	RegistryUsername  string          `json:"registry_username"`
+	RegistryPassword  string          `json:"registry_password"`
 	RegistryConfig    *RegistryConfig `json:"registry_config"` // 新的嵌套配置格式
 }
 
@@ -151,7 +151,7 @@ type HostSSHInfo struct {
 	User     string
 	Password string
 	Key      string
-	AuthType int    // 认证类型：1-密码，2-私钥，3-公钥免认证
+	AuthType int // 认证类型：1-密码，2-私钥，3-公钥免认证
 }
 
 // HostSSHInfoCollection 主机信息集合
@@ -341,7 +341,7 @@ func (s *TaskAnsibleServiceImpl) GetJobLog(c *gin.Context, taskID, workID uint) 
 	c.Header("Cache-Control", "no-cache")
 	c.Header("Connection", "keep-alive")
 	c.Header("Access-Control-Allow-Origin", "*")
-	
+
 	// H5: SSE认证检查 — 必须提供有效token
 	token := c.Query("token")
 	if token == "" || token == "null" {
@@ -425,7 +425,7 @@ func (s *TaskAnsibleServiceImpl) GetJobLog(c *gin.Context, taskID, workID uint) 
 	// 读取完整的日志文件内容
 	lineCount := 0
 	batchSize := 10 // 每10行flush一次，平衡性能和实时性
-	
+
 	for {
 		line, err := reader.ReadString('\n')
 		if err == io.EOF {
@@ -436,7 +436,7 @@ func (s *TaskAnsibleServiceImpl) GetJobLog(c *gin.Context, taskID, workID uint) 
 			return
 		}
 		lineCount++
-		
+
 		// 发送日志内容 (确保非空行才发送)
 		trimmed := strings.TrimSpace(line)
 		if trimmed != "" {
@@ -445,7 +445,7 @@ func (s *TaskAnsibleServiceImpl) GetJobLog(c *gin.Context, taskID, workID uint) 
 			// 发送空行
 			fmt.Fprintf(c.Writer, "data: \n\n")
 		}
-		
+
 		// 批量flush，减少网络开销
 		if lineCount%batchSize == 0 {
 			if flusher, ok := c.Writer.(http.Flusher); ok {
@@ -457,10 +457,10 @@ func (s *TaskAnsibleServiceImpl) GetJobLog(c *gin.Context, taskID, workID uint) 
 				return
 			}
 		}
-		
+
 		lastPos, _ = file.Seek(0, io.SeekCurrent)
 	}
-	
+
 	// 最后flush剩余数据
 	if flusher, ok := c.Writer.(http.Flusher); ok {
 		flusher.Flush()
@@ -788,7 +788,6 @@ func (s *TaskAnsibleServiceImpl) StartJob(c *gin.Context, taskID uint) {
 				logWriter.WriteWithTime("执行成功\n")
 			}
 			logFile.Close()
-
 
 			// 计算执行耗时
 			workEndTime := time.Now()
@@ -1345,7 +1344,7 @@ func (s *TaskAnsibleServiceImpl) CreateK8sTask(c *gin.Context, req *CreateK8sTas
 	task := &model.TaskAnsible{
 		Name:        req.Name,
 		Description: req.Description,
-		Type:        3, // K8s任务类型
+		Type:        3,                                        // K8s任务类型
 		GitRepo:     "git@gitee.com:zhang_fan1024/zf-k8s.git", // 固定的K8s Git仓库
 		HostGroups:  s.buildK8sHostGroups(req),
 		AllHostIDs:  s.buildK8sAllHostIDs(req),

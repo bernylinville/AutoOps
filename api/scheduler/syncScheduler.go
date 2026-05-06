@@ -15,13 +15,13 @@ import (
 
 // SyncScheduler 定时同步调度器
 type SyncScheduler struct {
-	cron               *cron.Cron
+	cron                *cron.Cron
 	syncScheduleService *service.SyncScheduleService
-	keyManageService   *service.KeyManageService
-	scheduleJobs       map[uint]cron.EntryID // 记录配置ID到任务ID的映射
-	mutex              sync.RWMutex
-	ctx                context.Context
-	cancel             context.CancelFunc
+	keyManageService    *service.KeyManageService
+	scheduleJobs        map[uint]cron.EntryID // 记录配置ID到任务ID的映射
+	mutex               sync.RWMutex
+	ctx                 context.Context
+	cancel              context.CancelFunc
 }
 
 // NewSyncScheduler 创建新的定时同步调度器
@@ -31,10 +31,10 @@ func NewSyncScheduler() *SyncScheduler {
 	return &SyncScheduler{
 		cron:                cron.New(),
 		syncScheduleService: service.NewSyncScheduleService(),
-		keyManageService:   service.NewKeyManageService(),
-		scheduleJobs:       make(map[uint]cron.EntryID),
-		ctx:                ctx,
-		cancel:             cancel,
+		keyManageService:    service.NewKeyManageService(),
+		scheduleJobs:        make(map[uint]cron.EntryID),
+		ctx:                 ctx,
+		cancel:              cancel,
 	}
 }
 

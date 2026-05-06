@@ -75,6 +75,7 @@ func getLocation(ip string) string {
 		return "未知地址"
 	}
 }
+
 // GetClientIP 获取客户端IP地址
 func GetClientIP(r *http.Request) string {
 	forwarded := r.Header.Get("X-Forwarded-For")

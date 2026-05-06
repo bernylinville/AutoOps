@@ -1,7 +1,6 @@
 package service
 
 import (
-	"fmt"
 	cmdbDao "dodevops-api/api/cmdb/dao"
 	"dodevops-api/api/cmdb/model"
 	configDao "dodevops-api/api/configcenter/dao"
@@ -9,27 +8,28 @@ import (
 	"dodevops-api/common/constant"
 	"dodevops-api/common/result"
 	"dodevops-api/common/util"
+	"fmt"
 	"time"
 
 	"github.com/gin-gonic/gin"
 )
 
 type CmdbHostServiceInterface interface {
-	GetCmdbHostList(c *gin.Context)                                                                           // 获取主机列表
+	GetCmdbHostList(c *gin.Context)                                                                              // 获取主机列表
 	GetCmdbHostListWithPage(c *gin.Context, page, pageSize int, sourceType string, groupId uint, keyword string) // 获取主机列表(分页)
-	GetCmdbHostById(c *gin.Context, id uint)                                                                  // 根据ID获取主机
-	GetCmdbHostByName(c *gin.Context, name string)                                                            // 根据名称获取主机
-	CreateCmdbHost(c *gin.Context, dto *model.CreateCmdbHostDto)                                              // 创建主机
-	UpdateCmdbHost(c *gin.Context, id uint, dto *model.UpdateCmdbHostDto)                                     // 更新主机
-	DeleteCmdbHost(c *gin.Context, id uint)                                                                   // 删除主机
-	GetCmdbHostsByGroupId(c *gin.Context, groupId uint)                                                       // 根据分组ID获取主机列表
-	GetCmdbHostsByHostNameLike(c *gin.Context, name string)                                                   // 根据主机名称模糊查询
-	GetCmdbHostsByIP(c *gin.Context, ip string)                                                               // 根据IP查询(内网/公网/SSH)
-	GetCmdbHostsByStatus(c *gin.Context, status int)                                                          // 根据状态查询
-	ImportHostsFromExcel(c *gin.Context, dto *model.ImportHostsFromExcelDto, hosts []model.ExcelHostTemplate) // 从Excel导入主机
-	SyncHostInfo(c *gin.Context, id uint)                                                                     // 同步主机基本信息
-	UpdateHostLifecycle(c *gin.Context, dto *model.UpdateHostLifecycleDto)                // 手动变更生命周期状态
-	BatchUpdateHostLifecycle(c *gin.Context, dto *model.BatchUpdateHostLifecycleDto)    // 批量变更生命周期状态
+	GetCmdbHostById(c *gin.Context, id uint)                                                                     // 根据ID获取主机
+	GetCmdbHostByName(c *gin.Context, name string)                                                               // 根据名称获取主机
+	CreateCmdbHost(c *gin.Context, dto *model.CreateCmdbHostDto)                                                 // 创建主机
+	UpdateCmdbHost(c *gin.Context, id uint, dto *model.UpdateCmdbHostDto)                                        // 更新主机
+	DeleteCmdbHost(c *gin.Context, id uint)                                                                      // 删除主机
+	GetCmdbHostsByGroupId(c *gin.Context, groupId uint)                                                          // 根据分组ID获取主机列表
+	GetCmdbHostsByHostNameLike(c *gin.Context, name string)                                                      // 根据主机名称模糊查询
+	GetCmdbHostsByIP(c *gin.Context, ip string)                                                                  // 根据IP查询(内网/公网/SSH)
+	GetCmdbHostsByStatus(c *gin.Context, status int)                                                             // 根据状态查询
+	ImportHostsFromExcel(c *gin.Context, dto *model.ImportHostsFromExcelDto, hosts []model.ExcelHostTemplate)    // 从Excel导入主机
+	SyncHostInfo(c *gin.Context, id uint)                                                                        // 同步主机基本信息
+	UpdateHostLifecycle(c *gin.Context, dto *model.UpdateHostLifecycleDto)                                       // 手动变更生命周期状态
+	BatchUpdateHostLifecycle(c *gin.Context, dto *model.BatchUpdateHostLifecycleDto)                             // 批量变更生命周期状态
 }
 
 type CmdbHostServiceImpl struct {

@@ -9,8 +9,6 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-
-
 // @Summary 新增资产分组接口
 // @Produce json
 // @Tags CMDB资产管理

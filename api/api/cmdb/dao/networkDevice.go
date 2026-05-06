@@ -1,8 +1,8 @@
 package dao
 
 import (
-	systemmodel "dodevops-api/api/system/model"
 	"dodevops-api/api/cmdb/model"
+	systemmodel "dodevops-api/api/system/model"
 	"dodevops-api/common"
 	"dodevops-api/common/util"
 	"fmt"

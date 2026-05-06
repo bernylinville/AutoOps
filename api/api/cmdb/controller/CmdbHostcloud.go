@@ -75,4 +75,3 @@ func (c *CmdbHostCloudController) CreateBaiduHost(ctx *gin.Context) {
 	}
 	c.service.CreateBaiduHost(ctx, &dto)
 }
-

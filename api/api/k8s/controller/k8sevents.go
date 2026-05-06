@@ -54,10 +54,10 @@ func (ctrl *K8sEventsController) GetEvents(c *gin.Context) {
 	}
 
 	// 获取查询参数
-	kind := c.Query("kind")       // 资源类型过滤
-	name := c.Query("name")       // 资源名称过滤
-	limitStr := c.Query("limit")  // 限制返回数量
-	
+	kind := c.Query("kind")      // 资源类型过滤
+	name := c.Query("name")      // 资源名称过滤
+	limitStr := c.Query("limit") // 限制返回数量
+
 	limit := 100 // 默认返回100条
 	if limitStr != "" {
 		if parsedLimit, err := strconv.Atoi(limitStr); err == nil && parsedLimit > 0 {

@@ -10,39 +10,39 @@ const (
 
 // JenkinsJob Jenkins任务信息
 type JenkinsJob struct {
-	Name         string            `json:"name"`         // 任务名称
-	DisplayName  string            `json:"displayName"`  // 显示名称
-	Description  string            `json:"description"`  // 任务描述
-	URL          string            `json:"url"`          // 任务URL
-	Buildable    bool              `json:"buildable"`    // 是否可构建
-	Color        string            `json:"color"`        // 状态颜色(blue/red/yellow等)
-	Class        string            `json:"_class"`       // 任务类型
-	LastBuild    *JenkinsBuild     `json:"lastBuild"`    // 最后一次构建
-	LastStableBuild *JenkinsBuild  `json:"lastStableBuild"` // 最后一次稳定构建
+	Name                string        `json:"name"`                // 任务名称
+	DisplayName         string        `json:"displayName"`         // 显示名称
+	Description         string        `json:"description"`         // 任务描述
+	URL                 string        `json:"url"`                 // 任务URL
+	Buildable           bool          `json:"buildable"`           // 是否可构建
+	Color               string        `json:"color"`               // 状态颜色(blue/red/yellow等)
+	Class               string        `json:"_class"`              // 任务类型
+	LastBuild           *JenkinsBuild `json:"lastBuild"`           // 最后一次构建
+	LastStableBuild     *JenkinsBuild `json:"lastStableBuild"`     // 最后一次稳定构建
 	LastSuccessfulBuild *JenkinsBuild `json:"lastSuccessfulBuild"` // 最后一次成功构建
-	LastFailedBuild *JenkinsBuild  `json:"lastFailedBuild"` // 最后一次失败构建
-	Properties   []JobProperty     `json:"property"`     // 任务属性
-	Actions      []JobAction       `json:"actions"`      // 任务操作
+	LastFailedBuild     *JenkinsBuild `json:"lastFailedBuild"`     // 最后一次失败构建
+	Properties          []JobProperty `json:"property"`            // 任务属性
+	Actions             []JobAction   `json:"actions"`             // 任务操作
 }
 
 // JenkinsBuild Jenkins构建信息
 type JenkinsBuild struct {
-	Number      int       `json:"number"`      // 构建编号
-	URL         string    `json:"url"`         // 构建URL
-	DisplayName string    `json:"displayName"` // 显示名称
-	FullDisplayName string `json:"fullDisplayName"` // 完整显示名称
-	Description string    `json:"description"` // 构建描述
-	Result      string    `json:"result"`      // 构建结果 SUCCESS/FAILURE/UNSTABLE/ABORTED
-	Building    bool      `json:"building"`    // 是否正在构建
-	Duration    int64     `json:"duration"`    // 构建时长(毫秒)
-	EstimatedDuration int64 `json:"estimatedDuration"` // 预计时长(毫秒)
-	Timestamp   int64     `json:"timestamp"`   // 开始时间戳
-	KeepLog     bool      `json:"keepLog"`     // 是否保留日志
-	QueueId     int       `json:"queueId"`     // 队列ID
-	Executor    *BuildExecutor `json:"executor"` // 执行器信息
-	Actions     []BuildAction  `json:"actions"`  // 构建操作
-	ChangeSet   *ChangeSet     `json:"changeSet"` // 变更集
-	Culprits    []User         `json:"culprits"`  // 责任人
+	Number            int            `json:"number"`            // 构建编号
+	URL               string         `json:"url"`               // 构建URL
+	DisplayName       string         `json:"displayName"`       // 显示名称
+	FullDisplayName   string         `json:"fullDisplayName"`   // 完整显示名称
+	Description       string         `json:"description"`       // 构建描述
+	Result            string         `json:"result"`            // 构建结果 SUCCESS/FAILURE/UNSTABLE/ABORTED
+	Building          bool           `json:"building"`          // 是否正在构建
+	Duration          int64          `json:"duration"`          // 构建时长(毫秒)
+	EstimatedDuration int64          `json:"estimatedDuration"` // 预计时长(毫秒)
+	Timestamp         int64          `json:"timestamp"`         // 开始时间戳
+	KeepLog           bool           `json:"keepLog"`           // 是否保留日志
+	QueueId           int            `json:"queueId"`           // 队列ID
+	Executor          *BuildExecutor `json:"executor"`          // 执行器信息
+	Actions           []BuildAction  `json:"actions"`           // 构建操作
+	ChangeSet         *ChangeSet     `json:"changeSet"`         // 变更集
+	Culprits          []User         `json:"culprits"`          // 责任人
 }
 
 // BuildExecutor 构建执行器信息
@@ -91,26 +91,26 @@ type JobAction struct {
 
 // BuildStatus 构建状态枚举
 const (
-	BuildStatusSuccess   = "SUCCESS"   // 成功
-	BuildStatusFailure   = "FAILURE"   // 失败
-	BuildStatusUnstable  = "UNSTABLE"  // 不稳定
-	BuildStatusAborted   = "ABORTED"   // 已终止
+	BuildStatusSuccess    = "SUCCESS"     // 成功
+	BuildStatusFailure    = "FAILURE"     // 失败
+	BuildStatusUnstable   = "UNSTABLE"    // 不稳定
+	BuildStatusAborted    = "ABORTED"     // 已终止
 	BuildStatusInProgress = "IN_PROGRESS" // 进行中
 )
 
 // JobColor 任务状态颜色枚举
 const (
-	JobColorBlue       = "blue"        // 成功
-	JobColorRed        = "red"         // 失败
-	JobColorYellow     = "yellow"      // 不稳定
-	JobColorGrey       = "grey"        // 未构建
-	JobColorDisabled   = "disabled"    // 已禁用
-	JobColorAborted    = "aborted"     // 已终止
-	JobColorNotBuilt   = "notbuilt"    // 未构建
-	JobColorBlueAnime  = "blue_anime"  // 构建中(成功)
-	JobColorRedAnime   = "red_anime"   // 构建中(失败)
+	JobColorBlue        = "blue"         // 成功
+	JobColorRed         = "red"          // 失败
+	JobColorYellow      = "yellow"       // 不稳定
+	JobColorGrey        = "grey"         // 未构建
+	JobColorDisabled    = "disabled"     // 已禁用
+	JobColorAborted     = "aborted"      // 已终止
+	JobColorNotBuilt    = "notbuilt"     // 未构建
+	JobColorBlueAnime   = "blue_anime"   // 构建中(成功)
+	JobColorRedAnime    = "red_anime"    // 构建中(失败)
 	JobColorYellowAnime = "yellow_anime" // 构建中(不稳定)
-	JobColorGreyAnime  = "grey_anime"  // 构建中(未知)
+	JobColorGreyAnime   = "grey_anime"   // 构建中(未知)
 )
 
 // ================== 请求和响应结构体 ==================
@@ -135,16 +135,16 @@ type JenkinsServerListResponse struct {
 
 // JenkinsJobListResponse Jenkins任务列表响应
 type JenkinsJobListResponse struct {
-	Jobs    []JenkinsJob `json:"jobs"`
-	Total   int          `json:"total"`
-	Server  string       `json:"server"`  // 服务器名称
+	Jobs   []JenkinsJob `json:"jobs"`
+	Total  int          `json:"total"`
+	Server string       `json:"server"` // 服务器名称
 }
 
 // JenkinsJobDetailResponse Jenkins任务详情响应
 type JenkinsJobDetailResponse struct {
-	Job    JenkinsJob      `json:"job"`
-	Builds []JenkinsBuild  `json:"builds"`   // 构建历史
-	Server string          `json:"server"`   // 服务器名称
+	Job    JenkinsJob     `json:"job"`
+	Builds []JenkinsBuild `json:"builds"` // 构建历史
+	Server string         `json:"server"` // 服务器名称
 }
 
 // JenkinsBuildDetailResponse Jenkins构建详情响应
@@ -177,45 +177,45 @@ type StopBuildRequest struct {
 
 // StopBuildResponse 停止构建响应
 type StopBuildResponse struct {
-	Success bool   `json:"success"` // 是否停止成功
-	Message string `json:"message"` // 响应消息
-	JobName string `json:"jobName"` // 任务名称
-	BuildNumber int `json:"buildNumber"` // 构建编号
-	Server  string `json:"server"`  // 服务器名称
+	Success     bool   `json:"success"`     // 是否停止成功
+	Message     string `json:"message"`     // 响应消息
+	JobName     string `json:"jobName"`     // 任务名称
+	BuildNumber int    `json:"buildNumber"` // 构建编号
+	Server      string `json:"server"`      // 服务器名称
 }
 
 // GetBuildLogRequest 获取构建日志请求
 type GetBuildLogRequest struct {
-	Start int `json:"start"` // 开始位置
+	Start int  `json:"start"` // 开始位置
 	Html  bool `json:"html"`  // 是否返回HTML格式
 }
 
 // GetBuildLogResponse 获取构建日志响应
 type GetBuildLogResponse struct {
-	Log        string `json:"log"`        // 日志内容
-	HasMore    bool   `json:"hasMore"`    // 是否有更多日志
-	TextSize   int    `json:"textSize"`   // 文本大小
-	MoreData   bool   `json:"moreData"`   // 是否有更多数据
-	JobName    string `json:"jobName"`    // 任务名称
-	BuildNumber int   `json:"buildNumber"` // 构建编号
-	Server     string `json:"server"`     // 服务器名称
+	Log         string `json:"log"`         // 日志内容
+	HasMore     bool   `json:"hasMore"`     // 是否有更多日志
+	TextSize    int    `json:"textSize"`    // 文本大小
+	MoreData    bool   `json:"moreData"`    // 是否有更多数据
+	JobName     string `json:"jobName"`     // 任务名称
+	BuildNumber int    `json:"buildNumber"` // 构建编号
+	Server      string `json:"server"`      // 服务器名称
 }
 
 // JenkinsSystemInfo Jenkins系统信息
 type JenkinsSystemInfo struct {
-	Version          string            `json:"version"`          // Jenkins版本
-	Mode             string            `json:"mode"`             // 运行模式
-	NodeDescription  string            `json:"nodeDescription"`  // 节点描述
-	NodeName         string            `json:"nodeName"`         // 节点名称
-	NumExecutors     int               `json:"numExecutors"`     // 执行器数量
-	UseCrumbs        bool              `json:"useCrumbs"`        // 是否使用CSRF保护
-	UseSecurity      bool              `json:"useSecurity"`      // 是否使用安全
-	Views            []JenkinsView     `json:"views"`            // 视图列表
-	PrimaryView      *JenkinsView      `json:"primaryView"`      // 主视图
-	UnlabeledLoad    map[string]int    `json:"unlabeledLoad"`    // 未标记负载
-	AssignedLabels   []JenkinsLabel    `json:"assignedLabels"`   // 分配的标签
-	OverallLoad      map[string]int    `json:"overallLoad"`      // 总体负载
-	Computers        []JenkinsComputer `json:"computers"`        // 计算机列表
+	Version         string            `json:"version"`         // Jenkins版本
+	Mode            string            `json:"mode"`            // 运行模式
+	NodeDescription string            `json:"nodeDescription"` // 节点描述
+	NodeName        string            `json:"nodeName"`        // 节点名称
+	NumExecutors    int               `json:"numExecutors"`    // 执行器数量
+	UseCrumbs       bool              `json:"useCrumbs"`       // 是否使用CSRF保护
+	UseSecurity     bool              `json:"useSecurity"`     // 是否使用安全
+	Views           []JenkinsView     `json:"views"`           // 视图列表
+	PrimaryView     *JenkinsView      `json:"primaryView"`     // 主视图
+	UnlabeledLoad   map[string]int    `json:"unlabeledLoad"`   // 未标记负载
+	AssignedLabels  []JenkinsLabel    `json:"assignedLabels"`  // 分配的标签
+	OverallLoad     map[string]int    `json:"overallLoad"`     // 总体负载
+	Computers       []JenkinsComputer `json:"computers"`       // 计算机列表
 }
 
 // JenkinsView Jenkins视图
@@ -233,21 +233,21 @@ type JenkinsLabel struct {
 
 // JenkinsComputer Jenkins计算机(节点)
 type JenkinsComputer struct {
-	DisplayName     string                  `json:"displayName"`     // 显示名称
-	Executors       []JenkinsExecutor       `json:"executors"`       // 执行器列表
-	Icon            string                  `json:"icon"`            // 图标
-	IconClassName   string                  `json:"iconClassName"`   // 图标类名
-	Idle            bool                    `json:"idle"`            // 是否空闲
-	JnlpAgent       bool                    `json:"jnlpAgent"`       // 是否JNLP代理
-	LaunchSupported bool                    `json:"launchSupported"` // 是否支持启动
-	LoadStatistics  JenkinsLoadStatistics   `json:"loadStatistics"`  // 负载统计
-	ManualLaunchAllowed bool                `json:"manualLaunchAllowed"` // 是否允许手动启动
-	MonitorData     map[string]interface{}  `json:"monitorData"`     // 监控数据
-	NumExecutors    int                     `json:"numExecutors"`    // 执行器数量
-	Offline         bool                    `json:"offline"`         // 是否离线
-	OfflineCause    interface{}             `json:"offlineCause"`    // 离线原因
-	OneOffExecutors []JenkinsExecutor       `json:"oneOffExecutors"` // 一次性执行器
-	TemporarilyOffline bool                 `json:"temporarilyOffline"` // 是否临时离线
+	DisplayName         string                 `json:"displayName"`         // 显示名称
+	Executors           []JenkinsExecutor      `json:"executors"`           // 执行器列表
+	Icon                string                 `json:"icon"`                // 图标
+	IconClassName       string                 `json:"iconClassName"`       // 图标类名
+	Idle                bool                   `json:"idle"`                // 是否空闲
+	JnlpAgent           bool                   `json:"jnlpAgent"`           // 是否JNLP代理
+	LaunchSupported     bool                   `json:"launchSupported"`     // 是否支持启动
+	LoadStatistics      JenkinsLoadStatistics  `json:"loadStatistics"`      // 负载统计
+	ManualLaunchAllowed bool                   `json:"manualLaunchAllowed"` // 是否允许手动启动
+	MonitorData         map[string]interface{} `json:"monitorData"`         // 监控数据
+	NumExecutors        int                    `json:"numExecutors"`        // 执行器数量
+	Offline             bool                   `json:"offline"`             // 是否离线
+	OfflineCause        interface{}            `json:"offlineCause"`        // 离线原因
+	OneOffExecutors     []JenkinsExecutor      `json:"oneOffExecutors"`     // 一次性执行器
+	TemporarilyOffline  bool                   `json:"temporarilyOffline"`  // 是否临时离线
 }
 
 // JenkinsExecutor Jenkins执行器
@@ -262,10 +262,10 @@ type JenkinsExecutor struct {
 
 // JenkinsLoadStatistics Jenkins负载统计
 type JenkinsLoadStatistics struct {
-	BusyExecutors   int `json:"busyExecutors"`   // 忙碌执行器数
-	IdleExecutors   int `json:"idleExecutors"`   // 空闲执行器数
-	TotalExecutors  int `json:"totalExecutors"`  // 总执行器数
-	QueueLength     int `json:"queueLength"`     // 队列长度
+	BusyExecutors  int `json:"busyExecutors"`  // 忙碌执行器数
+	IdleExecutors  int `json:"idleExecutors"`  // 空闲执行器数
+	TotalExecutors int `json:"totalExecutors"` // 总执行器数
+	QueueLength    int `json:"queueLength"`    // 队列长度
 }
 
 // JenkinsQueue Jenkins队列信息
@@ -275,17 +275,17 @@ type JenkinsQueue struct {
 
 // JenkinsQueueItem Jenkins队列项目
 type JenkinsQueueItem struct {
-	Actions            []interface{} `json:"actions"`            // 操作
-	Blocked            bool          `json:"blocked"`            // 是否阻塞
-	Buildable          bool          `json:"buildable"`          // 是否可构建
-	Id                 int           `json:"id"`                 // 队列项目ID
-	InQueueSince       int64         `json:"inQueueSince"`       // 入队时间
-	Params             string        `json:"params"`             // 参数
-	Stuck              bool          `json:"stuck"`              // 是否卡住
-	Task               JenkinsTask   `json:"task"`               // 任务信息
-	URL                string        `json:"url"`                // URL
-	Why                string        `json:"why"`                // 等待原因
-	BuildableStartMilliseconds int64 `json:"buildableStartMilliseconds"` // 可构建开始时间
+	Actions                    []interface{} `json:"actions"`                    // 操作
+	Blocked                    bool          `json:"blocked"`                    // 是否阻塞
+	Buildable                  bool          `json:"buildable"`                  // 是否可构建
+	Id                         int           `json:"id"`                         // 队列项目ID
+	InQueueSince               int64         `json:"inQueueSince"`               // 入队时间
+	Params                     string        `json:"params"`                     // 参数
+	Stuck                      bool          `json:"stuck"`                      // 是否卡住
+	Task                       JenkinsTask   `json:"task"`                       // 任务信息
+	URL                        string        `json:"url"`                        // URL
+	Why                        string        `json:"why"`                        // 等待原因
+	BuildableStartMilliseconds int64         `json:"buildableStartMilliseconds"` // 可构建开始时间
 }
 
 // JenkinsTask Jenkins任务
@@ -304,10 +304,10 @@ type TestJenkinsConnectionRequest struct {
 
 // TestJenkinsConnectionResponse 测试Jenkins连接响应
 type TestJenkinsConnectionResponse struct {
-	Success     bool              `json:"success"`     // 是否连接成功
-	Message     string            `json:"message"`     // 响应消息
-	SystemInfo  *JenkinsSystemInfo `json:"systemInfo"`  // 系统信息
-	Error       string            `json:"error"`       // 错误信息
+	Success    bool               `json:"success"`    // 是否连接成功
+	Message    string             `json:"message"`    // 响应消息
+	SystemInfo *JenkinsSystemInfo `json:"systemInfo"` // 系统信息
+	Error      string             `json:"error"`      // 错误信息
 }
 
 // BuildParameter 构建参数
@@ -345,19 +345,19 @@ type DeleteJobRequest struct {
 
 // JobStatistics 任务统计信息
 type JobStatistics struct {
-	TotalJobs       int `json:"totalJobs"`       // 总任务数
-	ActiveJobs      int `json:"activeJobs"`      // 活跃任务数
-	DisabledJobs    int `json:"disabledJobs"`    // 禁用任务数
+	TotalJobs        int `json:"totalJobs"`        // 总任务数
+	ActiveJobs       int `json:"activeJobs"`       // 活跃任务数
+	DisabledJobs     int `json:"disabledJobs"`     // 禁用任务数
 	SuccessfulBuilds int `json:"successfulBuilds"` // 成功构建数
-	FailedBuilds    int `json:"failedBuilds"`    // 失败构建数
-	RunningBuilds   int `json:"runningBuilds"`   // 正在运行的构建数
+	FailedBuilds     int `json:"failedBuilds"`     // 失败构建数
+	RunningBuilds    int `json:"runningBuilds"`    // 正在运行的构建数
 }
 
 // SystemStatistics 系统统计信息
 type SystemStatistics struct {
-	ServerCount     int           `json:"serverCount"`     // 服务器数量
-	JobStatistics   JobStatistics `json:"jobStatistics"`   // 任务统计
-	QueueLength     int           `json:"queueLength"`     // 队列长度
-	BusyExecutors   int           `json:"busyExecutors"`   // 忙碌执行器数
-	TotalExecutors  int           `json:"totalExecutors"`  // 总执行器数
+	ServerCount    int           `json:"serverCount"`    // 服务器数量
+	JobStatistics  JobStatistics `json:"jobStatistics"`  // 任务统计
+	QueueLength    int           `json:"queueLength"`    // 队列长度
+	BusyExecutors  int           `json:"busyExecutors"`  // 忙碌执行器数
+	TotalExecutors int           `json:"totalExecutors"` // 总执行器数
 }

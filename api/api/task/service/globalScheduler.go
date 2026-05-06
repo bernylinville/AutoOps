@@ -14,10 +14,10 @@ import (
 
 // GlobalScheduler 全局定时调度器
 type GlobalScheduler struct {
-	cron     *cron.Cron
-	entries  map[uint]cron.EntryID // 任务ID -> EntryID映射
-	mutex    sync.RWMutex
-	running  bool
+	cron    *cron.Cron
+	entries map[uint]cron.EntryID // 任务ID -> EntryID映射
+	mutex   sync.RWMutex
+	running bool
 }
 
 // ScheduledTask 调度任务信息
@@ -337,9 +337,9 @@ func (gs *GlobalScheduler) LoadScheduledTasks() error {
 
 	// 统计计数器
 	var (
-		loadedCount   = 0
-		skippedCount  = 0
-		resumedCount  = 0
+		loadedCount  = 0
+		skippedCount = 0
+		resumedCount = 0
 	)
 
 	// 逐个处理定时任务

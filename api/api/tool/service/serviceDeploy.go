@@ -4,8 +4,8 @@ package service
 
 import (
 	"bytes"
-	"dodevops-api/api/cmdb/model"
 	cmdbDao "dodevops-api/api/cmdb/dao"
+	"dodevops-api/api/cmdb/model"
 	ccDao "dodevops-api/api/configcenter/dao"
 	"dodevops-api/api/tool/dao1"
 	toolModel "dodevops-api/api/tool/model"
@@ -27,12 +27,12 @@ import (
 
 // IServiceDeployService 服务部署接口
 type IServiceDeployService interface {
-	GetServicesList(c *gin.Context)                                // 获取可部署服务列表
-	GetServiceDetail(c *gin.Context, serviceID string)             // 获取服务详情
-	CreateDeploy(c *gin.Context, dto toolModel.CreateDeployDto)    // 创建部署任务
-	GetDeployList(c *gin.Context, dto toolModel.DeployQueryDto)    // 获取部署历史列表
-	GetDeployStatus(c *gin.Context, id uint)                       // 获取部署状态
-	DeleteDeploy(c *gin.Context, id uint)                          // 删除部署记录（卸载服务）
+	GetServicesList(c *gin.Context)                             // 获取可部署服务列表
+	GetServiceDetail(c *gin.Context, serviceID string)          // 获取服务详情
+	CreateDeploy(c *gin.Context, dto toolModel.CreateDeployDto) // 创建部署任务
+	GetDeployList(c *gin.Context, dto toolModel.DeployQueryDto) // 获取部署历史列表
+	GetDeployStatus(c *gin.Context, id uint)                    // 获取部署状态
+	DeleteDeploy(c *gin.Context, id uint)                       // 删除部署记录（卸载服务）
 }
 
 type ServiceDeployServiceImpl struct{}

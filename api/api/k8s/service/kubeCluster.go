@@ -69,7 +69,7 @@ func (s *KubeClusterServiceImpl) CreateCluster(c *gin.Context, req *model.Create
 	if req.ClusterType == 0 {
 		req.ClusterType = model.ClusterTypeSelfBuilt
 	}
-	
+
 	switch req.ClusterType {
 	case model.ClusterTypeSelfBuilt:
 		s.createSelfBuiltCluster(c, req)
@@ -222,18 +222,17 @@ func (s *KubeClusterServiceImpl) GetClusterStatus(c *gin.Context, id uint) {
 	summary := s.calculateClusterSummary(nodes)
 
 	statusInfo := map[string]interface{}{
-		"id":         cluster.ID,
-		"name":       cluster.Name,
-		"status":     cluster.Status,
-		"statusText": cluster.GetStatusText(),
+		"id":          cluster.ID,
+		"name":        cluster.Name,
+		"status":      cluster.Status,
+		"statusText":  cluster.GetStatusText(),
 		"clusterType": cluster.ClusterType,
-		"summary":    summary,
-		"nodes":      nodes,
+		"summary":     summary,
+		"nodes":       nodes,
 	}
 
 	result.Success(c, statusInfo)
 }
-
 
 // createSelfBuiltCluster 创建自建集群
 func (s *KubeClusterServiceImpl) createSelfBuiltCluster(c *gin.Context, req *model.CreateKubeClusterRequest) {
@@ -279,9 +278,9 @@ func (s *KubeClusterServiceImpl) createSelfBuiltCluster(c *gin.Context, req *mod
 					s.dao.UpdateStatus(cluster.ID, model.ClusterStatusStopped)
 				}
 			}()
-			
+
 			fmt.Printf("开始异步创建Ansible任务: ID=%d, Name=%s\n", cluster.ID, cluster.Name)
-			
+
 			// 构建Ansible任务请求参数
 			taskReq := &taskservice.CreateK8sTaskRequest{
 				Name:              req.Name + "-deployment",
@@ -305,16 +304,16 @@ func (s *KubeClusterServiceImpl) createSelfBuiltCluster(c *gin.Context, req *mod
 
 			// 调用专门的异步任务创建方法
 			fmt.Printf("创建Ansible任务参数: %+v\n", taskReq)
-			
+
 			taskID, err := s.createK8sTaskAsync(taskReq)
 			if err != nil {
 				fmt.Printf("创建Ansible任务失败: %v\n", err)
 				s.dao.UpdateStatus(cluster.ID, model.ClusterStatusStopped)
 				return
 			}
-			
+
 			fmt.Printf("Ansible任务创建成功，任务ID: %d\n", taskID)
-			
+
 			// 如果启用自动部署，则立即执行任务
 			// 否则等待用户手动点击执行按钮
 			fmt.Printf("AutoDeploy=%v, 任务创建完成，等待手动执行\n", req.AutoDeploy)
@@ -419,7 +418,7 @@ func (s *KubeClusterServiceImpl) getHostInfos(nodeConfig model.NodeConfig) (map[
 func (s *KubeClusterServiceImpl) getClusterNodes(cluster *model.KubeCluster) ([]model.NodeInfo, error) {
 	// TODO: 实现K8s API调用获取节点信息
 	// 这里暂时返回空切片，实际应该调用K8s API
-	
+
 	// 示例代码：
 	// k8sClient := NewK8sClient(cluster.Credential)
 	// nodes, err := k8sClient.GetNodes()
@@ -427,7 +426,7 @@ func (s *KubeClusterServiceImpl) getClusterNodes(cluster *model.KubeCluster) ([]
 	//     return nil, err
 	// }
 	// return convertToNodeInfo(nodes), nil
-	
+
 	return []model.NodeInfo{}, nil
 }
 
@@ -457,7 +456,7 @@ func (s *KubeClusterServiceImpl) calculateClusterSummary(nodes []model.NodeInfo)
 // createK8sTaskAsync 异步创建K8s任务（不依赖gin.Context）
 func (s *KubeClusterServiceImpl) createK8sTaskAsync(req *taskservice.CreateK8sTaskRequest) (uint, error) {
 	// 直接调用底层逻辑，避免使用gin.Context
-	
+
 	// 1. 验证主机信息
 	hostInfos, err := s.getK8sHostInfoForAsync(req)
 	if err != nil {
@@ -468,7 +467,7 @@ func (s *KubeClusterServiceImpl) createK8sTaskAsync(req *taskservice.CreateK8sTa
 	task := &taskmodel.TaskAnsible{
 		Name:        req.Name,
 		Description: req.Description,
-		Type:        3, // K8s任务类型
+		Type:        3,                                        // K8s任务类型
 		GitRepo:     "git@gitee.com:zhang_fan1024/zf-k8s.git", // K8s部署仓库
 		HostGroups:  s.buildK8sHostGroupsForAsync(req),
 		AllHostIDs:  s.buildK8sAllHostIDsForAsync(req),
@@ -487,7 +486,7 @@ func (s *KubeClusterServiceImpl) createK8sTaskAsync(req *taskservice.CreateK8sTa
 	if err := s.setupK8sTaskFiles(projectDir, req, hostInfos, task.ID); err != nil {
 		return 0, fmt.Errorf("设置任务文件失败: %v", err)
 	}
-	
+
 	// 4. 创建子任务（K8s部署脚本）
 	if err := s.createK8sSubTaskAsync(task.ID, projectDir); err != nil {
 		return 0, fmt.Errorf("创建K8s子任务失败: %v", err)
@@ -500,17 +499,17 @@ func (s *KubeClusterServiceImpl) createK8sTaskAsync(req *taskservice.CreateK8sTa
 func (s *KubeClusterServiceImpl) startK8sTaskAsync(taskID uint) error {
 	// 暂时简化，只更新任务状态为运行中
 	// 实际应该启动任务执行，但这需要复杂的实现
-	
+
 	// 更新任务状态为运行中
 	if err := s.dao.DB.Model(&taskmodel.TaskAnsible{}).Where("id = ?", taskID).Update("status", 2).Error; err != nil {
 		return fmt.Errorf("更新任务状态失败: %v", err)
 	}
-	
+
 	fmt.Printf("任务 %d 已标记为运行中（简化版实现）\n", taskID)
-	
+
 	// TODO: 这里应该实际启动Ansible执行
 	// 可以考虑调用shell命令或者其他方式
-	
+
 	return nil
 }
 
@@ -524,18 +523,18 @@ func (s *KubeClusterServiceImpl) createK8sSubTaskAsync(taskID uint, projectDir s
 		LogPath:       filepath.Join("./logs/ansible", fmt.Sprintf("%d", taskID), "deploy-k8s.log"),
 		Status:        1, // 等待中
 	}
-	
+
 	// 确保日志目录存在
 	logDir := filepath.Dir(work.LogPath)
 	if err := os.MkdirAll(logDir, 0755); err != nil {
 		return fmt.Errorf("创建日志目录失败: %v", err)
 	}
-	
+
 	// 保存子任务
 	if err := s.dao.DB.Create(work).Error; err != nil {
 		return fmt.Errorf("创建子任务失败: %v", err)
 	}
-	
+
 	return nil
 }
 
@@ -573,13 +572,13 @@ func (s *KubeClusterServiceImpl) getK8sHostInfoForAsync(req *taskservice.CreateK
 			sshKeyIDs = append(sshKeyIDs, host.SSHKeyID)
 		}
 	}
-	
+
 	// 查询SSH凭据信息
 	var sshKeys []configcentermodel.EcsAuth
 	if len(sshKeyIDs) > 0 {
 		s.dao.DB.Where("id IN ?", sshKeyIDs).Find(&sshKeys)
 	}
-	
+
 	// 构建SSH凭据映射
 	sshKeyMap := make(map[uint]string)
 	for _, key := range sshKeys {
@@ -648,7 +647,7 @@ func (s *KubeClusterServiceImpl) buildK8sHostGroupsForAsync(req *taskservice.Cre
 		"workers": req.WorkerHostIDs,
 		"etcd":    req.EtcdHostIDs,
 	}
-	
+
 	jsonData, _ := json.Marshal(hostGroups)
 	return string(jsonData)
 }
@@ -670,7 +669,7 @@ func (s *KubeClusterServiceImpl) buildK8sAllHostIDsForAsync(req *taskservice.Cre
 	for id := range allIDs {
 		ids = append(ids, id)
 	}
-	
+
 	jsonData, _ := json.Marshal(ids)
 	return string(jsonData)
 }
@@ -683,7 +682,7 @@ func (s *KubeClusterServiceImpl) buildK8sGlobalVarsForAsync(req *taskservice.Cre
 		"deployment_mode":    fmt.Sprintf("%d", req.DeploymentMode),
 		"enabled_components": strings.Join(req.EnabledComponents, ","),
 	}
-	
+
 	jsonData, _ := json.Marshal(vars)
 	return string(jsonData)
 }
@@ -700,16 +699,14 @@ func (s *KubeClusterServiceImpl) setupK8sTaskFiles(projectDir string, req *tasks
 	if err := s.cloneGitRepositoryAsync(gitRepo, projectDir); err != nil {
 		return fmt.Errorf("克隆K8s仓库失败: %v", err)
 	}
-	
+
 	// 3. 生成config.json配置文件
 	if err := s.generateK8sConfigAsync(projectDir, req, hostInfos, taskID); err != nil {
 		return fmt.Errorf("生成K8s配置失败: %v", err)
 	}
-	
+
 	return nil
 }
-
-
 
 // cloneGitRepositoryAsync 异步版本的Git仓库克隆
 func (s *KubeClusterServiceImpl) cloneGitRepositoryAsync(gitRepo, projectDir string) error {
@@ -730,22 +727,22 @@ func (s *KubeClusterServiceImpl) generateK8sConfigAsync(projectDir string, req *
 	var registryConfig map[string]interface{}
 	fmt.Printf("[DEBUG] Registry配置检查: RegistryConfig=%+v, UsePrivateRegistry=%v\n", req.RegistryConfig, req.RegistryConfig != nil && req.RegistryConfig.UsePrivateRegistry)
 	fmt.Printf("[DEBUG] 旧格式Registry: PrivateRegistry=%s, Username=%s\n", req.PrivateRegistry, req.RegistryUsername)
-	
+
 	if req.RegistryConfig != nil && req.RegistryConfig.PrivateRegistry != "" {
 		// 使用新的嵌套格式
 		fmt.Printf("[DEBUG] 使用新的嵌套Registry格式\n")
 		registryConfig = map[string]interface{}{
 			"private_registry": req.RegistryConfig.PrivateRegistry,
-			"username":        req.RegistryConfig.RegistryUsername,
-			"password":        req.RegistryConfig.RegistryPassword,
+			"username":         req.RegistryConfig.RegistryUsername,
+			"password":         req.RegistryConfig.RegistryPassword,
 		}
 	} else {
 		// 兼容旧格式
 		fmt.Printf("[DEBUG] 使用旧的平铺Registry格式\n")
 		registryConfig = map[string]interface{}{
 			"private_registry": req.PrivateRegistry,
-			"username":        req.RegistryUsername,
-			"password":        req.RegistryPassword,
+			"username":         req.RegistryUsername,
+			"password":         req.RegistryPassword,
 		}
 	}
 
@@ -761,7 +758,7 @@ func (s *KubeClusterServiceImpl) generateK8sConfigAsync(projectDir string, req *
 		},
 		"registry": registryConfig,
 	}
-	
+
 	// 添加节点信息到nodes结构中
 	nodes := config["nodes"].(map[string]interface{})
 	if masters, ok := hostInfos["masters"]; ok && len(masters) > 0 {
@@ -773,14 +770,14 @@ func (s *KubeClusterServiceImpl) generateK8sConfigAsync(projectDir string, req *
 	if etcd, ok := hostInfos["etcd"]; ok && len(etcd) > 0 {
 		nodes["etcd"] = etcd
 	}
-	
+
 	// 生成JSON配置文件
 	configPath := filepath.Join(projectDir, "config.json")
 	configData, _ := json.MarshalIndent(config, "", "  ")
 	if err := os.WriteFile(configPath, configData, 0644); err != nil {
 		return fmt.Errorf("写入配置文件失败: %v", err)
 	}
-	
+
 	fmt.Printf("[DEBUG] K8s配置文件生成成功: %s\n", configPath)
 	return nil
 }
@@ -1011,12 +1008,12 @@ func (s *KubeClusterServiceImpl) validateKubeconfig(kubeconfig string) error {
 	// 测试连接 - 尝试获取集群版本信息
 	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 	defer cancel()
-	
+
 	_, err = clientset.Discovery().ServerVersion()
 	if err != nil {
 		return fmt.Errorf("连接K8s集群失败: %v", err)
 	}
-	
+
 	// 测试节点访问权限
 	_, err = clientset.CoreV1().Nodes().List(ctx, metav1.ListOptions{Limit: 1})
 	if err != nil {
@@ -1109,15 +1106,15 @@ func (s *KubeClusterServiceImpl) getClusterDetailInfo(cluster *model.KubeCluster
 	summary := s.calculateClusterSummary(nodes)
 
 	return &model.ClusterDetailResponse{
-		Cluster:     *cluster,
-		Nodes:       nodes,
-		Summary:     summary,
-		Components:  components,
-		Workloads:   workloads,
-		Network:     network,
-		Events:      events,
-		Monitoring:  monitoring,
-		Runtime:     runtime,
+		Cluster:    *cluster,
+		Nodes:      nodes,
+		Summary:    summary,
+		Components: components,
+		Workloads:  workloads,
+		Network:    network,
+		Events:     events,
+		Monitoring: monitoring,
+		Runtime:    runtime,
 	}, nil
 }
 
@@ -1331,9 +1328,9 @@ func (s *KubeClusterServiceImpl) getNetworkInfo(ctx context.Context, clientset *
 	if network.ServiceCIDR == "" {
 		network.ServiceCIDR = "10.96.0.0/12" // Kubernetes默认
 	}
-	network.PodCIDR = "10.244.0.0/16"      // Flannel默认
+	network.PodCIDR = "10.244.0.0/16" // Flannel默认
 	network.DNSService = "CoreDNS"
-	network.NetworkPlugin = "Flannel"      // 需要实际检测
+	network.NetworkPlugin = "Flannel" // 需要实际检测
 	network.ProxyMode = "iptables"
 
 	return network, nil
@@ -1397,19 +1394,19 @@ func (s *KubeClusterServiceImpl) getMonitoringInfo(ctx context.Context, clientse
 
 	// CPU监控信息
 	monitoring.CPU = model.ClusterResourceMetrics{
-		Total:     fmt.Sprintf("%.1f cores", float64(totalCPU)/1000),        // 毫核转换为核
-		Used:      "0 cores", // 需要metrics-server支持
-		Available: fmt.Sprintf("%.1f cores", float64(allocatableCPU)/1000),  // 毫核转换为核
-		UsageRate: 0, // 需要实际监控数据
+		Total:       fmt.Sprintf("%.1f cores", float64(totalCPU)/1000),       // 毫核转换为核
+		Used:        "0 cores",                                               // 需要metrics-server支持
+		Available:   fmt.Sprintf("%.1f cores", float64(allocatableCPU)/1000), // 毫核转换为核
+		UsageRate:   0,                                                       // 需要实际监控数据
 		RequestRate: 0,
 	}
 
 	// 内存监控信息
 	monitoring.Memory = model.ClusterResourceMetrics{
-		Total:     fmt.Sprintf("%d Mi", totalMemory/(1024*1024)),
-		Used:      "0 Mi", // 需要metrics-server支持
-		Available: fmt.Sprintf("%d Mi", allocatableMemory/(1024*1024)),
-		UsageRate: 0, // 需要实际监控数据
+		Total:       fmt.Sprintf("%d Mi", totalMemory/(1024*1024)),
+		Used:        "0 Mi", // 需要metrics-server支持
+		Available:   fmt.Sprintf("%d Mi", allocatableMemory/(1024*1024)),
+		UsageRate:   0, // 需要实际监控数据
 		RequestRate: 0,
 	}
 

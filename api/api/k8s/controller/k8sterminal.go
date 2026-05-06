@@ -35,7 +35,6 @@ var upgrader = websocket.Upgrader{
 	},
 }
 
-
 // K8sTerminalController 容器终端控制器
 type K8sTerminalController struct {
 	service service.IK8sTerminalService
@@ -114,7 +113,6 @@ func (ctrl *K8sTerminalController) ConnectPodTerminal(c *gin.Context) {
 		log.Printf("K8s terminal connection closed")
 	}
 }
-
 
 // GetPodContainers 获取Pod中的容器列表
 // @Summary 获取Pod中的容器列表

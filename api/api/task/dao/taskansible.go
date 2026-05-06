@@ -1,8 +1,8 @@
 package dao
 
 import (
-	"fmt"
 	"dodevops-api/api/task/model"
+	"fmt"
 	"sync"
 	"time"
 
@@ -34,24 +34,24 @@ const cacheTTL = 5 * time.Second // 5秒缓存TTL
 func (d *TaskAnsibleDao) getFromCache(key string) (interface{}, bool) {
 	d.mutex.RLock()
 	defer d.mutex.RUnlock()
-	
+
 	item, exists := d.cache[key]
 	if !exists {
 		return nil, false
 	}
-	
+
 	// 检查是否过期
 	if time.Since(item.timestamp) > cacheTTL {
 		return nil, false
 	}
-	
+
 	return item.data, true
 }
 
 func (d *TaskAnsibleDao) setCache(key string, data interface{}) {
 	d.mutex.Lock()
 	defer d.mutex.Unlock()
-	
+
 	d.cache[key] = &cacheItem{
 		data:      data,
 		timestamp: time.Now(),
@@ -61,7 +61,7 @@ func (d *TaskAnsibleDao) setCache(key string, data interface{}) {
 func (d *TaskAnsibleDao) clearCache(pattern string) {
 	d.mutex.Lock()
 	defer d.mutex.Unlock()
-	
+
 	// 简单实现：清空所有缓存
 	d.cache = make(map[string]*cacheItem)
 }
@@ -149,7 +149,7 @@ func (d *TaskAnsibleDao) GetWorkByID(taskID, workID uint) (*model.TaskAnsibleWor
 			return work, nil
 		}
 	}
-	
+
 	var work model.TaskAnsibleWork
 	// 只查询必要的字段，减少数据传输
 	err := d.DB.Select("id, task_id, entry_file_name, log_path, status, start_time, end_time").
@@ -157,7 +157,7 @@ func (d *TaskAnsibleDao) GetWorkByID(taskID, workID uint) (*model.TaskAnsibleWor
 	if err != nil {
 		return nil, err
 	}
-	
+
 	// 存入缓存
 	d.setCache(cacheKey, &work)
 	return &work, nil
@@ -195,18 +195,18 @@ func (d *TaskAnsibleDao) GetTaskDetail(taskID uint) (*model.TaskAnsible, error) 
 			return task, nil
 		}
 	}
-	
+
 	var task model.TaskAnsible
 	// 只预加载Works的关键字段，减少数据传输
 	err := d.DB.Preload("Works", func(db *gorm.DB) *gorm.DB {
 		return db.Select("id, task_id, entry_file_name, status, start_time, end_time, duration")
 	}).Where("id = ?", taskID).First(&task).Error
-	
+
 	if err == nil {
 		// 存入缓存
 		d.setCache(cacheKey, &task)
 	}
-	
+
 	return &task, err
 }
 
@@ -219,18 +219,18 @@ func (d *TaskAnsibleDao) GetWorkStatus(taskID, workID uint) (int, error) {
 			return status, nil
 		}
 	}
-	
+
 	var status int
 	err := d.DB.Model(&model.TaskAnsibleWork{}).
 		Select("status").
 		Where("task_id = ? AND id = ?", taskID, workID).
 		Scan(&status).Error
-		
+
 	if err == nil {
 		// 存入缓存
 		d.setCache(cacheKey, status)
 	}
-	
+
 	return status, err
 }
 
@@ -239,12 +239,12 @@ func (d *TaskAnsibleDao) StartJob(taskID uint) error {
 	err := d.DB.Model(&model.TaskAnsible{}).
 		Where("id = ?", taskID).
 		Update("status", 2).Error // 2表示运行中
-	
+
 	if err == nil {
 		// 清空相关缓存
 		d.clearCache("")
 	}
-	
+
 	return err
 }
 

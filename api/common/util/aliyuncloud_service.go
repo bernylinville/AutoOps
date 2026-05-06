@@ -8,7 +8,7 @@ import (
 type AliyunCloudService struct {
 	AccessKey    string
 	AccessSecret string
-	Region      string
+	Region       string
 }
 
 // NewAliyunCloudService 创建新的阿里云服务实例
@@ -16,7 +16,7 @@ func NewAliyunCloudService(accessKey, accessSecret, region string) *AliyunCloudS
 	return &AliyunCloudService{
 		AccessKey:    accessKey,
 		AccessSecret: accessSecret,
-		Region:      region,
+		Region:       region,
 	}
 }
 
@@ -88,7 +88,7 @@ func (s *AliyunCloudService) GetInstances() ([]AliyunInstanceInfo, error) {
 			instances[i].Region = "unknown"
 		}
 	}
-	
+
 	return instances, nil
 }
 
