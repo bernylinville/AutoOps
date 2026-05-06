@@ -72,19 +72,13 @@ Gateway / exposure
   └─ Envoy Gateway + HTTPRoute → 10.0.17.206
 ```
 
-## 4. 监控架构调整
-
-### 4.1 已移除
-
-- 项目内置 Prometheus
-- 项目内置 Pushgateway
-- Docker / K8s 运行时相关 manifests 与配置项（服务市场模板等归档/示例资产不参与 AutoOps 平台运行时）
-
-### 4.2 当前模式
+## 4. 监控架构
 
 - 主机基础指标：AutoOps → N9E / VictoriaMetrics
 - 告警：AutoOps / N9E → FlashDuty
-- 进程 / 端口接口：兼容保留，但在外部监控模式下可返回空结果
+- 进程 / 端口接口：兼容保留，外部监控模式下可返回空结果
+- 开发环境 Docker Compose 含 Prometheus + Pushgateway（本地测试）
+- 生产环境不部署内置监控组件，全部依赖外部 N9E
 
 ## 5. GitOps 架构
 
@@ -100,4 +94,4 @@ AutoOps 平台有两个 GitOps 相关面：
 - 配置加载：`gopkg.in/yaml.v2`
 - Docker / K8s 运行时都通过 `config.template.yaml` 渲染最终配置
 - `integrations.gitops.local_checkout_path` 必须指向可写工作树
-- 生产若需要 `git push`，必须提供仓库认证能力
+- 生产若需要 `git push`，需提供 Git 凭据（SSH key 或 token）

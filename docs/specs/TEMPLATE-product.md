@@ -1,46 +1,45 @@
-# Product Spec Template
+# PRODUCT: <feature or issue title>
 
-**Issue:** [链接到 GitHub Issue 或内部工单]
-**Figma:** 如有设计稿请提供链接，否则填写 `none provided`
+**Issue:** <GitHub issue / internal ticket / none>
+**Figma:** <link or `none provided` for UI work>
 
 ## Summary
 
-1-3 句话描述功能和期望结果。
+1-3 sentences describing the desired outcome.
 
-## Problem（如动机不明显则包含）
+## Problem
 
-清晰描述当前问题。
+Include only when the motivation is not obvious.
+
+## User Scenarios
+
+- **US-1:** As a <role>, I want <capability>, so that <outcome>.
+- **US-2:** As a <role>, I want <capability>, so that <outcome>.
 
 ## Goals / Non-goals
 
 **Goals:**
-- 目标 1
-- 目标 2
+- <goal>
 
 **Non-goals:**
-- 非目标 1（明确排除的范围）
+- <explicitly excluded scope>
 
-## Behavior
+## Behavior Invariants
 
-用编号、可测试的不变量描述功能行为：
+Write numbered, testable invariants. These are the source of truth for implementation and review.
 
-1. 默认行为和 happy path。
-2. 每个用户可见状态和状态转换。
-3. 所有用户输入及系统响应。
-4. 空状态、错误状态、加载状态、取消行为。
-5. 边界情况：权限拒绝、离线、超时、竞态、并发。
-6. 与相邻功能的交互。
+- **BI-1:** When <condition/action>, AutoOps must <observable behavior>.
+- **BI-2:** If <edge case>, AutoOps must <safe behavior> and must not <forbidden behavior>.
+- **BI-3:** For permission/RBAC failure, AutoOps must <expected response/log/audit behavior>.
 
-## Edge Cases
+Cover relevant states: default, loading/pending, empty, error, cancellation, retry, permission denied, stale data, concurrent requests, and adjacent feature interactions.
 
-- 边界 1: 描述 + 期望行为
-- 边界 2: 描述 + 期望行为
+## Acceptance Criteria
 
-## Success Criteria
-
-1. 标准 1: 可验证的具体行为
-2. 标准 2: 可验证的具体行为
+- [ ] BI-1 is verified by <unit/integration/manual check>.
+- [ ] BI-2 is verified by <unit/integration/manual check>.
+- [ ] UI changes include screenshot/video evidence, or a reason visual evidence is unnecessary.
 
 ## Open Questions
 
-- 问题 1?
+- <question, owner, decision deadline>

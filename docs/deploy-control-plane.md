@@ -40,11 +40,8 @@ integrations:
 - 可选 bootstrap clone
 - 若要执行 `git push`，必须补充 Git 凭据
 
-## 4. 监控 / 告警边界
+## 4. 监控与告警
 
-发布控制平面不再依赖内置 Prometheus / Pushgateway。
-
-环境统一约束：
-
-- 外部 N9E + VictoriaMetrics 负责指标
-- 既有 FlashDuty 负责告警通知
+- 生产环境依赖外部 N9E + VictoriaMetrics 提供指标
+- 生产环境 FlashDuty 负责告警通知
+- 开发环境 Docker Compose 含 Prometheus + Pushgateway 用于本地测试

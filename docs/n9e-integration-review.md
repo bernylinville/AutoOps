@@ -10,7 +10,7 @@
 - CMDB 总览仪表盘
 - Stale (失联) 资产检测
 
-技术栈：Go (Gin) 后端 + Vue.js (Element Plus) 前端 + MySQL + Docker
+技术栈：Go (Gin) 后端 + Vue (Element Plus) 前端 + PostgreSQL + Valkey + Docker
 
 ---
 
