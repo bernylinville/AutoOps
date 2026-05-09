@@ -7,6 +7,7 @@ import (
 	"fmt"
 	"log"
 	"net/url"
+	"os"
 	"strconv"
 	"strings"
 	"time"
@@ -133,9 +134,13 @@ func (s *PipelineService) StartPipelineRun(pipelineRunID uint) error {
 		s.finalizePipelineFailure(run, err)
 		return err
 	}
-	if err := s.executeScanStage(run); err != nil {
-		s.finalizePipelineFailure(run, err)
-		return err
+	if os.Getenv("AUTOOPS_SKIP_PIPELINE_SCAN") == "true" {
+		log.Printf("pipeline scan stage skipped by AUTOOPS_SKIP_PIPELINE_SCAN: pipelineRunID=%d", run.ID)
+	} else {
+		if err := s.executeScanStage(run); err != nil {
+			s.finalizePipelineFailure(run, err)
+			return err
+		}
 	}
 	req, record, err := s.executeDeployStage(run)
 	if err != nil {
