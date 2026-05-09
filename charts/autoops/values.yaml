@@ -56,6 +56,7 @@ api:
     runAsGroup: 100
     fsGroup: 100
   securityContext: {}
+  skipPipelineScan: false
 
 secret:
   mode: generated

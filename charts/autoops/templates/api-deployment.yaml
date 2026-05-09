@@ -64,6 +64,8 @@ spec:
           imagePullPolicy: {{ .Values.images.api.pullPolicy }}
           command: ["/bin/sh", "/app/entrypoint.sh"]
           env:
+            - name: AUTOOPS_SKIP_PIPELINE_SCAN
+              value: {{ .Values.api.skipPipelineScan | default "false" | quote }}
             - name: TZ
               value: {{ .Values.api.timezone | quote }}
             - name: DB_SSL_MODE
