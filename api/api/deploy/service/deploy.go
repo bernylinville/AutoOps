@@ -945,15 +945,31 @@ func (s *DeployService) GetAgentStatusByRequestNo(c *gin.Context, requestNo stri
 		}
 	}
 
+	var pipelineInfo map[string]interface{}
+	if req.WorkflowKind == model.WorkflowKindBuildDeploy {
+		pipelineDao := dao.NewPipelineDao(s.db)
+		run, runErr := pipelineDao.GetPipelineRunByRequestID(req.ID)
+		if runErr == nil {
+			stages, stageErr := pipelineDao.GetPipelineStageRecordsByPipelineRunID(run.ID)
+			if stageErr != nil {
+				stages = nil
+			}
+			pipelineInfo = buildAgentPipelineInfo(run, stages)
+		}
+	}
+
 	result.Success(c, map[string]interface{}{
-		"requestNo":        req.RequestNo,
-		"requestStatus":    req.RequestStatus,
-		"approvalStatus":   req.ApprovalStatus,
-		"executionStatus":  req.ExecutionStatus,
-		"finishedAt":       req.FinishedAt,
-		"executionSummary": buildExecutionSummary(req),
-		"accessInfo":       accessInfo,
-		"errorMessage":     errMsg,
+		"requestNo":            req.RequestNo,
+		"requestStatus":        req.RequestStatus,
+		"approvalStatus":       req.ApprovalStatus,
+		"executionStatus":      req.ExecutionStatus,
+		"pipelineStatus":       req.PipelineStatus,
+		"currentPipelineStage": req.CurrentPipelineStage,
+		"finishedAt":           req.FinishedAt,
+		"executionSummary":     buildExecutionSummary(req),
+		"pipeline":             pipelineInfo,
+		"accessInfo":           accessInfo,
+		"errorMessage":         errMsg,
 	})
 }
 
@@ -1302,8 +1318,24 @@ func (s *DeployService) reserveResourceOwners(req *model.DeployRequest) error {
 	for _, owner := range owners {
 		existing, err := s.dao.GetActiveResourceOwner(owner.ClusterTargetID, owner.Namespace, owner.Kind, owner.Name)
 		if err == nil {
-			if existing.RequestID != req.ID || existing.OwnerSystem != owner.OwnerSystem {
+			if existing.RequestID == req.ID && existing.OwnerSystem == owner.OwnerSystem {
+				continue
+			}
+			if existing.OwnerSystem != owner.OwnerSystem {
 				return fmt.Errorf("资源已被其他 owner 占用: %s/%s %s (%s)", owner.Namespace, owner.Name, owner.Kind, existing.OwnerSystem)
+			}
+			existingReq, reqErr := s.dao.GetDeployRequestByID(existing.RequestID)
+			if reqErr != nil {
+				return fmt.Errorf("读取已有资源 owner 对应申请失败: %v", reqErr)
+			}
+			if !canTakeOverResourceOwner(existingReq, req, existing, &owner) {
+				return fmt.Errorf("资源已被其他 owner 占用: %s/%s %s (%s)", owner.Namespace, owner.Name, owner.Kind, existing.OwnerSystem)
+			}
+			if err := s.dao.DeactivateResourceOwnersByRequestID(existing.RequestID); err != nil {
+				return fmt.Errorf("释放旧资源 owner 失败: %v", err)
+			}
+			if err := s.dao.CreateResourceOwner(&owner); err != nil {
+				return fmt.Errorf("创建资源 owner 失败: %v", err)
 			}
 			continue
 		}
@@ -1315,6 +1347,60 @@ func (s *DeployService) reserveResourceOwners(req *model.DeployRequest) error {
 		}
 	}
 	return nil
+}
+
+func canTakeOverResourceOwner(existingReq, currentReq *model.DeployRequest, existingOwner, desiredOwner *model.ResourceOwner) bool {
+	if existingReq == nil || currentReq == nil || existingOwner == nil || desiredOwner == nil {
+		return false
+	}
+	if existingOwner.OwnerSystem != desiredOwner.OwnerSystem {
+		return false
+	}
+	if existingOwner.ClusterTargetID != desiredOwner.ClusterTargetID ||
+		existingOwner.Namespace != desiredOwner.Namespace ||
+		existingOwner.Kind != desiredOwner.Kind ||
+		existingOwner.Name != desiredOwner.Name {
+		return false
+	}
+	if strings.TrimSpace(existingReq.Mode) != strings.TrimSpace(currentReq.Mode) {
+		return false
+	}
+	if defaultUint(existingReq.ApplicationID) != defaultUint(currentReq.ApplicationID) {
+		return false
+	}
+	if existingReq.ClusterTargetID != currentReq.ClusterTargetID {
+		return false
+	}
+	if strings.TrimSpace(existingReq.Namespace) != strings.TrimSpace(currentReq.Namespace) {
+		return false
+	}
+	if strings.TrimSpace(existingReq.ReleaseName) != strings.TrimSpace(currentReq.ReleaseName) {
+		return false
+	}
+	existingEnv := deployRequestLogicalEnv(existingReq)
+	currentEnv := deployRequestLogicalEnv(currentReq)
+	if existingEnv == "" || currentEnv == "" {
+		return false
+	}
+	return existingEnv == currentEnv
+}
+
+func deployRequestLogicalEnv(req *model.DeployRequest) string {
+	if req == nil || strings.TrimSpace(req.EnvJSON) == "" {
+		return ""
+	}
+	var env map[string]interface{}
+	if err := json.Unmarshal([]byte(req.EnvJSON), &env); err != nil {
+		return ""
+	}
+	for _, key := range []string{"name", "env", "SPRING_PROFILES_ACTIVE", "spring_profiles_active"} {
+		if value, ok := env[key]; ok {
+			if normalized := strings.ToLower(strings.TrimSpace(fmt.Sprint(value))); normalized != "" && normalized != "<nil>" {
+				return normalized
+			}
+		}
+	}
+	return ""
 }
 
 func (s *DeployService) cleanupDirectRequestInternal(req *model.DeployRequest) error {
@@ -1666,6 +1752,62 @@ func buildExecutionSummary(req *model.DeployRequest) string {
 		return "执行失败"
 	}
 	return "执行中或待执行"
+}
+
+func buildAgentPipelineInfo(run *model.PipelineRun, stages []model.PipelineStageRecord) map[string]interface{} {
+	if run == nil {
+		return nil
+	}
+	info := map[string]interface{}{
+		"status":             run.Status,
+		"currentStage":       run.CurrentStage,
+		"gitRef":             run.GitRef,
+		"jenkinsQueueId":     run.JenkinsQueueID,
+		"jenkinsBuildNumber": run.JenkinsBuildNumber,
+		"jenkinsBuildUrl":    strings.TrimSpace(run.JenkinsBuildURL),
+		"harborProject":      run.HarborProject,
+		"harborRepository":   run.HarborRepository,
+		"artifactTag":        run.ArtifactTag,
+		"artifactDigest":     run.ArtifactDigest,
+		"plannedImageRef":    strings.TrimSpace(run.PlannedImageRef),
+		"finalImageRef":      strings.TrimSpace(run.FinalImageRef),
+		"imageRef":           firstNonEmptyAgentPipelineValue(strings.TrimSpace(run.FinalImageRef), strings.TrimSpace(run.PlannedImageRef)),
+		"scanStatus":         pipelineStageStatus(stages, model.PipelineStageScan),
+		"lastError":          strings.TrimSpace(run.LastError),
+	}
+	if len(stages) == 0 {
+		return info
+	}
+	summaries := make([]map[string]interface{}, 0, len(stages))
+	for _, stage := range stages {
+		summaries = append(summaries, map[string]interface{}{
+			"stage":        stage.Stage,
+			"status":       stage.Status,
+			"externalId":   stage.ExternalID,
+			"externalUrl":  stage.ExternalURL,
+			"errorMessage": stage.ErrorMessage,
+		})
+	}
+	info["stages"] = summaries
+	return info
+}
+
+func pipelineStageStatus(stages []model.PipelineStageRecord, stageName string) string {
+	for _, stage := range stages {
+		if stage.Stage == stageName {
+			return stage.Status
+		}
+	}
+	return ""
+}
+
+func firstNonEmptyAgentPipelineValue(values ...string) string {
+	for _, value := range values {
+		if strings.TrimSpace(value) != "" {
+			return strings.TrimSpace(value)
+		}
+	}
+	return ""
 }
 
 var validNamePattern = regexp.MustCompile(`[^a-z0-9-]+`)

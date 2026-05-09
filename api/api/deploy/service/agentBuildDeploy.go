@@ -25,6 +25,7 @@ func (s *DeployService) CreateAgentBuildDeployRequest(c *gin.Context, req *model
 		result.Failed(c, 400, "当前仅支持 dingtalk 外部身份类型")
 		return
 	}
+	env := strings.ToLower(strings.TrimSpace(req.Env))
 
 	var app appmodel.Application
 	if err := s.db.Where("code = ?", strings.TrimSpace(req.ApplicationCode)).First(&app).Error; err != nil {
@@ -33,7 +34,7 @@ func (s *DeployService) CreateAgentBuildDeployRequest(c *gin.Context, req *model
 	}
 
 	var profile appmodel.AppDeployProfile
-	if err := s.db.Where("app_id = ? AND env = ?", app.ID, strings.TrimSpace(req.Env)).First(&profile).Error; err != nil {
+	if err := s.db.Where("app_id = ? AND env = ?", app.ID, env).First(&profile).Error; err != nil {
 		result.Failed(c, 404, "应用环境未配置部署 Profile")
 		return
 	}
@@ -113,6 +114,7 @@ func (s *DeployService) CreateAgentProjectOnboardBuildDeployRequest(c *gin.Conte
 func buildAgentDeployRequestFromProfile(appID uint, profile *appmodel.AppDeployProfile, req *model.CreateAgentBuildDeployRequest) *model.CreateAgentDeployRequest {
 	gitRef := defaultAgentBuildGitRef(req.GitRef, profile.DefaultGitRef)
 	buildParams := mergeProfileMaps(profile.BuildParamsJSON, req.BuildParams)
+	setBuildParamIfBlank(buildParams, "HARBOR_CREDENTIALS_ID", defaultAgentProjectHarborCredentialsID(profile.HarborServerID))
 	buildParams["GIT_REF"] = gitRef
 	buildParams["ENV"] = profile.Env
 	buildParams["RELEASE_NAME"] = profile.ReleaseName
@@ -186,19 +188,20 @@ func defaultProfileResourceType(value string) string {
 }
 
 type agentProjectOnboardingDefaults struct {
-	AllowedGitHosts        []string
-	SharedJenkinsJobName   string
-	DefaultBusinessGroupID uint
-	DefaultBusinessDeptID  uint
-	DefaultJenkinsServerID uint
-	DefaultHarborServerID  uint
-	DefaultHarborProject   string
-	DefaultApproverAdminID uint
-	DevClusterTargetID     uint
-	TestClusterTargetID    uint
-	NamespacePrefix        string
-	DefaultServicePort     int32
-	DefaultTargetPort      int32
+	AllowedGitHosts            []string
+	SharedJenkinsJobName       string
+	DefaultBusinessGroupID     uint
+	DefaultBusinessDeptID      uint
+	DefaultJenkinsServerID     uint
+	DefaultHarborServerID      uint
+	DefaultHarborCredentialsID string
+	DefaultHarborProject       string
+	DefaultApproverAdminID     uint
+	DevClusterTargetID         uint
+	TestClusterTargetID        uint
+	NamespacePrefix            string
+	DefaultServicePort         int32
+	DefaultTargetPort          int32
 }
 
 type agentGitRepo struct {
@@ -217,19 +220,20 @@ func loadAgentProjectOnboardingDefaults() (*agentProjectOnboardingDefaults, erro
 		return nil, fmt.Errorf("integrations.agent.project_onboarding.enabled 未开启")
 	}
 	defaults := &agentProjectOnboardingDefaults{
-		AllowedGitHosts:        cfg.AllowedGitHosts,
-		SharedJenkinsJobName:   strings.TrimSpace(cfg.SharedJenkinsJobName),
-		DefaultBusinessGroupID: cfg.DefaultBusinessGroupID,
-		DefaultBusinessDeptID:  cfg.DefaultBusinessDeptID,
-		DefaultJenkinsServerID: cfg.DefaultJenkinsServerID,
-		DefaultHarborServerID:  cfg.DefaultHarborServerID,
-		DefaultHarborProject:   strings.TrimSpace(cfg.DefaultHarborProject),
-		DefaultApproverAdminID: cfg.DefaultApproverAdminID,
-		DevClusterTargetID:     cfg.DevClusterTargetID,
-		TestClusterTargetID:    cfg.TestClusterTargetID,
-		NamespacePrefix:        defaultString(cfg.NamespacePrefix, "ao-direct"),
-		DefaultServicePort:     defaultAgentProjectPort(cfg.DefaultServicePort, 80),
-		DefaultTargetPort:      defaultAgentProjectPort(cfg.DefaultTargetPort, 8080),
+		AllowedGitHosts:            cfg.AllowedGitHosts,
+		SharedJenkinsJobName:       strings.TrimSpace(cfg.SharedJenkinsJobName),
+		DefaultBusinessGroupID:     cfg.DefaultBusinessGroupID,
+		DefaultBusinessDeptID:      cfg.DefaultBusinessDeptID,
+		DefaultJenkinsServerID:     cfg.DefaultJenkinsServerID,
+		DefaultHarborServerID:      cfg.DefaultHarborServerID,
+		DefaultHarborCredentialsID: strings.TrimSpace(cfg.DefaultHarborCredentialsID),
+		DefaultHarborProject:       strings.TrimSpace(cfg.DefaultHarborProject),
+		DefaultApproverAdminID:     cfg.DefaultApproverAdminID,
+		DevClusterTargetID:         cfg.DevClusterTargetID,
+		TestClusterTargetID:        cfg.TestClusterTargetID,
+		NamespacePrefix:            defaultString(cfg.NamespacePrefix, "ao-direct"),
+		DefaultServicePort:         defaultAgentProjectPort(cfg.DefaultServicePort, 80),
+		DefaultTargetPort:          defaultAgentProjectPort(cfg.DefaultTargetPort, 8080),
 	}
 	if len(defaults.AllowedGitHosts) == 0 {
 		return nil, fmt.Errorf("allowed_git_hosts 未配置")
@@ -298,50 +302,55 @@ func (s *DeployService) ensureAgentProjectOnboarded(defaults *agentProjectOnboar
 			}
 			return syncAgentOnboardedProfileSideEffects(tx, &profile)
 		}
+		requiredBuildParams := requiredAgentProjectBuildParams(
+			repo.RawURL,
+			app.Code,
+			profileDefaults.HarborProject,
+			profileDefaults.HarborRepository,
+			profileDefaults.ServicePort,
+			profileDefaults.TargetPort,
+		)
+		setBuildParamIfBlank(requiredBuildParams, "HARBOR_CREDENTIALS_ID", defaults.DefaultHarborCredentialsID)
 
-		if err := validateAgentOnboardingClusterTarget(tx, profile.ClusterTargetID, env); err != nil {
-			return err
-		}
-
-		effectiveHarborProject := defaultString(profile.HarborProject, defaults.DefaultHarborProject)
-		effectiveHarborRepository := defaultString(profile.HarborRepository, app.Code)
-		effectiveServicePort := defaultAgentProjectPort(profile.ServicePort, defaults.DefaultServicePort)
-		effectiveTargetPort := defaultAgentProjectPort(profile.TargetPort, defaults.DefaultTargetPort)
 		updates := map[string]interface{}{
-			"build_params_json": mergeAgentProjectBuildParamsJSON(profile.BuildParamsJSON, requiredAgentProjectBuildParams(repo.RawURL, app.Code, effectiveHarborProject, effectiveHarborRepository, effectiveServicePort, effectiveTargetPort)),
+			"enabled":           profileDefaults.Enabled,
+			"cluster_target_id": profileDefaults.ClusterTargetID,
+			"namespace":         profileDefaults.Namespace,
+			"release_name":      profileDefaults.ReleaseName,
+			"resource_type":     profileDefaults.ResourceType,
+			"jenkins_server_id": profileDefaults.JenkinsServerID,
+			"jenkins_job_name":  profileDefaults.JenkinsJobName,
+			"harbor_server_id":  profileDefaults.HarborServerID,
+			"harbor_project":    profileDefaults.HarborProject,
+			"harbor_repository": profileDefaults.HarborRepository,
+			"default_git_ref":   profileDefaults.DefaultGitRef,
+			"approver_admin_id": profileDefaults.ApproverAdminID,
+			"replicas":          profileDefaults.Replicas,
+			"service_enabled":   profileDefaults.ServiceEnabled,
+			"service_type":      profileDefaults.ServiceType,
+			"service_port":      profileDefaults.ServicePort,
+			"target_port":       profileDefaults.TargetPort,
+			"application_code":  profileDefaults.ApplicationCode,
+			"build_params_json": mergeAgentProjectBuildParamsJSON(profile.BuildParamsJSON, requiredBuildParams),
 		}
-		if exposureSpecified && profile.Enabled {
+		if exposureSpecified {
 			updates["service_enabled"] = true
 			updates["service_type"] = serviceType
-			updates["service_port"] = effectiveServicePort
-			updates["target_port"] = effectiveTargetPort
 		}
-		if strings.TrimSpace(profile.JenkinsJobName) == "" {
-			updates["jenkins_job_name"] = defaults.SharedJenkinsJobName
+		if isEmptyProfileJSON(profile.EnvJSON) || strings.TrimSpace(profile.Namespace) != profileDefaults.Namespace {
+			updates["env_json"] = profileDefaults.EnvJSON
 		}
-		if profile.JenkinsServerID == 0 {
-			updates["jenkins_server_id"] = defaults.DefaultJenkinsServerID
+		if isEmptyProfileJSON(profile.ResourcesJSON) || strings.TrimSpace(profile.Namespace) != profileDefaults.Namespace {
+			updates["resources_json"] = profileDefaults.ResourcesJSON
 		}
-		if profile.HarborServerID == 0 {
-			updates["harbor_server_id"] = defaults.DefaultHarborServerID
+		if isEmptyProfileJSON(profile.ScanPolicyJSON) {
+			updates["scan_policy_json"] = profileDefaults.ScanPolicyJSON
 		}
-		if strings.TrimSpace(profile.HarborProject) == "" {
-			updates["harbor_project"] = effectiveHarborProject
+		if strings.TrimSpace(profile.HealthCheckPath) == "" {
+			updates["health_check_path"] = profileDefaults.HealthCheckPath
 		}
-		if strings.TrimSpace(profile.HarborRepository) == "" {
-			updates["harbor_repository"] = effectiveHarborRepository
-		}
-		if profile.ApproverAdminID == 0 {
-			updates["approver_admin_id"] = defaults.DefaultApproverAdminID
-		}
-		if strings.TrimSpace(profile.ApplicationCode) == "" {
-			updates["application_code"] = app.Code
-		}
-		if strings.TrimSpace(profile.DefaultGitRef) == "" {
-			updates["default_git_ref"] = "main"
-		}
-		if isEmptyProfileJSON(profile.ResourcesJSON) {
-			updates["resources_json"] = marshalProfileMap(defaultAgentProjectResources())
+		if strings.TrimSpace(profile.Description) == "" {
+			updates["description"] = profileDefaults.Description
 		}
 		if err := tx.Model(&profile).Updates(updates).Error; err != nil {
 			return err
@@ -391,13 +400,15 @@ func buildAgentOnboardingProfileDefaults(defaults *agentProjectOnboardingDefault
 	servicePort := defaults.DefaultServicePort
 	targetPort := defaults.DefaultTargetPort
 	harborRepository := app.Code
+	requiredBuildParams := requiredAgentProjectBuildParams(repo.RawURL, app.Code, defaults.DefaultHarborProject, harborRepository, servicePort, targetPort)
+	setBuildParamIfBlank(requiredBuildParams, "HARBOR_CREDENTIALS_ID", defaults.DefaultHarborCredentialsID)
 	return appmodel.AppDeployProfile{
 		AppID:            app.ID,
 		ApplicationCode:  app.Code,
 		Env:              env,
 		Enabled:          true,
 		ClusterTargetID:  clusterTargetID,
-		Namespace:        strings.Trim(strings.TrimSpace(defaults.NamespacePrefix), "-") + "-" + app.Code,
+		Namespace:        buildAgentOnboardingNamespace(defaults.NamespacePrefix, app.Code, env),
 		ReleaseName:      app.Code,
 		ResourceType:     model.DeployResourceTypeDeployment,
 		JenkinsServerID:  defaults.DefaultJenkinsServerID,
@@ -414,11 +425,52 @@ func buildAgentOnboardingProfileDefaults(defaults *agentProjectOnboardingDefault
 		TargetPort:       targetPort,
 		EnvJSON:          marshalProfileMap(map[string]interface{}{"SPRING_PROFILES_ACTIVE": env}),
 		ResourcesJSON:    marshalProfileMap(defaultAgentProjectResources()),
-		BuildParamsJSON:  mergeAgentProjectBuildParamsJSON("{}", requiredAgentProjectBuildParams(repo.RawURL, app.Code, defaults.DefaultHarborProject, harborRepository, servicePort, targetPort)),
+		BuildParamsJSON:  mergeAgentProjectBuildParamsJSON("{}", requiredBuildParams),
 		ScanPolicyJSON:   "{}",
 		HealthCheckPath:  "/actuator/health",
 		Description:      "Hermes GitLab 项目自动接入生成的部署 Profile",
 	}
+}
+
+func defaultAgentProjectHarborCredentialsID(harborServerID uint) string {
+	if config.Config == nil {
+		return ""
+	}
+	cfg := config.Config.Integrations.Agent.ProjectOnboarding
+	credentialID := strings.TrimSpace(cfg.DefaultHarborCredentialsID)
+	if credentialID == "" {
+		return ""
+	}
+	if cfg.DefaultHarborServerID != 0 && harborServerID != 0 && harborServerID != cfg.DefaultHarborServerID {
+		return ""
+	}
+	return credentialID
+}
+
+func setBuildParamIfBlank(params map[string]interface{}, key, value string) {
+	if params == nil {
+		return
+	}
+	value = strings.TrimSpace(value)
+	if value == "" {
+		return
+	}
+	if existing, ok := params[key]; ok && strings.TrimSpace(fmt.Sprint(existing)) != "" {
+		return
+	}
+	params[key] = value
+}
+
+func buildAgentOnboardingNamespace(prefix, appCode, env string) string {
+	base := strings.Trim(strings.TrimSpace(prefix), "-")
+	if base == "" {
+		base = "ao-direct"
+	}
+	parts := []string{base, strings.Trim(strings.TrimSpace(appCode), "-")}
+	if normalizedEnv := strings.ToLower(strings.TrimSpace(env)); normalizedEnv != "" {
+		parts = append(parts, normalizedEnv)
+	}
+	return strings.Join(parts, "-")
 }
 
 func validateAgentOnboardingClusterTarget(tx *gorm.DB, clusterTargetID uint, env string) error {
@@ -432,10 +484,23 @@ func validateAgentOnboardingClusterTarget(tx *gorm.DB, clusterTargetID uint, env
 	if strings.TrimSpace(target.DirectKubeconfigRef) == "" {
 		return fmt.Errorf("部署目标 %s 未配置 directKubeconfigRef，无法 Direct 部署", target.Name)
 	}
-	if strings.ToLower(strings.TrimSpace(target.EnvType)) != strings.ToLower(strings.TrimSpace(env)) {
+	if !clusterTargetMatchesAgentEnv(target.EnvType, env) {
 		return fmt.Errorf("部署目标与环境不匹配（集群目标 envType=%s，profile env=%s 不匹配）", strings.TrimSpace(target.EnvType), strings.TrimSpace(env))
 	}
 	return nil
+}
+
+func clusterTargetMatchesAgentEnv(targetEnvType, requestedEnv string) bool {
+	targetEnvType = strings.ToLower(strings.TrimSpace(targetEnvType))
+	requestedEnv = strings.ToLower(strings.TrimSpace(requestedEnv))
+	switch requestedEnv {
+	case appmodel.DeployProfileEnvDev:
+		return targetEnvType == appmodel.DeployProfileEnvDev
+	case appmodel.DeployProfileEnvTest:
+		return targetEnvType == appmodel.DeployProfileEnvTest || targetEnvType == "devtest" || targetEnvType == "staging"
+	default:
+		return false
+	}
 }
 
 func syncAgentOnboardedProfileSideEffects(tx *gorm.DB, profile *appmodel.AppDeployProfile) error {

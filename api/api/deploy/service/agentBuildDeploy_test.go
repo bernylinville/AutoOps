@@ -1,13 +1,32 @@
 package service
 
 import (
+	"os"
 	"testing"
 
 	appmodel "dodevops-api/api/app/model"
 	deploymodel "dodevops-api/api/deploy/model"
+	"dodevops-api/common/config"
 )
 
+func loadAgentBuildDeployTestConfig(t *testing.T, content string) {
+	t.Helper()
+	originalConfig := config.Config
+	configPath := t.TempDir() + "/config.yaml"
+	if err := os.WriteFile(configPath, []byte(content), 0o600); err != nil {
+		t.Fatalf("WriteFile() error = %v", err)
+	}
+	if err := config.LoadConfig(configPath); err != nil {
+		t.Fatalf("LoadConfig() error = %v", err)
+	}
+	t.Cleanup(func() {
+		config.Config = originalConfig
+	})
+}
+
 func TestBuildAgentDeployRequestFromProfileMapsProfileAndOverrides(t *testing.T) {
+	loadAgentBuildDeployTestConfig(t, "integrations:\n  agent:\n    project_onboarding:\n      default_harbor_server_id: 4\n      default_harbor_credentials_id: harbor-robot\n")
+
 	appID := uint(42)
 	profile := &appmodel.AppDeployProfile{
 		Env:              appmodel.DeployProfileEnvDev,
@@ -64,6 +83,9 @@ func TestBuildAgentDeployRequestFromProfileMapsProfileAndOverrides(t *testing.T)
 	}
 	if got.BuildParams["MAVEN_PROFILE"] != "fast" {
 		t.Fatalf("request build params should override profile params: %v", got.BuildParams)
+	}
+	if got.BuildParams["HARBOR_CREDENTIALS_ID"] != "harbor-robot" {
+		t.Fatalf("default harbor credentials id should be injected, got %v", got.BuildParams)
 	}
 	if got.Env["name"] != appmodel.DeployProfileEnvDev || got.Env["JAVA_OPTS"] != "-Xmx512m" {
 		t.Fatalf("env not merged: %v", got.Env)
@@ -262,21 +284,22 @@ func TestAgentServiceTypeFromExposureMode(t *testing.T) {
 
 func TestBuildAgentOnboardingProfileDefaults(t *testing.T) {
 	defaults := &agentProjectOnboardingDefaults{
-		SharedJenkinsJobName:   "autoops-springboot-build",
-		DefaultJenkinsServerID: 3,
-		DefaultHarborServerID:  4,
-		DefaultHarborProject:   "library",
-		DefaultApproverAdminID: 5,
-		NamespacePrefix:        "ao-direct",
-		DefaultServicePort:     80,
-		DefaultTargetPort:      8080,
+		SharedJenkinsJobName:       "autoops-springboot-build",
+		DefaultJenkinsServerID:     3,
+		DefaultHarborServerID:      4,
+		DefaultHarborCredentialsID: "harbor-robot",
+		DefaultHarborProject:       "library",
+		DefaultApproverAdminID:     5,
+		NamespacePrefix:            "ao-direct",
+		DefaultServicePort:         80,
+		DefaultTargetPort:          8080,
 	}
 	app := &appmodel.Application{ID: 42, Code: "springboot-demo"}
 	repo := agentGitRepo{RawURL: "git@gayhub.seeingtv.com:demo/springboot-demo.git", Host: "gayhub.seeingtv.com", Path: "demo/springboot-demo", RepoName: "springboot-demo"}
 
 	got := buildAgentOnboardingProfileDefaults(defaults, app, repo, appmodel.DeployProfileEnvDev, 7, "NodePort")
 
-	if got.Namespace != "ao-direct-springboot-demo" || got.ReleaseName != "springboot-demo" {
+	if got.Namespace != "ao-direct-springboot-demo-dev" || got.ReleaseName != "springboot-demo" {
 		t.Fatalf("namespace/release defaults wrong: namespace=%q release=%q", got.Namespace, got.ReleaseName)
 	}
 	if got.ServiceType != "NodePort" || got.ServicePort != 80 || got.TargetPort != 8080 {
@@ -297,5 +320,56 @@ func TestBuildAgentOnboardingProfileDefaults(t *testing.T) {
 	params := mergeProfileMaps(got.BuildParamsJSON, nil)
 	if params["GIT_URL"] != repo.RawURL || params["APPLICATION_CODE"] != app.Code || params["HARBOR_PROJECT"] != "library" || params["HARBOR_REPOSITORY"] != app.Code {
 		t.Fatalf("build params missing required values: %v", params)
+	}
+	if params["HARBOR_CREDENTIALS_ID"] != "harbor-robot" {
+		t.Fatalf("build params should carry harbor credential id, got %v", params)
+	}
+}
+
+func TestBuildAgentDeployRequestFromProfileKeepsExplicitHarborCredentialsID(t *testing.T) {
+	loadAgentBuildDeployTestConfig(t, "integrations:\n  agent:\n    project_onboarding:\n      default_harbor_server_id: 4\n      default_harbor_credentials_id: harbor-robot\n")
+
+	profile := &appmodel.AppDeployProfile{
+		Env:             appmodel.DeployProfileEnvTest,
+		JenkinsServerID: 3,
+		JenkinsJobName:  "java-demo-build",
+		HarborServerID:  4,
+		ApproverAdminID: 9,
+		ReleaseName:     "java-demo",
+		BuildParamsJSON: `{"HARBOR_CREDENTIALS_ID":"custom-harbor-creds"}`,
+	}
+	req := &deploymodel.CreateAgentBuildDeployRequest{
+		RequesterExternalType: "dingtalk",
+		BuildParams:           map[string]interface{}{},
+		ChatContext:           map[string]interface{}{},
+	}
+
+	got := buildAgentDeployRequestFromProfile(42, profile, req)
+
+	if got.BuildParams["HARBOR_CREDENTIALS_ID"] != "custom-harbor-creds" {
+		t.Fatalf("explicit harbor credentials id should win, got %v", got.BuildParams)
+	}
+}
+
+func TestBuildAgentOnboardingNamespace(t *testing.T) {
+	if got := buildAgentOnboardingNamespace("ao-direct", "java-demo", "test"); got != "ao-direct-java-demo-test" {
+		t.Fatalf("buildAgentOnboardingNamespace() = %q, want %q", got, "ao-direct-java-demo-test")
+	}
+	if got := buildAgentOnboardingNamespace("", "java-demo", "TEST"); got != "ao-direct-java-demo-test" {
+		t.Fatalf("buildAgentOnboardingNamespace() should normalize defaults, got %q", got)
+	}
+}
+
+func TestClusterTargetMatchesAgentEnv(t *testing.T) {
+	if !clusterTargetMatchesAgentEnv("dev", appmodel.DeployProfileEnvDev) {
+		t.Fatal("expected dev target to match dev env")
+	}
+	for _, targetEnv := range []string{"test", "devtest", "staging"} {
+		if !clusterTargetMatchesAgentEnv(targetEnv, appmodel.DeployProfileEnvTest) {
+			t.Fatalf("expected %q target envType to match test env", targetEnv)
+		}
+	}
+	if clusterTargetMatchesAgentEnv("dev", appmodel.DeployProfileEnvTest) {
+		t.Fatal("expected dev target not to match test env")
 	}
 }

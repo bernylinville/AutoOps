@@ -228,6 +228,7 @@ integrations:
       defaultBusinessDeptID: 0
       defaultJenkinsServerID: 0
       defaultHarborServerID: 0
+      defaultHarborCredentialsID: ""
       defaultHarborProject: ""
       defaultApproverAdminID: 0
       devClusterTargetID: 0

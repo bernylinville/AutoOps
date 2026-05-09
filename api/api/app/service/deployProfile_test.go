@@ -56,6 +56,8 @@ func TestValidateDeployProfileRefs_EnvTypeMismatch(t *testing.T) {
 		{clusterEnvType: "dev", profileEnv: "test", wantErr: true},
 		{clusterEnvType: "dev", profileEnv: "dev", wantErr: false},
 		{clusterEnvType: "test", profileEnv: "test", wantErr: false},
+		{clusterEnvType: "staging", profileEnv: "test", wantErr: false},
+		{clusterEnvType: "devtest", profileEnv: "test", wantErr: false},
 		{clusterEnvType: "dev", profileEnv: "  dev  ", wantErr: false},
 		{clusterEnvType: "Dev", profileEnv: "dev", wantErr: false},
 		{clusterEnvType: "TEST", profileEnv: "test", wantErr: false},

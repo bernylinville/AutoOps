@@ -7,6 +7,135 @@ import (
 	deploymodel "dodevops-api/api/deploy/model"
 )
 
+func TestCanTakeOverResourceOwnerAllowsSameAppEnvSlice(t *testing.T) {
+	appID := uint(42)
+	existingReq := &deploymodel.DeployRequest{
+		Mode:            deploymodel.DeployModeDirect,
+		ApplicationID:   &appID,
+		ClusterTargetID: 2,
+		Namespace:       "ao-direct-java-demo-test",
+		ReleaseName:     "java-demo",
+		EnvJSON:         `{"name":"test","env":"test"}`,
+	}
+	currentReq := &deploymodel.DeployRequest{
+		Mode:            deploymodel.DeployModeDirect,
+		ApplicationID:   &appID,
+		ClusterTargetID: 2,
+		Namespace:       "ao-direct-java-demo-test",
+		ReleaseName:     "java-demo",
+		EnvJSON:         `{"SPRING_PROFILES_ACTIVE":"test"}`,
+	}
+	existingOwner := &deploymodel.ResourceOwner{
+		ClusterTargetID: 2,
+		Namespace:       "ao-direct-java-demo-test",
+		Kind:            "Deployment",
+		Name:            "java-demo",
+		OwnerSystem:     deploymodel.ResourceOwnerSystemDirect,
+	}
+	desiredOwner := &deploymodel.ResourceOwner{
+		ClusterTargetID: 2,
+		Namespace:       "ao-direct-java-demo-test",
+		Kind:            "Deployment",
+		Name:            "java-demo",
+		OwnerSystem:     deploymodel.ResourceOwnerSystemDirect,
+	}
+
+	if !canTakeOverResourceOwner(existingReq, currentReq, existingOwner, desiredOwner) {
+		t.Fatal("expected same app/env/namespace/release to allow takeover")
+	}
+}
+
+func TestCanTakeOverResourceOwnerRejectsDifferentEnv(t *testing.T) {
+	appID := uint(42)
+	existingReq := &deploymodel.DeployRequest{
+		Mode:            deploymodel.DeployModeDirect,
+		ApplicationID:   &appID,
+		ClusterTargetID: 2,
+		Namespace:       "ao-direct-java-demo-test",
+		ReleaseName:     "java-demo",
+		EnvJSON:         `{"name":"dev"}`,
+	}
+	currentReq := &deploymodel.DeployRequest{
+		Mode:            deploymodel.DeployModeDirect,
+		ApplicationID:   &appID,
+		ClusterTargetID: 2,
+		Namespace:       "ao-direct-java-demo-test",
+		ReleaseName:     "java-demo",
+		EnvJSON:         `{"name":"test"}`,
+	}
+	existingOwner := &deploymodel.ResourceOwner{
+		ClusterTargetID: 2,
+		Namespace:       "ao-direct-java-demo-test",
+		Kind:            "Deployment",
+		Name:            "java-demo",
+		OwnerSystem:     deploymodel.ResourceOwnerSystemDirect,
+	}
+	desiredOwner := &deploymodel.ResourceOwner{
+		ClusterTargetID: 2,
+		Namespace:       "ao-direct-java-demo-test",
+		Kind:            "Deployment",
+		Name:            "java-demo",
+		OwnerSystem:     deploymodel.ResourceOwnerSystemDirect,
+	}
+
+	if canTakeOverResourceOwner(existingReq, currentReq, existingOwner, desiredOwner) {
+		t.Fatal("expected different logical env to block takeover")
+	}
+}
+
+func TestDeployRequestLogicalEnv(t *testing.T) {
+	if got := deployRequestLogicalEnv(&deploymodel.DeployRequest{EnvJSON: `{"env":"test"}`}); got != "test" {
+		t.Fatalf("deployRequestLogicalEnv() = %q, want %q", got, "test")
+	}
+	if got := deployRequestLogicalEnv(&deploymodel.DeployRequest{EnvJSON: `{"SPRING_PROFILES_ACTIVE":"DEV"}`}); got != "dev" {
+		t.Fatalf("deployRequestLogicalEnv() should normalize profile env, got %q", got)
+	}
+	if got := deployRequestLogicalEnv(&deploymodel.DeployRequest{EnvJSON: `not-json`}); got != "" {
+		t.Fatalf("deployRequestLogicalEnv() should ignore invalid JSON, got %q", got)
+	}
+}
+
+func TestBuildAgentPipelineInfo(t *testing.T) {
+	run := &deploymodel.PipelineRun{
+		Status:             deploymodel.PipelineStatusScanning,
+		CurrentStage:       deploymodel.PipelineStageScan,
+		GitRef:             "main",
+		JenkinsQueueID:     7,
+		JenkinsBuildNumber: 28,
+		JenkinsBuildURL:    "http://10.0.17.204/job/java-demo-build/28/",
+		HarborProject:      "java-demo",
+		HarborRepository:   "java-demo",
+		ArtifactTag:        "main-28",
+		PlannedImageRef:    "10.0.17.205:80/java-demo/java-demo:main-28",
+		LastError:          "",
+	}
+	stages := []deploymodel.PipelineStageRecord{
+		{Stage: deploymodel.PipelineStageBuild, Status: deploymodel.PipelineStageStatusSucceeded},
+		{Stage: deploymodel.PipelineStageScan, Status: deploymodel.PipelineStageStatusRunning},
+	}
+
+	info := buildAgentPipelineInfo(run, stages)
+	if info == nil {
+		t.Fatal("expected non-nil pipeline info")
+	}
+	if info["currentStage"] != deploymodel.PipelineStageScan || info["scanStatus"] != deploymodel.PipelineStageStatusRunning {
+		t.Fatalf("unexpected stage summary: %+v", info)
+	}
+	if info["imageRef"] != run.PlannedImageRef {
+		t.Fatalf("expected imageRef to fall back to planned image, got %+v", info["imageRef"])
+	}
+	stageSummaries, ok := info["stages"].([]map[string]interface{})
+	if !ok || len(stageSummaries) != 2 {
+		t.Fatalf("expected simplified stage summaries, got %#v", info["stages"])
+	}
+}
+
+func TestBuildAgentPipelineInfoNilRun(t *testing.T) {
+	if got := buildAgentPipelineInfo(nil, nil); got != nil {
+		t.Fatalf("expected nil pipeline info for nil run, got %#v", got)
+	}
+}
+
 func TestBuildAccessInfoNilRequest(t *testing.T) {
 	if got := buildAccessInfo(nil); got != nil {
 		t.Fatalf("expected nil for nil request, got %+v", got)

@@ -343,10 +343,23 @@ func deleteProfileManagedSideEffects(db *gorm.DB, profile *appmodel.AppDeployPro
 // checkClusterTargetEnvType returns an error when the cluster target's env type
 // does not match the profile's env. Extracted as a pure function for testability.
 func checkClusterTargetEnvType(clusterEnvType, profileEnv string) error {
-	if strings.ToLower(strings.TrimSpace(clusterEnvType)) != strings.ToLower(strings.TrimSpace(profileEnv)) {
+	if !clusterTargetMatchesProfileEnv(clusterEnvType, profileEnv) {
 		return fmt.Errorf("部署目标与环境不匹配（集群目标 envType=%s，profile env=%s 不匹配）", strings.TrimSpace(clusterEnvType), strings.TrimSpace(profileEnv))
 	}
 	return nil
+}
+
+func clusterTargetMatchesProfileEnv(clusterEnvType, profileEnv string) bool {
+	clusterEnvType = strings.ToLower(strings.TrimSpace(clusterEnvType))
+	profileEnv = strings.ToLower(strings.TrimSpace(profileEnv))
+	switch profileEnv {
+	case appmodel.DeployProfileEnvDev:
+		return clusterEnvType == appmodel.DeployProfileEnvDev
+	case appmodel.DeployProfileEnvTest:
+		return clusterEnvType == appmodel.DeployProfileEnvTest || clusterEnvType == "devtest" || clusterEnvType == "staging"
+	default:
+		return clusterEnvType == profileEnv
+	}
 }
 
 func marshalProfileJSON(v map[string]interface{}) string {

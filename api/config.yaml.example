@@ -82,6 +82,7 @@ integrations:
       default_business_dept_id: 0
       default_jenkins_server_id: 0
       default_harbor_server_id: 0
+      default_harbor_credentials_id: ""
       default_harbor_project: ""
       default_approver_admin_id: 0
       dev_cluster_target_id: 0

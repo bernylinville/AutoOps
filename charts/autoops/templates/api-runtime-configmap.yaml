@@ -140,6 +140,7 @@ data:
           default_business_dept_id: {{ .Values.integrations.agent.projectOnboarding.defaultBusinessDeptID }}
           default_jenkins_server_id: {{ .Values.integrations.agent.projectOnboarding.defaultJenkinsServerID }}
           default_harbor_server_id: {{ .Values.integrations.agent.projectOnboarding.defaultHarborServerID }}
+          default_harbor_credentials_id: {{ .Values.integrations.agent.projectOnboarding.defaultHarborCredentialsID | quote }}
           default_harbor_project: {{ .Values.integrations.agent.projectOnboarding.defaultHarborProject | quote }}
           default_approver_admin_id: {{ .Values.integrations.agent.projectOnboarding.defaultApproverAdminID }}
           dev_cluster_target_id: {{ .Values.integrations.agent.projectOnboarding.devClusterTargetID }}
