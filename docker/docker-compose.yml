@@ -13,7 +13,7 @@ services:
       TZ: ${TZ:-Asia/Shanghai}
     volumes:
       # Persistent data directory
-      - ./postgres/data:/var/lib/postgresql/data
+      - postgres-data:/var/lib/postgresql/data
       # Initialization SQL scripts (executed in alphabetical order)
       - ./postgres/init:/docker-entrypoint-initdb.d
     command:
@@ -42,7 +42,7 @@ services:
       TZ: ${TZ:-Asia/Shanghai}
     volumes:
       # Persistent data directory
-      - ./valkey/data:/data
+      - valkey-data:/data
       # Valkey configuration
       - ./valkey/valkey.conf:/usr/local/etc/valkey/valkey.conf
     networks:
@@ -65,7 +65,7 @@ services:
       TZ: ${TZ:-Asia/Shanghai}
     volumes:
       # Persistent data
-      - ./pushgateway/data:/pushgateway
+      - pushgateway-data:/pushgateway
     networks:
       - devops-network
     healthcheck:
@@ -88,7 +88,7 @@ services:
       # Prometheus configuration
       - ./prometheus/prometheus.yml:/etc/prometheus/prometheus.yml
       # Persistent data directory
-      - ./prometheus/data:/prometheus
+      - prometheus-data:/prometheus
     command:
       - '--config.file=/etc/prometheus/prometheus.yml'
       - '--storage.tsdb.path=/prometheus'
@@ -133,11 +133,11 @@ services:
       # Configuration file
       - ./api/config.yaml:/app/config.yaml
       # Logs directory
-      - ./api/logs:/app/log
+      - api-logs:/app/log
       # Upload files directory
-      - ./api/upload:/app/upload
+      - api-upload:/app/upload
       # Excel template file
-      - ./api/upload/host.xlsx:/app/upload/xlsl/host.xlsx
+      - ./api/templates/host.xlsx:/app/upload/xlsl/host.xlsx:ro
       # SSH keys (persistent across container restarts)
       - ./api/ssh_keys:/root/.ssh:ro
     networks:
@@ -172,7 +172,7 @@ services:
       # Nginx configuration
       - ./web/devops.conf:/etc/nginx/conf.d/default.conf
       # Upload files static service (shared with API)
-      - ./api/upload:/home/devops/upload
+      - api-upload:/home/devops/upload
     networks:
       - devops-network
     depends_on:
@@ -192,6 +192,14 @@ networks:
 
 volumes:
   postgres-data:
+    name: autoops-postgres-data
   valkey-data:
+    name: autoops-valkey-data
   prometheus-data:
+    name: autoops-prometheus-data
   pushgateway-data:
+    name: autoops-pushgateway-data
+  api-logs:
+    name: autoops-api-log
+  api-upload:
+    name: autoops-api-upload

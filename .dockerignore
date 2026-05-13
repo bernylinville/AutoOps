@@ -1,0 +1,4 @@
+docker/postgres/data
+docker/valkey/data
+docker/prometheus/data
+docker/pushgateway/data
