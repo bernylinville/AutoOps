@@ -1,0 +1,51 @@
+roadmap: dingtalk-autoops-deploy-e2e
+created: 2026-05-12
+
+items:
+  - slug: java-demo-dingtalk-minimal-e2e
+    description: 用用户原话跑通钉钉群到 Hermes、AutoOps、OA 审批、Jenkins、Harbor、Direct NodePort 和回群通知的最小 E2E
+    depends_on: []
+    status: done
+    feature: 2026-05-12-java-demo-dingtalk-minimal-e2e
+    minimal_loop: true
+    notes: 只做阻塞最小 E2E 的配置或脚本修正，不扩大到 Gateway、生产环境或多语言模板重构
+
+  - slug: autoops-production-config-readiness
+    description: 校验并修正 AutoOps 生产 Helm runtime config、Secret、ClusterTarget、Jenkins、Harbor、project onboarding 和 deploy_bot 配置
+    depends_on: []
+    status: planned
+    feature: null
+    minimal_loop: false
+    notes: 不记录 Secret 值；重点确认 nodeport_access_host 渲染但未被 Go 消费的问题
+
+  - slug: hermes-deploy-skill-routing
+    description: 更新 opsclaw Hermes skill 和脚本，使 Git URL、测试环境、对外访问稳定路由到 project-onboard-build-deploy 并使用 snake_case chatContext
+    depends_on: []
+    status: planned
+    feature: null
+    minimal_loop: false
+    notes: 当前 opsclaw skill 方向正确，但脚本仍输出 chatId 和 atUserIds，需要统一为 chat_id 和 at_user_ids
+
+  - slug: repo-jenkinsfile-build-contract
+    description: 固化 repo Jenkinsfile 的标准输入参数和 AUTOOPS_IMAGE 输出协议，并让 AutoOps 优先解析显式镜像结果
+    depends_on: []
+    status: planned
+    feature: null
+    minimal_loop: false
+    notes: 可复用已有草稿 .codestable/features/2026-05-12-repo-jenkinsfile-build-contract/repo-jenkinsfile-build-contract-design.md
+
+  - slug: nodeport-access-feedback
+    description: 确保 Direct 部署状态查询和钉钉通知返回稳定可用的 NodePort 外部访问 URL
+    depends_on: [autoops-production-config-readiness]
+    status: planned
+    feature: null
+    minimal_loop: false
+    notes: 先确认节点 IP URL 是否满足测试环境；如需固定地址，再实现 Go config 中的 nodeport_access_host 或 Profile URL 模板
+
+  - slug: e2e-runbook-and-evidence
+    description: 形成可重复执行的 E2E 测试手册和证据模板，覆盖请求号、审批、Jenkins、Harbor、Kubernetes 和钉钉通知
+    depends_on: [java-demo-dingtalk-minimal-e2e]
+    status: planned
+    feature: null
+    minimal_loop: false
+    notes: 只记录资源名、状态、时间和脱敏链接，不记录任何真实凭据

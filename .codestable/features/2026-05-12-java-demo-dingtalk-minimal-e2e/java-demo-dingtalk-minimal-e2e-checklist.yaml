@@ -1,0 +1,120 @@
+feature: 2026-05-12-java-demo-dingtalk-minimal-e2e
+created: 2026-05-12
+
+steps:
+  - action: "Preflight 骨架：只读检查 Hermes、AutoOps、pukka-gitops、Kubespray、Jenkins、Harbor、ClusterTarget 和 Secret key 存在性"
+    exit_signal: "得到一份不含 Secret 值的可触发或阻塞判断，阻塞项已归类到本 feature 战术修正或后续 roadmap item"
+    status: done
+
+  - action: "战术修正节点：只处理最小 E2E 必需的小修，例如 Hermes chatContext snake_case、Jenkinsfile 输出 IMAGE_TAG"
+    exit_signal: "能构造符合 roadmap 第 4.2 节的 Agent 请求，且 Jenkins Console Output 至少有一种当前 AutoOps 可解析镜像结果"
+    status: done
+
+  - action: "真实入口触发：在钉钉群发送用户原话，由 Hermes 调 AutoOps"
+    exit_signal: "群内或 Hermes 响应出现 requestNo，AutoOps 返回 workflowKind=build_deploy、mode=direct、approvalStatus=pending"
+    status: done
+
+  - action: "审批与流水线推进：审批人通过 OA，等待审批同步和 PipelineScheduler 自动执行"
+    exit_signal: "状态查询显示 approvalStatus=approved，pipelineStatus 进入 building/deploying/succeeded，或失败时有明确 stage error"
+    status: done
+
+  - action: "Kubernetes 与访问验证：确认测试 namespace 中 Deployment ready、Service(type=NodePort) 存在，并验证访问 URL"
+    exit_signal: "访问 http://<node-ip>:<nodePort>/ 或等价方式返回 java-demo 可识别响应，状态接口 accessInfo 包含镜像、namespace、NodePort 或 accessUrls"
+    status: done
+
+  - action: "回群与证据收尾：确认 deploy_bot 通知发送成功，并写入 feature-local 证据包"
+    exit_signal: "钉钉群可见部署结果，证据包包含 requestNo、审批、Jenkins、Harbor、Kubernetes、访问 URL 和通知记录"
+    status: done
+
+checks:
+  - item: "Agent 请求使用 project-onboard-build-deploy，包含 gitRepoUrl、env=test、gitRef=main、exposureMode=nodeport 和 snake_case chatContext"
+    source: 名词契约
+    status: passed
+
+  - item: "本 feature 不新增 AutoOps API 字段，只在必要时修正 opsclaw Hermes 请求体和 Jenkinsfile 旧格式镜像输出"
+    source: 名词契约
+    status: passed
+
+  - item: "真实流程从钉钉群用户原话触发，裸 curl 只作为定位手段，不算最终验收"
+    source: 编排骨架
+    status: passed
+
+  - item: "创建请求后必须先进入 OA 审批，approvalStatus=approved 前不得触发部署"
+    source: 流程级约束
+    status: passed
+
+  - item: "重复请求复用 Application(code=java-demo) 和 test Profile，但每次创建新的 DeployRequest / PipelineRun"
+    source: 流程级约束
+    status: passed
+
+  - item: "任一阶段失败时，证据包记录失败阶段、错误信息和应转入的后续 roadmap item"
+    source: 流程级约束
+    status: passed
+
+  - item: "opsclaw Hermes skill / 脚本如被修改，只修改 chatContext key 为 snake_case"
+    source: 挂载点
+    status: passed
+
+  - item: "java-demo Jenkinsfile 如被修改，只补当前 AutoOps 可解析的 IMAGE_TAG 或等价旧格式输出"
+    source: 挂载点
+    status: passed
+
+  - item: "feature-local evidence 文件记录脱敏证据，不记录任何 Secret 值"
+    source: 挂载点
+    status: passed
+
+  - item: "不支持生产环境、prod、正式发布或复杂审批矩阵"
+    source: 范围守护
+    status: passed
+
+  - item: "不新增 Gateway / Ingress / MetalLB 独立暴露模式"
+    source: 范围守护
+    status: passed
+
+  - item: "Hermes 不追问或提交 image、namespace、clusterTargetId、jenkinsJobName、harborProject 等 Profile 字段"
+    source: 范围守护
+    status: passed
+
+  - item: "不写 pukka-gitops release 文件，不依赖 ArgoCD 托管本次业务应用部署"
+    source: 范围守护
+    status: passed
+
+  - item: "不把真实 token、密码、PAT、webhook、kubeconfig、钉钉 Secret 写入 .codestable 文档"
+    source: 范围守护
+    status: passed
+
+  - item: "Preflight 正常时，证据包记录可触发判断或明确 blocker，且不包含 Secret 值"
+    source: 验收场景
+    status: passed
+
+  - item: "钉钉群发送用户原话后，Hermes 请求字段与意图解析结果正确"
+    source: 验收场景
+    status: passed
+
+  - item: "AutoOps 创建申请成功后返回 requestNo、mode=direct、workflowKind=build_deploy、approvalStatus=pending 和测试 namespace"
+    source: 验收场景
+    status: passed
+
+  - item: "审批通过后状态查询显示 approvalStatus=approved，且 build-deploy 不绕过审批直接执行"
+    source: 验收场景
+    status: passed
+
+  - item: "Jenkins build 成功，Console Output 包含 AutoOps 当前可解析的镜像 tag 或 image ref"
+    source: 验收场景
+    status: passed
+
+  - item: "Harbor 出现本次 build 对应的 java-demo artifact，AutoOps finalImageRef 指向该镜像"
+    source: 验收场景
+    status: passed
+
+  - item: "Kubernetes 测试 namespace 中 Deployment/java-demo ready，Service/java-demo 为 NodePort"
+    source: 验收场景
+    status: passed
+
+  - item: "访问 NodePort URL 返回 java-demo 可识别响应"
+    source: 验收场景
+    status: passed
+
+  - item: "deploy_bot 回群消息包含申请号、状态、镜像、namespace、Service 类型、NodePort 或访问地址"
+    source: 验收场景
+    status: passed
