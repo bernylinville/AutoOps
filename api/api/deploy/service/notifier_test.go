@@ -100,8 +100,9 @@ func TestBuildMarkdown_IncludesAccessInfo(t *testing.T) {
 	if !strings.Contains(text, "80") {
 		t.Fatalf("expected service port in markdown, got:\n%s", text)
 	}
-	if !strings.Contains(text, "对外访问地址") || !strings.Contains(text, "http://10.0.17.40:30278/") {
-		t.Fatalf("expected external access URL in markdown, got:\n%s", text)
+	wantAccessLink := "[http://10.0.17.40:30278/](http://10.0.17.40:30278/)"
+	if !strings.Contains(text, "对外访问地址") || !strings.Contains(text, wantAccessLink) {
+		t.Fatalf("expected external access URL markdown link %q, got:\n%s", wantAccessLink, text)
 	}
 }
 

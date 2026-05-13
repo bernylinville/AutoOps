@@ -149,7 +149,11 @@ func (n *DeployNotifier) buildMarkdown(req *model.DeployRequest, exec *model.Exe
 				fmt.Fprintf(&b, "\n- **NodePort**: %d", access.NodePort)
 			}
 			if len(access.AccessURLs) > 0 {
-				fmt.Fprintf(&b, "\n- **对外访问地址**: %s", strings.Join(access.AccessURLs, ", "))
+				urlLinks := make([]string, 0, len(access.AccessURLs))
+				for _, u := range access.AccessURLs {
+					urlLinks = append(urlLinks, fmt.Sprintf("[%s](%s)", u, u))
+				}
+				fmt.Fprintf(&b, "\n- **对外访问地址**: %s", strings.Join(urlLinks, ", "))
 			}
 		}
 	}
