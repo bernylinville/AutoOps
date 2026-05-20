@@ -174,7 +174,7 @@ func (c *InspectionController) ListRunAlerts(ctx *gin.Context) {
 	result.SuccessWithPage(ctx, alerts, total, q.Page, q.PageSize)
 }
 
-// GetTodayOverview GET /inspection/overview — 今日巡检概览
+// GetTodayOverview GET /inspection/overview — 今日巡检概览（含统计和最近告警）
 func (c *InspectionController) GetTodayOverview(ctx *gin.Context) {
 	stats, err := c.inspSvc.RunDAO().GetTodayStats()
 	if err != nil {
@@ -182,5 +182,10 @@ func (c *InspectionController) GetTodayOverview(ctx *gin.Context) {
 		return
 	}
 
-	result.Success(ctx, stats)
+	recentAlerts, _ := c.inspSvc.AlertDAO().GetRecentAlerts(10)
+
+	result.Success(ctx, gin.H{
+		"stats":        stats,
+		"recentAlerts": recentAlerts,
+	})
 }
