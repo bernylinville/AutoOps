@@ -24,6 +24,7 @@ import (
 	"dodevops-api/router/dashboard"    // 看板模块路由
 	"dodevops-api/router/deploy"       // 部署中心路由
 	"dodevops-api/router/flashduty"    // FlashDuty告警中心路由
+	"dodevops-api/router/inspection"   // 巡检系统路由
 	"dodevops-api/router/k8s"          // k8s模块路由
 	"dodevops-api/router/monitor"      // 监控模块路由
 	"dodevops-api/router/n9e"          // N9E监控路由
@@ -125,11 +126,12 @@ func register(router *gin.Engine) {
 			dashboard.RegisterDashboardRoutes(jwtGroup) // 看板模块路由
 			deploy.RegisterDeployRoutes(jwtGroup)       // 部署中心路由
 			k8s.RegisterK8sRoutes(jwtGroup)
-			monitor.InitMonitorRouter(jwtGroup)         // 新增监控路由
-			task.RegisterTaskRoutes(jwtGroup)           // 任务中心路由
-			tool.RegisterToolRoutes(jwtGroup)           // 导航工具路由
-			n9e.RegisterN9ERoutes(jwtGroup)             // N9E监控路由
-			flashduty.RegisterFlashDutyRoutes(jwtGroup) // FlashDuty告警中心路由
+			monitor.InitMonitorRouter(jwtGroup)           // 新增监控路由
+			task.RegisterTaskRoutes(jwtGroup)             // 任务中心路由
+			tool.RegisterToolRoutes(jwtGroup)             // 导航工具路由
+			n9e.RegisterN9ERoutes(jwtGroup)               // N9E监控路由
+			flashduty.RegisterFlashDutyRoutes(jwtGroup)   // FlashDuty告警中心路由
+			inspection.RegisterInspectionRoutes(jwtGroup) // 巡检系统路由
 		}
 	}
 }
