@@ -6,6 +6,7 @@ import configRoutes from './config'
 import task from './task'
 import tools from './Tools'
 import app from './app'
+import inspectionRoutes from './inspection'
 
 // 路由集合
 const routes = [
@@ -49,6 +50,7 @@ const routes = [
             ...task,
             ...tools,
             ...app,
+            ...inspectionRoutes,
         ]
     }
 ]
