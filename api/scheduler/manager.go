@@ -5,6 +5,10 @@ import (
 	"sync"
 
 	"dodevops-api/api/configcenter/model"
+	inspScheduler "dodevops-api/api/inspection/scheduler"
+	inspService "dodevops-api/api/inspection/service"
+
+	"gorm.io/gorm"
 )
 
 // Manager 调度器管理器
@@ -15,6 +19,7 @@ type Manager struct {
 	deployApprovalSyncScheduler *DeployApprovalSyncScheduler
 	deployTTLReaper             *DeployTTLReaper
 	pipelineScheduler           *PipelineScheduler
+	inspectionScheduler         *inspScheduler.Scheduler
 	mutex                       sync.RWMutex
 	running                     bool
 }
@@ -25,8 +30,14 @@ var (
 )
 
 // GetManager 获取调度器管理器实例（单例模式）
-func GetManager() *Manager {
+func GetManager(db *gorm.DB) *Manager {
 	once.Do(func() {
+		var inspSch *inspScheduler.Scheduler
+		if db != nil {
+			taskSvc := inspService.NewTaskService(db)
+			inspSvc := inspService.NewInspectionService(db)
+			inspSch = inspScheduler.NewScheduler(taskSvc, inspSvc)
+		}
 		instance = &Manager{
 			syncScheduler:               NewSyncScheduler(),
 			n9eSyncScheduler:            NewN9ESyncScheduler(),
@@ -34,6 +45,7 @@ func GetManager() *Manager {
 			deployApprovalSyncScheduler: NewDeployApprovalSyncScheduler(),
 			deployTTLReaper:             NewDeployTTLReaper(),
 			pipelineScheduler:           NewPipelineScheduler(),
+			inspectionScheduler:         inspSch,
 			running:                     false,
 		}
 	})
@@ -79,6 +91,12 @@ func (m *Manager) Start() error {
 		log.Printf("流水线调度器启动警告: %v", err)
 	}
 
+	if m.inspectionScheduler != nil {
+		if err := m.inspectionScheduler.Start(); err != nil {
+			log.Printf("巡检调度器启动警告: %v", err)
+		}
+	}
+
 	m.running = true
 	log.Println("调度器管理器启动成功")
 	return nil
@@ -108,6 +126,10 @@ func (m *Manager) Stop() {
 	m.deployApprovalSyncScheduler.Stop()
 	m.deployTTLReaper.Stop()
 	m.pipelineScheduler.Stop()
+
+	if m.inspectionScheduler != nil {
+		m.inspectionScheduler.Stop()
+	}
 
 	m.running = false
 	log.Println("调度器管理器已停止")
