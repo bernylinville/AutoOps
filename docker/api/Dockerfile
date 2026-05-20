@@ -34,7 +34,7 @@ ENV TZ=Asia/Shanghai
 RUN ln -snf /usr/share/zoneinfo/$TZ /etc/localtime && echo $TZ > /etc/timezone
 
 RUN addgroup -S devops && adduser -S devops -G devops
-RUN mkdir -p /app/log /app/upload /app/docs && chown -R devops:devops /app
+RUN mkdir -p /app/log /app/upload /app/docs /data/inspection && chown -R devops:devops /app /data
 
 COPY --from=builder /build/devops /app/devops
 RUN chmod +x /app/devops
