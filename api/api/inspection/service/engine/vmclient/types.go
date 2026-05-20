@@ -5,6 +5,8 @@ package vmclient
 import (
 	"fmt"
 	"strconv"
+
+	"dodevops-api/pkg/log"
 )
 
 // QueryResponse represents the API response from /api/v1/query endpoint.
@@ -126,10 +128,12 @@ func ParseQueryResults(resp *QueryResponse) ([]QueryResult, error) {
 	results := make([]QueryResult, 0, len(resp.Data.Result))
 	for _, sample := range resp.Data.Result {
 		if sample.Value.IsNaN() {
+			log.Log().Debugf("[VM] ParseQueryResults: skipping NaN/Inf sample for ident=%s", sample.GetIdent())
 			continue
 		}
 		value, err := sample.Value.Value()
 		if err != nil {
+			log.Log().Debugf("[VM] ParseQueryResults: skipping invalid sample for ident=%s: %v", sample.GetIdent(), err)
 			continue
 		}
 		results = append(results, QueryResult{

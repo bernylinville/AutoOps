@@ -327,6 +327,10 @@ func (s *InspectionService) SaveRunResult(
 
 	if txErr != nil {
 		log.Log().Errorf("[InspectionService] run %d: transaction failed: %v", run.ID, txErr)
+		// Clean up orphaned Excel file on transaction rollback.
+		if reportPath != "" {
+			os.Remove(reportPath)
+		}
 		return txErr
 	}
 
