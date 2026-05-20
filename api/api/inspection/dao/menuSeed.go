@@ -71,5 +71,18 @@ func (d *MenuSeedDAO) SeedInspectionMenu() error {
 	}
 
 	fmt.Printf("SeedInspectionMenu: 巡检中心菜单初始化完成 (menuID=%d, parent=top)\n", inspectionMenu.ID)
+
+	// Assign all new inspection menus to the admin role (id=1) so they appear in the sidebar.
+	menuIDs := []uint{inspectionMenu.ID}
+	for i := range pages {
+		menuIDs = append(menuIDs, pages[i].ID)
+	}
+	for i := range buttons {
+		menuIDs = append(menuIDs, buttons[i].ID)
+	}
+	for _, mid := range menuIDs {
+		d.db.Exec("INSERT INTO sys_role_menu (role_id, menu_id) VALUES (1, ?) ON CONFLICT DO NOTHING", mid)
+	}
+
 	return nil
 }
