@@ -30,6 +30,13 @@ type Codes struct {
 	ValidationParameterError                uint
 	KUBEClUSTERNAMENOTEXIST                 uint
 	WEBSOCKETERROR                          uint
+	INSPECTION_TASK_NOT_FOUND               uint
+	INSPECTION_TASK_UPDATE_FAILED           uint
+	INSPECTION_RUN_NOT_FOUND                uint
+	INSPECTION_TRIGGER_FAILED               uint
+	INSPECTION_REPORT_NOT_FOUND             uint
+	INSPECTION_REPORT_GENERATE_FAILED       uint
+	INSPECTION_ALREADY_RUNNING              uint
 }
 
 // ApiCode 状态码
@@ -61,6 +68,13 @@ var ApiCode = &Codes{
 	KUBEClUSTERNOTEXIST:                     426,
 	KUBEClUSTERNAMENOTEXIST:                 427,
 	WEBSOCKETERROR:                          428,
+	INSPECTION_TASK_NOT_FOUND:               471,
+	INSPECTION_TASK_UPDATE_FAILED:           472,
+	INSPECTION_RUN_NOT_FOUND:                473,
+	INSPECTION_TRIGGER_FAILED:               474,
+	INSPECTION_REPORT_NOT_FOUND:             475,
+	INSPECTION_REPORT_GENERATE_FAILED:       476,
+	INSPECTION_ALREADY_RUNNING:              477,
 }
 
 // 状态信息
@@ -93,6 +107,13 @@ func init() {
 		ApiCode.KUBEClUSTERNOTEXIST:                     "集群ID不存在",
 		ApiCode.KUBEClUSTERNAMENOTEXIST:                 "集群名称不存在",
 		ApiCode.WEBSOCKETERROR:                          "WebSocket连接错误",
+		ApiCode.INSPECTION_TASK_NOT_FOUND:               "巡检任务不存在",
+		ApiCode.INSPECTION_TASK_UPDATE_FAILED:           "巡检任务更新失败",
+		ApiCode.INSPECTION_RUN_NOT_FOUND:                "巡检运行记录不存在",
+		ApiCode.INSPECTION_TRIGGER_FAILED:               "巡检触发失败",
+		ApiCode.INSPECTION_REPORT_NOT_FOUND:             "巡检报告不存在",
+		ApiCode.INSPECTION_REPORT_GENERATE_FAILED:       "巡检报告生成失败",
+		ApiCode.INSPECTION_ALREADY_RUNNING:              "巡检任务正在运行中",
 	}
 }
 
