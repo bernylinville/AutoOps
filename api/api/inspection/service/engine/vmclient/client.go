@@ -28,7 +28,7 @@ func NewClient(endpoint string, timeout int) *Client {
 
 	httpClient := resty.New().
 		SetBaseURL(strings.TrimRight(endpoint, "/")).
-		SetTimeout(time.Duration(timeout) * time.Second).
+		SetTimeout(time.Duration(timeout)*time.Second).
 		SetHeader("Content-Type", "application/x-www-form-urlencoded").
 		SetRetryCount(3).
 		SetRetryWaitTime(time.Second).
@@ -134,6 +134,9 @@ func (c *Client) injectLabelMatchers(query string, filter *HostFilter) string {
 	}
 
 	for k, v := range filter.Tags {
+		if !isValidLabelValue(v) {
+			continue
+		}
 		matchers = append(matchers, fmt.Sprintf(`%s="%s"`, k, strings.ReplaceAll(v, `"`, `\"`)))
 	}
 
@@ -144,28 +147,89 @@ func (c *Client) injectLabelMatchers(query string, filter *HostFilter) string {
 	return injectMatchersToQuery(query, matchers)
 }
 
-// injectMatchersToQuery injects label matchers into PromQL.
+// promqlMetricPattern matches a PromQL metric name with optional label selector.
+// Compiled once at package init to avoid per-call regex compilation.
+var promqlMetricPattern = regexp.MustCompile(`([a-zA-Z_][a-zA-Z0-9_]*)(\{[^}]*\})?`)
+
+// injectMatchersToQuery injects label matchers into PromQL metric selectors.
+// Skips identifiers followed by '(' (function calls) and identifiers inside
+// range selectors [...] to avoid corrupting queries.
 func injectMatchersToQuery(query string, matchers []string) string {
 	if len(matchers) == 0 {
 		return query
 	}
 	matcherStr := strings.Join(matchers, ", ")
 
-	// Match metric name with optional label selector.
-	re := regexp.MustCompile(`([a-zA-Z_][a-zA-Z0-9_]*)(\{[^}]*\})?`)
+	matches := promqlMetricPattern.FindAllStringSubmatchIndex(query, -1)
+	if len(matches) == 0 {
+		return query
+	}
 
-	return re.ReplaceAllStringFunc(query, func(match string) string {
-		braceIdx := strings.Index(match, "{")
-		if braceIdx == -1 {
-			return match + "{" + matcherStr + "}"
+	var result strings.Builder
+	lastEnd := 0
+	for _, m := range matches {
+		fullStart, fullEnd := m[0], m[1]
+		nameStart, nameEnd := m[2], m[3]
+
+		// Write text between matches.
+		result.WriteString(query[lastEnd:fullStart])
+
+		// Skip identifiers inside range selectors [...] or followed by '('.
+		if isInsideBrackets(query, fullStart) || isFollowedByParen(query, fullEnd) {
+			result.WriteString(query[fullStart:fullEnd])
+			lastEnd = fullEnd
+			continue
 		}
-		metricName := match[:braceIdx]
-		existing := match[braceIdx+1 : len(match)-1]
-		if existing == "" {
-			return metricName + "{" + matcherStr + "}"
+
+		metricName := query[nameStart:nameEnd]
+		hasBraces := m[4] != -1
+
+		if hasBraces {
+			existing := query[m[4]+1 : m[5]-1]
+			if existing == "" {
+				result.WriteString(metricName)
+				result.WriteString("{")
+				result.WriteString(matcherStr)
+				result.WriteString("}")
+			} else {
+				result.WriteString(metricName)
+				result.WriteString("{")
+				result.WriteString(existing)
+				result.WriteString(", ")
+				result.WriteString(matcherStr)
+				result.WriteString("}")
+			}
+		} else {
+			result.WriteString(metricName)
+			result.WriteString("{")
+			result.WriteString(matcherStr)
+			result.WriteString("}")
 		}
-		return metricName + "{" + existing + ", " + matcherStr + "}"
-	})
+		lastEnd = fullEnd
+	}
+	result.WriteString(query[lastEnd:])
+
+	return result.String()
+}
+
+// isInsideBrackets returns true if position pos is inside square brackets [...].
+func isInsideBrackets(query string, pos int) bool {
+	depth := 0
+	for i := 0; i < pos; i++ {
+		switch query[i] {
+		case '[':
+			depth++
+		case ']':
+			depth--
+		}
+	}
+	return depth > 0
+}
+
+// isFollowedByParen returns true if the position is followed by '(' (function call).
+func isFollowedByParen(query string, pos int) bool {
+	rest := strings.TrimLeft(query[pos:], " \t")
+	return len(rest) > 0 && rest[0] == '('
 }
 
 // escapeRegex escapes special regex characters.
@@ -175,4 +239,16 @@ func escapeRegex(s string) string {
 		s = strings.ReplaceAll(s, char, `\`+char)
 	}
 	return s
+}
+
+// isValidLabelValue checks for PromQL metacharacters that could break query injection.
+// Rejects characters: {}[]=~!, and backslash.
+func isValidLabelValue(s string) bool {
+	for _, c := range s {
+		switch c {
+		case '{', '}', '[', ']', '=', '~', '!', ',', '\\':
+			return false
+		}
+	}
+	return true
 }
