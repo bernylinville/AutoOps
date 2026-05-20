@@ -27,28 +27,13 @@ func (d *MenuSeedDAO) SeedInspectionMenu() error {
 		return nil
 	}
 
-	// 寻找合适父菜单（容器管理 / 服务管理 / 任务中心 / 监控管理）
-	parentNames := []string{"监控管理", "容器管理", "服务管理", "任务中心"}
-	var parentMenu systemmodel.SysMenu
-	found := false
-	for _, name := range parentNames {
-		if err := d.db.Where("menu_name = ? AND menu_type = ?", name, 1).First(&parentMenu).Error; err == nil {
-			found = true
-			break
-		}
-	}
-	if !found {
-		fmt.Println("SeedInspectionMenu: 未找到合适父菜单，跳过")
-		return nil
-	}
-
 	now := util.HTime{Time: time.Now()}
 	inspectionMenu := systemmodel.SysMenu{
-		ParentId:   parentMenu.ID,
+		ParentId:   0,
 		MenuName:   "巡检中心",
 		Icon:       "Search",
 		Value:      "inspection:overview:view",
-		MenuType:   2,
+		MenuType:   1,
 		Url:        "/inspection/overview",
 		MenuStatus: 2,
 		Sort:       99,
@@ -85,6 +70,6 @@ func (d *MenuSeedDAO) SeedInspectionMenu() error {
 		}
 	}
 
-	fmt.Printf("SeedInspectionMenu: 巡检中心菜单初始化完成 (parentID=%d, menuID=%d)\n", parentMenu.ID, inspectionMenu.ID)
+	fmt.Printf("SeedInspectionMenu: 巡检中心菜单初始化完成 (menuID=%d, parent=top)\n", inspectionMenu.ID)
 	return nil
 }
