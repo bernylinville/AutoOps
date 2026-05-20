@@ -1,4 +1,5 @@
 api/devops
+api/dodevops-api
 
 # Docker runtime data
 docker/mysql/data/
@@ -13,6 +14,7 @@ docker/api/ssh_keys/
 
 # Runtime logs
 api/api/task/controller/logs/
+api/api/inspection/**/logs/
 docker/api/logs/
 
 # Environment config (use .env.example as template)
