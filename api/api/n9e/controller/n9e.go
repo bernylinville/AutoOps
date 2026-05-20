@@ -96,7 +96,7 @@ func (ctrl *N9EController) SaveConfig(c *gin.Context) {
 	}
 
 	// 重新加载 N9E 定时同步配置
-	if err := scheduler.GetManager().ReloadN9ECron(); err != nil {
+	if err := scheduler.GetManager(nil).ReloadN9ECron(); err != nil {
 		// 只记录警告，不影响保存结果
 		result.Success(c, gin.H{
 			"config":      config,

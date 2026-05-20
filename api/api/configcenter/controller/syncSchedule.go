@@ -50,7 +50,7 @@ func (c *SyncScheduleController) Create(ctx *gin.Context) {
 
 	// 如果配置是启用状态，则添加到调度器
 	if syncSchedule.Status == 1 {
-		if err := scheduler.GetManager().AddSyncSchedule(&syncSchedule); err != nil {
+		if err := scheduler.GetManager(nil).AddSyncSchedule(&syncSchedule); err != nil {
 			// 调度器添加失败不影响数据库创建，只记录日志
 			// log.Printf("Failed to add schedule to scheduler: %v", err)
 		}
@@ -89,7 +89,7 @@ func (c *SyncScheduleController) Update(ctx *gin.Context) {
 	}
 
 	// 更新调度器中的配置
-	if err := scheduler.GetManager().UpdateSyncSchedule(&syncSchedule); err != nil {
+	if err := scheduler.GetManager(nil).UpdateSyncSchedule(&syncSchedule); err != nil {
 		// 调度器更新失败不影响数据库更新，只记录日志
 		// log.Printf("Failed to update schedule in scheduler: %v", err)
 	}
@@ -118,7 +118,7 @@ func (c *SyncScheduleController) Delete(ctx *gin.Context) {
 	}
 
 	// 从调度器中移除配置
-	scheduler.GetManager().RemoveSyncSchedule(req.ID)
+	scheduler.GetManager(nil).RemoveSyncSchedule(req.ID)
 
 	result.Success(ctx, nil)
 }
@@ -203,11 +203,11 @@ func (c *SyncScheduleController) ToggleStatus(ctx *gin.Context) {
 	if req.Status == 1 {
 		// 启用：获取配置并添加到调度器
 		if schedule, err := c.service.GetByID(req.ID); err == nil {
-			scheduler.GetManager().AddSyncSchedule(schedule)
+			scheduler.GetManager(nil).AddSyncSchedule(schedule)
 		}
 	} else {
 		// 禁用：从调度器中移除
-		scheduler.GetManager().RemoveSyncSchedule(req.ID)
+		scheduler.GetManager(nil).RemoveSyncSchedule(req.ID)
 	}
 
 	result.Success(ctx, nil)
@@ -283,7 +283,7 @@ func (c *SyncScheduleController) TriggerManualSync(ctx *gin.Context) {
 // @Router /api/v1/config/sync-schedule/scheduler-stats [get]
 // @Security ApiKeyAuth
 func (c *SyncScheduleController) GetSchedulerStats(ctx *gin.Context) {
-	stats := scheduler.GetManager().GetSyncSchedulerStats()
+	stats := scheduler.GetManager(nil).GetSyncSchedulerStats()
 	result.Success(ctx, stats)
 }
 
