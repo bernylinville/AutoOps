@@ -16,6 +16,9 @@ type InspectionTargetResult struct {
 	BootTime    string      `gorm:"column:boot_time;type:varchar(50)" json:"bootTime,omitempty"`
 	CollectedAt *util.HTime `gorm:"column:collected_at" json:"collectedAt"`
 	CreatedAt   util.HTime  `gorm:"column:created_at;NOT NULL" json:"createdAt"`
+
+	MetricSummary string `gorm:"-" json:"metricSummary,omitempty"`
+	AlertCount    int    `gorm:"-" json:"alertCount"`
 }
 
 func (InspectionTargetResult) TableName() string { return "inspection_target_result" }

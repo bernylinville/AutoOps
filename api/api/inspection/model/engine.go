@@ -121,6 +121,7 @@ func CleanIdent(ident string) string {
 
 // HostResult represents inspection result for a single host.
 type HostResult struct {
+	Ident         string                  `json:"ident"`
 	Hostname      string                  `json:"hostname"`
 	IP            string                  `json:"ip"`
 	OS            string                  `json:"os"`
@@ -146,6 +147,7 @@ func NewHostResult(meta *HostMeta) *HostResult {
 		}
 	}
 	return &HostResult{
+		Ident:         meta.Ident,
 		Hostname:      meta.Hostname,
 		IP:            meta.IP,
 		OS:            meta.OS,

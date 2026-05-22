@@ -31,12 +31,12 @@ func (d *MenuSeedDAO) SeedInspectionMenu() error {
 	inspectionMenu := systemmodel.SysMenu{
 		ParentId:   0,
 		MenuName:   "巡检中心",
-		Icon:       "Search",
+		Icon:       "Monitor",
 		Value:      "inspection:overview:view",
 		MenuType:   1,
 		Url:        "/inspection/overview",
 		MenuStatus: 2,
-		Sort:       99,
+		Sort:       10,
 		CreateTime: now,
 	}
 	if err := d.db.Create(&inspectionMenu).Error; err != nil {
@@ -46,9 +46,9 @@ func (d *MenuSeedDAO) SeedInspectionMenu() error {
 
 	// 页面权限
 	pages := []systemmodel.SysMenu{
-		{ParentId: inspectionMenu.ID, MenuName: "巡检概览", MenuType: 2, Value: "inspection:overview:view", Url: "/inspection/overview", MenuStatus: 2, Sort: 1, CreateTime: now},
-		{ParentId: inspectionMenu.ID, MenuName: "任务管理", MenuType: 2, Value: "inspection:task:view", Url: "/inspection/tasks", MenuStatus: 2, Sort: 2, CreateTime: now},
-		{ParentId: inspectionMenu.ID, MenuName: "运行历史", MenuType: 2, Value: "inspection:run:view", Url: "/inspection/runs", MenuStatus: 2, Sort: 3, CreateTime: now},
+		{ParentId: inspectionMenu.ID, MenuName: "巡检概览", Icon: "DataAnalysis", MenuType: 2, Value: "inspection:overview:view", Url: "/inspection/overview", MenuStatus: 2, Sort: 1, CreateTime: now},
+		{ParentId: inspectionMenu.ID, MenuName: "任务管理", Icon: "List", MenuType: 2, Value: "inspection:task:view", Url: "/inspection/tasks", MenuStatus: 2, Sort: 2, CreateTime: now},
+		{ParentId: inspectionMenu.ID, MenuName: "运行历史", Icon: "Clock", MenuType: 2, Value: "inspection:run:view", Url: "/inspection/runs", MenuStatus: 2, Sort: 3, CreateTime: now},
 	}
 	for _, page := range pages {
 		if err := d.db.Create(&page).Error; err != nil {

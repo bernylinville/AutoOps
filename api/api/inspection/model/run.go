@@ -31,6 +31,8 @@ type InspectionRun struct {
 	ErrorMessage   string     `gorm:"column:error_message;type:text" json:"errorMessage,omitempty"`
 	RunDate        string     `gorm:"column:run_date;type:date;comment:运行日期(用于唯一约束)" json:"-"`
 	CreatedAt      util.HTime `gorm:"column:created_at;NOT NULL" json:"createdAt"`
+	N9EGroupName   string     `gorm:"-" json:"n9eGroupName,omitempty"`
+	TaskName       string     `gorm:"-" json:"taskName,omitempty"`
 }
 
 func (InspectionRun) TableName() string { return "inspection_run" }
