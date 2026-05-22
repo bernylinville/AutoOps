@@ -78,8 +78,8 @@ func (c *Collector) CollectAll(ctx context.Context) (*CollectionResult, error) {
 		}
 	}
 
-	// Restrict hosts to metric scope when filter is active.
-	if c.shouldRestrictHostsToMetricScope() {
+	// Restrict hosts to metric scope only when N9E target metadata cannot define the scope.
+	if c.shouldRestrictHostsToMetricScope() && !c.canFilterTargetsByMetadata() {
 		hosts, hostMetrics = c.restrictHostsToMetricScope(hosts, hostMetrics)
 	}
 
@@ -113,6 +113,9 @@ func (c *Collector) collectHostMetas(ctx context.Context) ([]*model.HostMeta, er
 
 	var hosts []*model.HostMeta
 	for _, target := range targets {
+		if !c.matchesHostFilter(target) {
+			continue
+		}
 		host := targetToHostMeta(target)
 		if host != nil {
 			hosts = append(hosts, host)
@@ -121,6 +124,39 @@ func (c *Collector) collectHostMetas(ctx context.Context) ([]*model.HostMeta, er
 
 	log.Log().Infof("[Collector] collected %d host metas", len(hosts))
 	return hosts, nil
+}
+
+func (c *Collector) matchesHostFilter(target n9emodel.TargetData) bool {
+	if c.hostFilter == nil || c.hostFilter.IsEmpty() {
+		return true
+	}
+	if len(c.hostFilter.GroupIDs) > 0 && !targetHasGroupID(target, c.hostFilter.GroupIDs) {
+		return false
+	}
+	for key, value := range c.hostFilter.TargetTags {
+		if target.TagsMaps[key] != value {
+			return false
+		}
+	}
+	return true
+}
+
+func targetHasGroupID(target n9emodel.TargetData, groupIDs []int64) bool {
+	for _, targetGroupID := range target.GroupIDs {
+		for _, groupID := range groupIDs {
+			if targetGroupID == groupID {
+				return true
+			}
+		}
+	}
+	for _, group := range target.GroupObjs {
+		for _, groupID := range groupIDs {
+			if group.ID == groupID {
+				return true
+			}
+		}
+	}
+	return false
 }
 
 // targetToHostMeta converts an N9E TargetData to HostMeta.
@@ -145,7 +181,7 @@ func targetToHostMeta(target n9emodel.TargetData) *model.HostMeta {
 
 	hostMeta := &model.HostMeta{
 		Ident:         target.Ident,
-		Hostname:      hostname,
+		Hostname:      model.CleanIdent(hostname),
 		IP:            ip,
 		OS:            os,
 		OSVersion:     strings.TrimSpace(target.Arch),
@@ -317,6 +353,10 @@ func (c *Collector) shouldRestrictHostsToMetricScope() bool {
 	return false
 }
 
+func (c *Collector) canFilterTargetsByMetadata() bool {
+	return c.hostFilter != nil && (len(c.hostFilter.GroupIDs) > 0 || len(c.hostFilter.TargetTags) > 0)
+}
+
 func (c *Collector) shouldRetryHostFilterWithTagsOnly(hostMetrics map[string]*model.HostMetrics) bool {
 	return c.shouldRestrictHostsToMetricScope() &&
 		len(c.hostFilter.BusinessGroups) > 0 &&
@@ -347,7 +387,10 @@ func tagsOnlyHostFilter(filter *vmclient.HostFilter) *vmclient.HostFilter {
 	for k, v := range filter.Tags {
 		tags[k] = v
 	}
-	return &vmclient.HostFilter{Tags: tags}
+	return &vmclient.HostFilter{
+		GroupIDs: filter.GroupIDs,
+		Tags:     tags,
+	}
 }
 
 func (c *Collector) restrictHostsToMetricScope(

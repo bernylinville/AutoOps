@@ -30,23 +30,7 @@ func NewInspectionNotifier(db *gorm.DB) *InspectionNotifier {
 // NotifyRunResult sends a DingTalk notification for an inspection run result.
 // Never blocks on failure — logs and returns.
 func (n *InspectionNotifier) NotifyRunResult(run *model.InspectionRun, task *model.InspectionTask) error {
-	// Check notification rules.
-	hasCritical := run.CriticalHosts > 0 || run.TotalAlerts > 0
-	hasWarning := run.WarningHosts > 0
-	hasFailure := run.FailedHosts > 0
-
-	shouldNotify := false
-	if hasCritical && task.NotifyOnCritical {
-		shouldNotify = true
-	}
-	if hasWarning && task.NotifyOnWarning {
-		shouldNotify = true
-	}
-	if hasFailure && task.NotifyOnFailure {
-		shouldNotify = true
-	}
-
-	if !shouldNotify {
+	if !shouldNotifyRun(run, task) {
 		log.Log().Infof("[InspectionNotifier] run %d: notification skipped (no conditions met)", run.ID)
 		return nil
 	}
@@ -103,6 +87,22 @@ func (n *InspectionNotifier) NotifyRunResult(run *model.InspectionRun, task *mod
 	}
 
 	return err
+}
+
+func shouldNotifyRun(run *model.InspectionRun, task *model.InspectionTask) bool {
+	if run == nil || task == nil {
+		return false
+	}
+	if run.CriticalHosts > 0 && task.NotifyOnCritical {
+		return true
+	}
+	if run.WarningHosts > 0 && task.NotifyOnWarning {
+		return true
+	}
+	if (run.FailedHosts > 0 || run.Status == model.RunStatusFailed) && task.NotifyOnFailure {
+		return true
+	}
+	return false
 }
 
 // buildMarkdown builds the DingTalk Markdown message for an inspection report.

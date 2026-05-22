@@ -101,16 +101,16 @@ func TestParseTargetQuery_Busigroup(t *testing.T) {
 	}
 }
 
-func TestParseTargetQuery_Tags(t *testing.T) {
+func TestParseTargetQuery_TargetTags(t *testing.T) {
 	f := parseTargetQuery("env=prod,region=cn-east")
 	if f == nil {
 		t.Fatal("expected non-nil filter")
 	}
-	if f.Tags["env"] != "prod" {
-		t.Errorf("expected env=prod, got %q", f.Tags["env"])
+	if f.TargetTags["env"] != "prod" {
+		t.Errorf("expected env=prod, got %q", f.TargetTags["env"])
 	}
-	if f.Tags["region"] != "cn-east" {
-		t.Errorf("expected region=cn-east, got %q", f.Tags["region"])
+	if f.TargetTags["region"] != "cn-east" {
+		t.Errorf("expected region=cn-east, got %q", f.TargetTags["region"])
 	}
 }
 
@@ -122,8 +122,8 @@ func TestParseTargetQuery_BusigroupAndTags(t *testing.T) {
 	if len(f.BusinessGroups) != 1 || f.BusinessGroups[0] != "生产环境" {
 		t.Errorf("expected busigroup 生产环境, got %v", f.BusinessGroups)
 	}
-	if f.Tags["env"] != "prod" {
-		t.Errorf("expected env=prod, got %q", f.Tags["env"])
+	if f.TargetTags["env"] != "prod" {
+		t.Errorf("expected env=prod, got %q", f.TargetTags["env"])
 	}
 }
 
@@ -196,17 +196,17 @@ func TestBuildMarkdown_SuccessRun(t *testing.T) {
 	n := &InspectionNotifier{}
 	now := time.Now()
 	run := &model.InspectionRun{
-		ID:           42,
-		TriggerType:  model.TriggerTypeCron,
-		Status:       model.RunStatusSuccess,
-		TotalHosts:   10,
-		NormalHosts:  10,
-		WarningHosts: 0,
+		ID:            42,
+		TriggerType:   model.TriggerTypeCron,
+		Status:        model.RunStatusSuccess,
+		TotalHosts:    10,
+		NormalHosts:   10,
+		WarningHosts:  0,
 		CriticalHosts: 0,
-		FailedHosts:  0,
-		TotalAlerts:  0,
-		DurationMs:   150000,
-		EndedAt:      &now,
+		FailedHosts:   0,
+		TotalAlerts:   0,
+		DurationMs:    150000,
+		EndedAt:       &now,
 	}
 	task := &model.InspectionTask{
 		ID:   3,
@@ -288,6 +288,37 @@ func TestBuildMarkdown_PartialRun(t *testing.T) {
 	_ = title
 }
 
+func TestShouldNotifyRun_RespectsWarningToggle(t *testing.T) {
+	run := &model.InspectionRun{
+		Status:       model.RunStatusPartial,
+		WarningHosts: 2,
+		TotalAlerts:  2,
+	}
+	task := &model.InspectionTask{
+		NotifyOnWarning:  false,
+		NotifyOnCritical: true,
+		NotifyOnFailure:  true,
+	}
+
+	if shouldNotifyRun(run, task) {
+		t.Fatal("warning-only run should not notify when warning notifications are disabled")
+	}
+}
+
+func TestShouldNotifyRun_CriticalAndFailure(t *testing.T) {
+	task := &model.InspectionTask{
+		NotifyOnWarning:  false,
+		NotifyOnCritical: true,
+		NotifyOnFailure:  true,
+	}
+	if !shouldNotifyRun(&model.InspectionRun{CriticalHosts: 1}, task) {
+		t.Fatal("critical run should notify when critical notifications are enabled")
+	}
+	if !shouldNotifyRun(&model.InspectionRun{Status: model.RunStatusFailed}, task) {
+		t.Fatal("failed run should notify when failure notifications are enabled")
+	}
+}
+
 func TestRemoveReportFile_EmptyPath(t *testing.T) {
 	// Should not panic or attempt deletion.
 	s := &CleanupService{}
@@ -328,11 +359,11 @@ func TestHostFilter_IsEmpty(t *testing.T) {
 		t.Error("non-empty filter should not be empty")
 	}
 
-	tagFilter := &vmclient.HostFilter{
-		Tags: map[string]string{"env": "prod"},
+	targetTagFilter := &vmclient.HostFilter{
+		TargetTags: map[string]string{"items": "重数传媒数字乡村-电信侧"},
 	}
-	if tagFilter.IsEmpty() {
-		t.Error("filter with tags should not be empty")
+	if targetTagFilter.IsEmpty() {
+		t.Error("filter with target tags should not be empty")
 	}
 }
 

@@ -24,8 +24,8 @@ import (
 
 // InspectionService orchestrates inspection run persistence, report generation, and notification.
 type InspectionService struct {
-	db        *gorm.DB
-	scheduler *Scheduler
+	db          *gorm.DB
+	scheduler   *Scheduler
 	taskService *TaskService
 	runDAO      *dao.RunDAO
 	resultDAO   *dao.TargetResultDAO
@@ -37,8 +37,8 @@ type InspectionService struct {
 // NewInspectionService creates an InspectionService.
 func NewInspectionService(db *gorm.DB) *InspectionService {
 	return &InspectionService{
-		db:        db,
-		scheduler: NewScheduler(db),
+		db:          db,
+		scheduler:   NewScheduler(db),
 		taskService: NewTaskService(db),
 		runDAO:      dao.NewRunDAO(db),
 		resultDAO:   dao.NewTargetResultDAO(db),
@@ -73,9 +73,12 @@ type InspectionConfigSnapshot struct {
 // If preCreatedRun is non-nil, it is reused (the caller already persisted it as pending).
 // Otherwise a new run record is created for cron/scheduled invocations.
 func (s *InspectionService) ExecuteInspection(ctx context.Context, taskID uint, triggerType string, triggeredBy *uint, preCreatedRun *model.InspectionRun) (*model.InspectionRun, error) {
-	// 0. Concurrency control: skip if task already has an active run, then acquire a slot.
-	if s.scheduler.SkipIfRunning(taskID) {
-		return nil, fmt.Errorf("任务 %d 已有进行中的巡检，跳过本次触发", taskID)
+	// 0. Concurrency control: skip if task already has an active run (cron only).
+	// Manual triggers are exempt from skip-if-running per spec.
+	if triggerType == model.TriggerTypeCron {
+		if s.scheduler.SkipIfRunning(taskID) {
+			return nil, fmt.Errorf("任务 %d 已有进行中的巡检，跳过本次触发", taskID)
+		}
 	}
 	s.scheduler.acquireSlot()
 	defer s.scheduler.releaseSlot()
@@ -136,7 +139,19 @@ func (s *InspectionService) ExecuteInspection(ctx context.Context, taskID uint, 
 	vmClient := vmclient.NewClient(vmEndpoint, 30)
 
 	// 5. 构建主机筛选器
-	hostFilter := parseTargetQuery(task.TargetQuery)
+	// 若用户已配置自定义 target_query，原样使用；任务所属 N9E 业务组 ID 始终限定主机范围。
+	// 若未配置，默认使用任务所属 N9E 业务组名称作为 VM busigroup 过滤。
+	targetQuery := task.TargetQuery
+	if targetQuery == "" && task.N9EGroupName != "" {
+		targetQuery = "busigroup=" + task.N9EGroupName
+	}
+	hostFilter := parseTargetQuery(targetQuery)
+	if task.N9EGroupID > 0 {
+		if hostFilter == nil {
+			hostFilter = &vmclient.HostFilter{}
+		}
+		hostFilter.GroupIDs = append(hostFilter.GroupIDs, task.N9EGroupID)
+	}
 
 	// 6. 创建 Collector
 	metrics := engine.HostMetricDefinitions()
@@ -187,11 +202,24 @@ func (s *InspectionService) FailRun(runID uint, errMsg string) {
 }
 
 // getVMEndpoint 获取 VictoriaMetrics/Prometheus 端点
+// 优先级：config.yaml 配置 > N9E 数据源（prometheus 类型）> N9E endpoint > localhost
 func (s *InspectionService) getVMEndpoint() string {
+	// 1. Config override
 	if config.Config != nil && config.Config.Monitor.Prometheus.URL != "" {
 		return config.Config.Monitor.Prometheus.URL
 	}
-	// 兜底：使用 N9E 配置端点
+	// 2. N9E datasource (VictoriaMetrics typically registered as prometheus)
+	dss, err := n9edao.GetN9EDataSources()
+	if err == nil {
+		for _, ds := range dss {
+			if ds.PluginType == "prometheus" || ds.PluginType == "victoriametrics" {
+				if ds.URL != "" {
+					return ds.URL
+				}
+			}
+		}
+	}
+	// 3. N9E config endpoint fallback
 	n9eConfig, err := n9edao.GetN9EConfig()
 	if err == nil && n9eConfig.Endpoint != "" {
 		return n9eConfig.Endpoint
@@ -207,7 +235,7 @@ func parseTargetQuery(query string) *vmclient.HostFilter {
 	}
 
 	filter := &vmclient.HostFilter{
-		Tags: make(map[string]string),
+		TargetTags: make(map[string]string),
 	}
 
 	parts := strings.Split(query, ",")
@@ -226,11 +254,11 @@ func parseTargetQuery(query string) *vmclient.HostFilter {
 		if key == "busigroup" {
 			filter.BusinessGroups = append(filter.BusinessGroups, value)
 		} else {
-			filter.Tags[key] = value
+			filter.TargetTags[key] = value
 		}
 	}
 
-	if len(filter.BusinessGroups) == 0 && len(filter.Tags) == 0 {
+	if len(filter.BusinessGroups) == 0 && len(filter.TargetTags) == 0 {
 		return nil
 	}
 
@@ -282,7 +310,7 @@ func (s *InspectionService) SaveRunResult(
 		if err := resultDAO.BatchCreate(targetResults); err != nil {
 			return fmt.Errorf("保存主机结果失败: %w", err)
 		}
-			alertRecords := s.buildAlertRecords(run.ID, targetResults, result.Alerts)
+		alertRecords := s.buildAlertRecords(run.ID, targetResults, result.Alerts)
 
 		// Step 2: Save alerts.
 		if err := alertDAO.BatchCreate(alertRecords); err != nil {
@@ -355,7 +383,6 @@ func (s *InspectionService) SaveRunResult(
 	return nil
 }
 
-
 // generateReportPath generates the output path for a report file.
 func (s *InspectionService) generateReportPath(outputDir string, runID uint) string {
 	dateStr := time.Now().Format("20060102")
@@ -379,6 +406,7 @@ func (s *InspectionService) buildTargetResults(runID uint, hosts []*model.HostRe
 		tr := &model.InspectionTargetResult{
 			RunID:    runID,
 			Hostname: host.Hostname,
+			Ident:    host.Ident,
 			IP:       host.IP,
 			OS:       host.OS,
 			Status:   string(host.Status),

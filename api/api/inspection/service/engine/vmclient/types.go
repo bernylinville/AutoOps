@@ -158,11 +158,13 @@ func GroupResultsByIdent(results []QueryResult) map[string]QueryResult {
 
 // HostFilter defines filters for querying specific hosts.
 type HostFilter struct {
+	GroupIDs       []int64           // N9E target metadata scope; not injected into PromQL
+	TargetTags     map[string]string // N9E target tags; not injected into PromQL
 	BusinessGroups []string          // OR relation
 	Tags           map[string]string // AND relation
 }
 
 // IsEmpty returns true if no filters are set.
 func (f *HostFilter) IsEmpty() bool {
-	return f == nil || (len(f.BusinessGroups) == 0 && len(f.Tags) == 0)
+	return f == nil || (len(f.GroupIDs) == 0 && len(f.TargetTags) == 0 && len(f.BusinessGroups) == 0 && len(f.Tags) == 0)
 }
