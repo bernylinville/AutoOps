@@ -159,6 +159,60 @@ func HostMetricDefinitions() []*model.MetricDefinition {
 			Format:      model.MetricFormatNTPOffset,
 			Note:        "系统时钟与 NTP 源的偏差，stratum=0 表示未同步",
 		},
+
+		// --- Security / baseline checks collected by collect_host_security.sh.j2 ---
+		{
+			Name:        "public_network",
+			DisplayName: "公网访问检查",
+			Query:       "host_public_network_access",
+			Unit:        "",
+			Category:    model.MetricCategorySecurity,
+			Format:      model.MetricFormatBoolean,
+			Note:        "检查服务器是否可访问公网 (1=可访问, 0=不可访问)",
+		},
+		{
+			Name:          "password_expiry",
+			DisplayName:   "密码过期天数",
+			Query:         "host_password_expiry_days",
+			Unit:          "天",
+			Category:      model.MetricCategorySecurity,
+			ExpandByLabel: "user",
+			Note:          "系统用户密码过期天数 (-1=永不过期, -2=无法获取)",
+		},
+		{
+			Name:          "password_policy",
+			DisplayName:   "密码策略",
+			Query:         "host_password_policy",
+			Unit:          "",
+			Category:      model.MetricCategorySecurity,
+			ExpandByLabel: "param",
+			Note:          "密码策略参数值 (PASS_MAX_DAYS, PASS_MIN_DAYS, PASS_MIN_LEN, PASS_WARN_AGE)",
+		},
+		{
+			Name:        "open_files",
+			DisplayName: "打开文件句柄数",
+			Query:       "host_open_files",
+			Unit:        "个",
+			Category:    model.MetricCategorySystem,
+			Note:        "当前打开的文件句柄数，来自 /proc/sys/fs/file-nr",
+		},
+		{
+			Name:        "max_files",
+			DisplayName: "句柄数最大值",
+			Query:       "host_max_files",
+			Unit:        "个",
+			Category:    model.MetricCategorySystem,
+			Note:        "系统文件句柄数上限，来自 /proc/sys/fs/file-max",
+		},
+		{
+			Name:          "sysctl_params",
+			DisplayName:   "系统参数检查",
+			Query:         "host_sysctl",
+			Unit:          "",
+			Category:      model.MetricCategorySystem,
+			ExpandByLabel: "param",
+			Note:          "sysctl 内核参数值 (10个关键网络参数)",
+		},
 	}
 }
 

@@ -81,7 +81,7 @@ func TestEvaluateHost_Critical(t *testing.T) {
 func TestEvaluateHost_MultipleAlerts_DominantStatus(t *testing.T) {
 	e := NewEvaluator(DefaultThresholds(), defs())
 	hm := model.NewHostMetrics("test-host")
-	hm.SetMetric(model.NewMetricValue("cpu_usage", 75.0))     // warning
+	hm.SetMetric(model.NewMetricValue("cpu_usage", 75.0))      // warning
 	hm.SetMetric(model.NewMetricValue("disk_usage_max", 95.0)) // critical
 	hm.SetMetric(model.NewMetricValue("memory_usage", 40.0))
 	hm.SetMetric(model.NewMetricValue("processes_zombies", 0))
@@ -263,7 +263,7 @@ func TestFormatUptime(t *testing.T) {
 	}{
 		{0, "0分钟"},
 		{60, "1分钟"},
-		{3661, "1时1分"},   // 3600+61
+		{3661, "1时1分"},    // 3600+61
 		{90061, "1天1时1分"}, // 86400+3600+61
 	}
 	for _, tc := range cases {
@@ -327,6 +327,38 @@ func TestHostMetricDefinitions_NoNil(t *testing.T) {
 		}
 		if d.DisplayName == "" {
 			t.Errorf("metric %s has empty display name", d.Name)
+		}
+	}
+}
+
+func TestHostMetricDefinitions_IncludeInspectionToolBaselineMetrics(t *testing.T) {
+	defsByName := make(map[string]*model.MetricDefinition)
+	for _, def := range HostMetricDefinitions() {
+		defsByName[def.Name] = def
+	}
+
+	cases := []struct {
+		name        string
+		query       string
+		expandLabel string
+	}{
+		{"public_network", "host_public_network_access", ""},
+		{"password_expiry", "host_password_expiry_days", "user"},
+		{"password_policy", "host_password_policy", "param"},
+		{"open_files", "host_open_files", ""},
+		{"max_files", "host_max_files", ""},
+		{"sysctl_params", "host_sysctl", "param"},
+	}
+	for _, tc := range cases {
+		def := defsByName[tc.name]
+		if def == nil {
+			t.Fatalf("missing metric definition %q", tc.name)
+		}
+		if def.Query != tc.query {
+			t.Fatalf("%s query = %q, want %q", tc.name, def.Query, tc.query)
+		}
+		if def.ExpandByLabel != tc.expandLabel {
+			t.Fatalf("%s expand_by_label = %q, want %q", tc.name, def.ExpandByLabel, tc.expandLabel)
 		}
 	}
 }

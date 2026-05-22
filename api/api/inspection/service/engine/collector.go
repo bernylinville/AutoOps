@@ -10,10 +10,10 @@ import (
 	"time"
 
 	"dodevops-api/api/inspection/model"
-	"dodevops-api/pkg/log"
 	"dodevops-api/api/inspection/service/engine/vmclient"
 	n9emodel "dodevops-api/api/n9e/model"
 	n9eservice "dodevops-api/api/n9e/service"
+	"dodevops-api/pkg/log"
 
 	"golang.org/x/sync/errgroup"
 )
@@ -69,6 +69,13 @@ func (c *Collector) CollectAll(ctx context.Context) (*CollectionResult, error) {
 	hostMetrics, err := c.collectMetrics(ctx, hosts)
 	if err != nil {
 		return nil, fmt.Errorf("collect metrics: %w", err)
+	}
+	if c.shouldRetryHostFilterWithTagsOnly(hostMetrics) {
+		log.Log().Warnf("[Collector] host filter matched no metrics with business groups %v and tags; retrying with tags only", c.hostFilter.BusinessGroups)
+		hostMetrics, err = c.collectMetricsWithTemporaryFilter(ctx, hosts, tagsOnlyHostFilter(c.hostFilter))
+		if err != nil {
+			return nil, fmt.Errorf("collect metrics with tag-only fallback: %w", err)
+		}
 	}
 
 	// Restrict hosts to metric scope when filter is active.
@@ -310,6 +317,39 @@ func (c *Collector) shouldRestrictHostsToMetricScope() bool {
 	return false
 }
 
+func (c *Collector) shouldRetryHostFilterWithTagsOnly(hostMetrics map[string]*model.HostMetrics) bool {
+	return c.shouldRestrictHostsToMetricScope() &&
+		len(c.hostFilter.BusinessGroups) > 0 &&
+		len(c.hostFilter.Tags) > 0 &&
+		!hasAnyCollectedMetric(hostMetrics)
+}
+
+func (c *Collector) collectMetricsWithTemporaryFilter(
+	ctx context.Context,
+	hosts []*model.HostMeta,
+	filter *vmclient.HostFilter,
+) (map[string]*model.HostMetrics, error) {
+	originalFilter := c.hostFilter
+	c.hostFilter = filter
+	defer func() {
+		c.hostFilter = originalFilter
+	}()
+
+	return c.collectMetrics(ctx, hosts)
+}
+
+func tagsOnlyHostFilter(filter *vmclient.HostFilter) *vmclient.HostFilter {
+	if filter == nil || len(filter.Tags) == 0 {
+		return nil
+	}
+
+	tags := make(map[string]string, len(filter.Tags))
+	for k, v := range filter.Tags {
+		tags[k] = v
+	}
+	return &vmclient.HostFilter{Tags: tags}
+}
+
 func (c *Collector) restrictHostsToMetricScope(
 	hosts []*model.HostMeta,
 	hostMetrics map[string]*model.HostMetrics,
@@ -342,6 +382,15 @@ func (c *Collector) restrictHostsToMetricScope(
 
 	log.Log().Infof("[Collector] host filter: %d -> %d", len(hosts), len(filteredHosts))
 	return filteredHosts, filteredMetrics
+}
+
+func hasAnyCollectedMetric(hostMetrics map[string]*model.HostMetrics) bool {
+	for _, metrics := range hostMetrics {
+		if hasCollectedMetric(metrics) {
+			return true
+		}
+	}
+	return false
 }
 
 func hasCollectedMetric(metrics *model.HostMetrics) bool {

@@ -327,6 +327,11 @@ func (e *Evaluator) formatMetricValue(metricName string, value float64) string {
 		return fmt.Sprintf("%.2f", value)
 	case model.MetricFormatNTPOffset:
 		return formatNTPOffset(value)
+	case model.MetricFormatBoolean:
+		if value == 1 {
+			return "是"
+		}
+		return "否"
 	default:
 		if def.Unit == "%" {
 			return fmt.Sprintf("%.1f%%", value)

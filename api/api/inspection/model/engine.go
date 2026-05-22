@@ -280,11 +280,12 @@ const (
 type MetricCategory string
 
 const (
-	MetricCategoryCPU     MetricCategory = "cpu"
-	MetricCategoryMemory  MetricCategory = "memory"
-	MetricCategoryDisk    MetricCategory = "disk"
-	MetricCategorySystem  MetricCategory = "system"
-	MetricCategoryProcess MetricCategory = "process"
+	MetricCategoryCPU      MetricCategory = "cpu"
+	MetricCategoryMemory   MetricCategory = "memory"
+	MetricCategoryDisk     MetricCategory = "disk"
+	MetricCategorySystem   MetricCategory = "system"
+	MetricCategoryProcess  MetricCategory = "process"
+	MetricCategorySecurity MetricCategory = "security"
 )
 
 // MetricFormat represents display formatting.
@@ -296,6 +297,7 @@ const (
 	MetricFormatDuration  MetricFormat = "duration"
 	MetricFormatNumber    MetricFormat = "number"
 	MetricFormatNTPOffset MetricFormat = "ntp_offset"
+	MetricFormatBoolean   MetricFormat = "boolean"
 )
 
 // AggregateType represents aggregation across multiple values.
