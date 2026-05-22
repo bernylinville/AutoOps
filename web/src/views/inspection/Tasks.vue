@@ -92,6 +92,9 @@
         <el-form-item label="Cron 表达式">
           <el-input v-model="form.cron" placeholder="如 */5 * * * *" />
         </el-form-item>
+        <el-form-item label="目标标签过滤">
+          <el-input v-model="form.targetQuery" placeholder="如 items=业务标签；留空按业务组巡检" />
+        </el-form-item>
         <el-form-item label="通知 Webhook URL">
           <el-input v-model="form.notifyWebhookUrl" placeholder="请输入 Webhook 地址" />
         </el-form-item>
@@ -135,6 +138,7 @@ const submitting = ref(false)
 const editingTaskId = ref(null)
 const form = ref({
   cron: '',
+  targetQuery: '',
   notifyWebhookUrl: '',
   notifySecret: '',
   notifyOnWarning: false,
@@ -179,6 +183,7 @@ function showEditDialog(row) {
   editingTaskId.value = row.id
   form.value = {
     cron: row.cron || '',
+    targetQuery: row.targetQuery || '',
     notifyWebhookUrl: row.notifyWebhookUrl || '',
     notifySecret: row.notifySecret || '',
     notifyOnWarning: row.notifyOnWarning || false,

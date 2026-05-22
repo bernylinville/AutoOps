@@ -81,6 +81,13 @@ func (d *TaskDAO) Create(task *model.InspectionTask) error {
 	return d.db.Create(task).Error
 }
 
+// CreateTaskWithEnabled 创建任务并强制写入 Enabled 字段（解决 GORM 零值忽略问题）
+// GORM 在 struct 中 bool=false 时会跳过该字段并使用数据库默认值(true)，
+// 通过 Select 显式指定字段可强制写入 false。
+func (d *TaskDAO) CreateTaskWithEnabled(task *model.InspectionTask) error {
+	return d.db.Select("N9EGroupID", "N9EGroupName", "Name", "Enabled", "Cron", "CreateTime", "UpdateTime").Create(task).Error
+}
+
 // Update 更新任务
 func (d *TaskDAO) Update(task *model.InspectionTask) error {
 	return d.db.Save(task).Error

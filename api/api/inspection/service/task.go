@@ -50,7 +50,14 @@ func (s *TaskService) GetTask(id uint) (*model.TaskVO, error) {
 
 // GetTaskRaw 获取原始任务（不脱敏，内部使用）
 func (s *TaskService) GetTaskRaw(id uint) (*model.InspectionTask, error) {
-	return s.taskDAO.GetByID(id)
+	task, err := s.taskDAO.GetByID(id)
+	if err != nil {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			return nil, ErrTaskNotFound
+		}
+		return nil, err
+	}
+	return task, nil
 }
 
 // UpdateTask 更新任务配置

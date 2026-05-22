@@ -249,6 +249,44 @@ func TestApplyUpdate_OnlyProvidedFieldsChanged(t *testing.T) {
 	}
 }
 
+func TestApplyUpdate_TargetQueryCanBeCleared(t *testing.T) {
+	task := &InspectionTask{
+		TargetQuery: "busigroup=生产环境",
+		UpdateTime:  util.HTime{Time: time.Now()},
+	}
+
+	empty := "  "
+	task.ApplyUpdate(&UpdateTaskDto{TargetQuery: &empty})
+
+	if task.TargetQuery != "" {
+		t.Errorf("target query should be cleared, got %q", task.TargetQuery)
+	}
+}
+
+func TestApplyUpdate_TargetQueryNilPreserves(t *testing.T) {
+	task := &InspectionTask{
+		TargetQuery: "busigroup=生产环境",
+		UpdateTime:  util.HTime{Time: time.Now()},
+	}
+
+	task.ApplyUpdate(&UpdateTaskDto{})
+
+	if task.TargetQuery != "busigroup=生产环境" {
+		t.Errorf("target query should be preserved, got %q", task.TargetQuery)
+	}
+}
+
+func TestNewHostResultKeepsIdent(t *testing.T) {
+	host := NewHostResult(&HostMeta{
+		Ident:    "host-a@10.0.0.1",
+		Hostname: "host-a",
+	})
+
+	if host.Ident != "host-a@10.0.0.1" {
+		t.Errorf("expected ident to be preserved, got %q", host.Ident)
+	}
+}
+
 func TestBeforeCreate_SetsRunDate(t *testing.T) {
 	run := &InspectionRun{
 		TaskID:      1,
@@ -356,8 +394,8 @@ func TestApplyUpdate_URLEncodedMaskedURLNotApplied(t *testing.T) {
 
 func TestIsMaskedURL(t *testing.T) {
 	cases := []struct {
-		input    string
-		masked   bool
+		input  string
+		masked bool
 	}{
 		{"https://x.com?token=***", true},
 		{"https://x.com?token=%2A%2A%2A", true},

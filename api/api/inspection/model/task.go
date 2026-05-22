@@ -17,7 +17,7 @@ type InspectionTask struct {
 	Name             string     `gorm:"column:name;type:varchar(200);NOT NULL;comment:任务名称" json:"name"`
 	Enabled          bool       `gorm:"column:enabled;default:true;comment:是否启用" json:"enabled"`
 	Cron             string     `gorm:"column:cron;type:varchar(100);default:'CRON_TZ=Asia/Shanghai 0 10 * * *';comment:Cron 表达式" json:"cron"`
-	TargetQuery      string     `gorm:"column:target_query;type:varchar(500);comment:VM label filter，如 busigroup=生产环境" json:"targetQuery"`
+	TargetQuery      string     `gorm:"column:target_query;type:varchar(500);comment:目标标签过滤，如 items=业务标签" json:"targetQuery"`
 	NotifyWebhookURL string     `gorm:"column:notify_webhook_url;type:varchar(500);comment:钉钉 Webhook URL" json:"notifyWebhookUrl"`
 	NotifySecret     string     `gorm:"column:notify_secret;type:varchar(200);comment:钉钉 Secret" json:"-"` // GET 不返回
 	NotifyOnWarning  bool       `gorm:"column:notify_on_warning;default:true;comment:Warning 是否通知" json:"notifyOnWarning"`
@@ -117,13 +117,14 @@ func (t *InspectionTask) ToVO() *TaskVO {
 
 // UpdateTaskDto PUT 接口入参，空字符串保留原值。
 type UpdateTaskDto struct {
-	Enabled          *bool  `json:"enabled,omitempty"`
-	Cron             string `json:"cron,omitempty"`
-	NotifyWebhookURL string `json:"notifyWebhookUrl,omitempty"`
-	NotifySecret     string `json:"notifySecret,omitempty"`
-	NotifyOnWarning  *bool  `json:"notifyOnWarning,omitempty"`
-	NotifyOnCritical *bool  `json:"notifyOnCritical,omitempty"`
-	NotifyOnFailure  *bool  `json:"notifyOnFailure,omitempty"`
+	Enabled          *bool   `json:"enabled,omitempty"`
+	Cron             string  `json:"cron,omitempty"`
+	TargetQuery      *string `json:"targetQuery,omitempty"`
+	NotifyWebhookURL string  `json:"notifyWebhookUrl,omitempty"`
+	NotifySecret     string  `json:"notifySecret,omitempty"`
+	NotifyOnWarning  *bool   `json:"notifyOnWarning,omitempty"`
+	NotifyOnCritical *bool   `json:"notifyOnCritical,omitempty"`
+	NotifyOnFailure  *bool   `json:"notifyOnFailure,omitempty"`
 }
 
 func (t *InspectionTask) ApplyUpdate(dto *UpdateTaskDto) {
@@ -132,6 +133,9 @@ func (t *InspectionTask) ApplyUpdate(dto *UpdateTaskDto) {
 	}
 	if dto.Cron != "" {
 		t.Cron = dto.Cron
+	}
+	if dto.TargetQuery != nil {
+		t.TargetQuery = strings.TrimSpace(*dto.TargetQuery)
 	}
 	if dto.NotifyWebhookURL != "" && !isMaskedURL(dto.NotifyWebhookURL) {
 		t.NotifyWebhookURL = dto.NotifyWebhookURL

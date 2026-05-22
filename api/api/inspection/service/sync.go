@@ -54,7 +54,7 @@ func (s *TaskService) SyncTasksFromN9EGroups(ctx context.Context, busiGroups []n
 				CreateTime:   util.HTime{Time: time.Now()},
 				UpdateTime:   util.HTime{Time: time.Now()},
 			}
-			if err := s.taskDAO.Create(task); err != nil {
+			if err := s.taskDAO.CreateTaskWithEnabled(task); err != nil {
 				log.Log().Errorf("[Inspection Sync] failed to create task for group %d (%s): %v", group.ID, group.Name, err)
 				continue
 			}
