@@ -30,11 +30,11 @@ router/inspection/  # 路由注册
 
 | 来源 | 抽取内容 | 目标位置 |
 |------|---------|---------|
-| `internal/model/` | Alert, HostResult, InspectionResult, MetricValue, HostStatus, AlertLevel 等 | `api/api/inspection/model/itmodel/`（inspection-tool model 适配层） |
+| `internal/model/` | Alert, HostResult, InspectionResult, MetricValue, HostStatus, AlertLevel 等 | `api/api/inspection/model/engine.go`（服务内移植类型，避免 import CLI/internal 包） |
 | `internal/service/` | Collector（采集）、Evaluator（评估）、Inspector（编排）的核心逻辑 | `api/api/inspection/service/engine/` |
 | `internal/client/n9e` | N9E 主机元信息获取 | 复用 AutoOps 已有的 `api/api/n9e/service/client.go` |
 | `internal/client/vm` | VictoriaMetrics PromQL 查询 | **移植** inspection-tool 的 VM client 核心到 `api/api/inspection/service/engine/vmclient/`。AutoOps 现有 `QueryPromQL` 是 `query_range`，巡检需要 **instant query** + **label matcher 注入** + **按 ident 分组解析** |
-| `internal/report/excel` | Excel 报告生成 | `api/api/inspection/report/excel.go`（适配，修复多业务组文件名冲突） |
+| `internal/report/excel` | Excel 报告生成 | `api/api/inspection/report/excel.go`（保持 CLI workbook 语义，仅适配 AutoOps 文件路径） |
 
 **抽取原则**：
 - 移除 Cobra/Viper 依赖，配置通过函数参数传入
@@ -42,6 +42,9 @@ router/inspection/  # 路由注册
 - 移除 `os.Exit`，错误通过 `error` 返回
 - 接受 `context.Context`，支持取消和超时
 - 输出结构化数据（`InspectionResult`），不直接写文件
+
+**兼容性基线**：Host 巡检语义以 `~/Code/inspection-tool` 为准，详见 [ADR-001](decisions/ADR-001-inspection-tool-as-host-inspection-baseline.md)。AutoOps 允许的平台侧差异仅限任务/调度/持久化/通知/下载鉴权和报告存储路径；指标定义、状态评估和 Excel workbook 结构应保持与 CLI 可比对。
+
 
 ### 1.3 依赖关系
 
@@ -477,8 +480,8 @@ if err := db.Create(run).Error; errors.Is(err, gorm.ErrDuplicatedKey) {
 
 ### 5.1 流程
 
-1. 巡检完成后，调用 `report.GenerateExcel(runID, result)`
-2. 生成文件到 `/data/inspection/{run_id}/report.xlsx`
+1. 巡检完成后，调用 `report.WriteHostReport(result, reportPath)`
+2. 生成文件到 `/data/inspection/{run_id}/inspection_report_{run_id}_{date}.xlsx`
 3. 更新 `inspection_report_artifact` 记录
 4. 下载时通过 `run_id` 查找文件路径，走 JWT 鉴权后流式返回
 
@@ -490,7 +493,20 @@ if err := db.Create(run).Error; errors.Is(err, gorm.ErrDuplicatedKey) {
 {output_dir}/{run_id}/inspection_report_{run_id}_{date}.xlsx
 ```
 
-### 5.3 存储位置
+### 5.3 Excel Workbook 契约
+
+Host 报告必须保持与 `inspection-tool/internal/report/excel/writer.go` 的用户可见语义一致：
+
+| Sheet | 语义 | 关键字段 |
+|------|------|---------|
+| `巡检概览` | 本次巡检总体统计 | 标题 `系统巡检报告`、巡检时间、巡检耗时、主机总数、正常/警告/严重/失败主机、告警总数 |
+| `基线检查` | 主机安全/基线检查 | 巡检时间、主机名、IP地址、操作系统、内核版本、运行时间、密码过期、密码策略、文件句柄、公网访问、sysctl 参数 |
+| `详细数据` | 主机资源与关键指标明细 | 一台主机一行；CPU、内存、可用内存、磁盘最大利用率、运行时间、NTP、僵尸进程、文件句柄、按挂载点展开的磁盘列 |
+| `异常汇总` | 告警统一视图 | 存在告警时生成；来源类型、实例标识、告警级别、指标名称、当前值、警告阈值、严重阈值、告警消息 |
+
+注意：`基线检查` 不应退化成资源指标表；`详细数据` 不应变成一指标一行，否则会破坏与 CLI 报告的可比对性。
+
+### 5.4 存储位置
 
 - **独立目录**：`/data/inspection/`（Docker 挂载独立 named volume，不走 `/api/v1/upload` 静态目录）
 - 报告下载必须通过 `GET /inspection/runs/:id/report` 接口，JWT 鉴权 + 审计后流式返回

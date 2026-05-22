@@ -415,12 +415,15 @@
 **Acceptance criteria:**
 - [ ] 移植 Excel writer 到 `api/api/inspection/report/`
 - [ ] 文件名规则：`{output_dir}/{run_id}/inspection_report_{run_id}_{date}.xlsx`
-- [ ] 包含概览、基线检查、详细数据、异常汇总 4 个 sheet
-- [ ] 条件格式：warning 黄色，critical 红色，normal 绿色
+- [ ] 包含 `巡检概览`、`基线检查`、`详细数据`，存在告警时包含 `异常汇总`
+- [ ] `基线检查` 包含密码过期、密码策略、文件句柄、公网访问、sysctl 参数
+- [ ] `详细数据` 保持一台主机一行，并按挂载点展开磁盘列
+- [ ] 条件格式与 inspection-tool 对齐：warning 黄色，critical 红色；正常状态/明确通过项绿色，普通正常指标不额外着色
 
 **Verification:**
 - [ ] 生成 Excel 文件，格式正确
 - [ ] 中文显示正常
+- [ ] 单元测试打开 xlsx 校验 sheet 顺序、标题、表头、关键单元格
 
 **Dependencies:** Task 11
 

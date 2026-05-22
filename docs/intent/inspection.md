@@ -25,7 +25,7 @@
 
 - 首版仅 Host 巡检，中间件巡检（MySQL/Redis/Nginx/Tomcat/Elasticsearch）后续迭代
 - 巡检目标限定为 N9E 监控纳管的机器，按业务组组织
-- Excel 报告生成复用 CLI 已有实现（修复多业务组文件名冲突等问题）
+- Excel 报告生成以 CLI 当前 Host 报告为兼容基线：sheet、字段和一主机一行明细保持一致；AutoOps 仅修复多业务组文件名冲突和下载鉴权/审计
 - Web 页面展示重新设计
 - 权限：所有已登录用户可见，下载接口走 JWT + 审计
 - 调度防并发冲击：队列化执行、最大并发上限 5 组、超时控制、跳过重入、失败处理
@@ -49,3 +49,4 @@
 | 首版巡检范围 | Host only | 最核心场景，降低首版风险，中间件后续迭代 |
 | 调度并发策略 | 并发 + 上限 5 组 | 避免 72 个业务组同时启动压垮系统，同时不拖太久 |
 | 通知规则 | critical 必通知，warning 默认通知，失败/无主机通知 | 可配置，默认覆盖主要异常场景 |
+| 巡检兼容基线 | inspection-tool Host 报告/指标语义 | 运维已有报告依赖，平台化不重新定义巡检结果；详见 `docs/decisions/ADR-001-inspection-tool-as-host-inspection-baseline.md` |
