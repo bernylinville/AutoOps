@@ -135,6 +135,14 @@ func (m *Manager) Stop() {
 	log.Println("调度器管理器已停止")
 }
 
+// ReloadInspectionTask reloads one inspection cron job after task configuration changes.
+func (m *Manager) ReloadInspectionTask(taskID uint) {
+	if m == nil || !m.running || m.inspectionScheduler == nil {
+		return
+	}
+	m.inspectionScheduler.ReloadTask(taskID)
+}
+
 // IsRunning 检查调度器管理器是否在运行
 func (m *Manager) IsRunning() bool {
 	m.mutex.RLock()

@@ -8,6 +8,8 @@ import (
 	"dodevops-api/api/inspection/model"
 	"dodevops-api/api/inspection/service"
 	"dodevops-api/common/result"
+	dbR "dodevops-api/pkg/db"
+	"dodevops-api/scheduler"
 
 	"github.com/gin-gonic/gin"
 )
@@ -92,5 +94,6 @@ func (c *TaskController) UpdateTask(ctx *gin.Context) {
 		return
 	}
 
+	scheduler.GetManager(dbR.Db).ReloadInspectionTask(id)
 	result.Success(ctx, nil)
 }
