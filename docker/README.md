@@ -1,8 +1,6 @@
-# DevOps运维管理系统 Docker 一键部署
+# DevOps 运维管理系统 Docker 部署
 
-## 部署说明
-
-本目录提供了 DevOps 运维管理系统的 Docker Compose 一键部署方案，所有配置文件和数据都已持久化到本地。
+本目录提供了 DevOps 运维管理系统的 Docker Compose 部署方案，所有配置文件和数据已持久化到本地。
 
 ## 目录结构
 
@@ -10,303 +8,200 @@
 docker/
 ├── docker-compose.yml          # Docker Compose 编排文件
 ├── .env                        # 环境变量配置
+├── .env.example                # 环境变量模板
+├── devops-start.sh             # 一键启动脚本
+├── devops-stop.sh              # 一键停止脚本
+├── import-dev-data.sh          # 导入 seed 数据脚本
 ├── api/                        # 后端配置
-│   ├── config.yaml            # API 配置文件
-│   ├── logs/                  # 日志目录(持久化)
-│   └── upload/                # 上传文件目录(持久化)
-├── web/                       # 前端配置
-│   └── devops.conf           # Nginx 配置文件
-├── mysql/                     # MySQL 配置
-│   ├── devops.sql            # 初始化 SQL 脚本
-│   ├── conf.d/               # MySQL 配置文件
-│   │   └── my.cnf
-│   └── data/                 # 数据目录(持久化)
-├── redis/                     # Redis 配置
-│   ├── redis.conf            # Redis 配置文件
-│   └── data/                 # 数据目录(持久化)
-├── prometheus/                # Prometheus 配置
-│   ├── prometheus.yml        # Prometheus 配置文件
-│   └── data/                 # 数据目录(持久化)
-└── pushgateway/               # Pushgateway 配置
-    └── data/                 # 数据目录(持久化)
+│   ├── config.yaml             # API 配置文件
+│   ├── Dockerfile              # API 镜像构建文件
+│   ├── templates/              # Excel 模板
+│   └── ssh_keys/               # SSH 密钥
+├── web/                        # 前端配置
+│   ├── Dockerfile              # Web 镜像构建文件
+│   └── devops.conf             # Nginx 配置文件
+├── postgres/                   # PostgreSQL 初始化脚本
+│   └── init/                   # 首次启动执行的 SQL
+├── valkey/                     # Valkey 配置
+│   └── valkey.conf
+├── prometheus/                 # Prometheus 配置
+│   └── prometheus.yml
+└── pushgateway/                # Pushgateway 配置
 ```
 
 ## 服务列表
 
 | 服务名 | 容器名 | 端口映射 | 说明 |
 |--------|--------|----------|------|
-| mysql | devops-mysql | 3306:3306 | MySQL 8.0.33 数据库 |
-| redis | devops-redis | 6379:6379 | Redis 7.0 缓存 |
-| pushgateway | devops-pushgateway | 9091:9091 | Pushgateway 指标推送 |
-| prometheus | devops-prometheus | 9090:9090 | Prometheus 监控 |
-| devops-api | devops-api | 8000:8000 | DevOps API 后端服务 |
-| devops-web | devops-web | 8080:80 | DevOps Web 前端服务 |
+| postgres | devops-postgres | 15432:5432 | PostgreSQL 17.4 数据库 |
+| valkey | devops-valkey | 16379:6379 | Valkey 9.0 缓存 (Redis 协议兼容) |
+| pushgateway | devops-pushgateway | 19091:9091 | Pushgateway 指标推送 |
+| prometheus | devops-prometheus | 19090:9090 | Prometheus 监控 |
+| devops-api | devops-api | 18000:8000 | DevOps API 后端 (本地构建) |
+| devops-web | devops-web | 18088:80 | DevOps Web 前端 (本地构建) |
 
 ## 部署前准备
 
-### 1. 拉取镜像(可选,首次部署会自动拉取)
+### 1. 配置文件准备
 
 ```bash
-docker pull crpi-aj3vgoxp9kzh2jx4.cn-hangzhou.personal.cr.aliyuncs.com/zhangfan_k8s/deviops-api:v3.0
-docker pull crpi-aj3vgoxp9kzh2jx4.cn-hangzhou.personal.cr.aliyuncs.com/zhangfan_k8s/deviops-web:v3.0
-docker pull crpi-aj3vgoxp9kzh2jx4.cn-hangzhou.personal.cr.aliyuncs.com/zhangfan_k8s/pushgateway:v1.9.0
-docker pull crpi-aj3vgoxp9kzh2jx4.cn-hangzhou.personal.cr.aliyuncs.com/zhangfan_k8s/redis:7.0-alpine
-docker pull crpi-aj3vgoxp9kzh2jx4.cn-hangzhou.personal.cr.aliyuncs.com/zhangfan_k8s/prometheus:v2.47.0
-docker pull crpi-aj3vgoxp9kzh2jx4.cn-hangzhou.personal.cr.aliyuncs.com/zhangfan_k8s/mysql:8.0.33
+# 复制环境变量模板（首次部署）
+cp .env.example .env
+# 按需修改端口、密码
+
+# 后端配置
+cp api/config.yaml.example api/config.yaml
+# 按需修改 db.password、redis.password 等
 ```
 
-### 2. 修改 `.env` 环境变量配置
+两个配置文件的密码必须一致：`.env` 的 `POSTGRES_PASSWORD` = `api/config.yaml` 的 `db.password`；`REDIS_PASSWORD` = `redis.password`。
 
-编辑 `.env` 文件,根据实际情况修改配置:
+### 2. 构建并启动所有服务
 
 ```bash
-# ----------------
-# 服务端口配置 (如果端口冲突,修改这里)
-# ----------------
-WEB_PORT=8080          # 前端访问端口
-API_PORT=8000          # API后端端口
-MYSQL_PORT=3306        # MySQL端口
-REDIS_PORT=6379        # Redis端口
-PROMETHEUS_PORT=9090   # Prometheus端口
-PUSHGATEWAY_PORT=9091  # Pushgateway端口
-
-# ----------------
-# 外网访问地址配置 (必改)
-# ----------------
-# 修改为实际的服务器IP或域名
-IMAGE_HOST=http://192.168.1.100:8080  # 或 http://your-domain.com
-
-# ----------------
-# 数据库密码 (建议修改)
-# ----------------
-MYSQL_ROOT_PASSWORD=devops@2025
-REDIS_PASSWORD=zhangfan@123
+docker compose up -d --build
 ```
 
-**说明:**
-- **修改端口**: 只需修改 `.env` 中的端口变量,无需改其他文件
-- **修改后重启**: `docker-compose down && docker-compose up -d`
-- **IMAGE_HOST**: 必须修改为实际的外网访问地址,否则图片无法正常显示
+首次构建需要 5-10 分钟（下载依赖、编译 Go 和前端）。
 
-### 1. 启动所有服务
+### 3. 导入 seed 数据（首次部署）
 
 ```bash
-# 脚本+镜像版本+ip+前端端口
-cd /root/deviops/docker
-./devops-start.sh  v3.0 ip 8080
-# v3.0表示版本
-# ip 是你本地可以访问的ip
-# 8080  是你外部暴露的端口
+./import-dev-data.sh --force
+# 默认账号: admin / 123456
 ```
 
-### 2. 查看服务状态
+## 访问地址
 
-```bash
-docker-compose ps
-```
-
-### 3. 查看服务日志
-
-```bash
-# 查看所有服务日志
-docker-compose logs -f
-
-# 查看指定服务日志
-docker-compose logs -f devops-api
-docker-compose logs -f devops-web
-docker-compose logs -f mysql
-```
-
-### 4. 访问系统
-
-- **Web 前端**: http://localhost:8088
-- **API 后端**: http://localhost:8000
-- **默认账号**: admin/123456
-- **Prometheus**: http://localhost:9090
-- **Pushgateway**: http://localhost:9091
+- **Web 前端**: http://127.0.0.1:18088 (admin/123456)
+- **API 后端**: http://127.0.0.1:18000
+- **Prometheus**: http://127.0.0.1:19090
+- **Pushgateway**: http://127.0.0.1:19091
 
 ## 服务管理
+
+### 查看服务状态
+
+```bash
+docker compose ps
+```
+
+### 查看服务日志
+
+```bash
+docker compose logs -f                    # 所有服务
+docker compose logs -f devops-api         # 指定服务
+```
 
 ### 停止服务
 
 ```bash
-docker-compose stop
+docker compose stop
 ```
 
 ### 重启服务
 
 ```bash
-docker-compose restart
+docker compose restart
 ```
 
 ### 停止并删除容器
 
 ```bash
-docker-compose down
+docker compose down
 ```
 
-### 停止并删除容器及数据卷(危险操作)
+### 停止并删除容器及数据卷（危险操作）
 
 ```bash
-docker-compose down -v
+docker compose down -v
 ```
 
-### 重新构建并启动
+## 日常更新（代码变更后）
 
 ```bash
-docker-compose up -d --build
+# 重建 API 和 Web 镜像（基础服务无需重建）
+docker compose down devops-api devops-web
+docker compose up -d --build devops-api devops-web
+
+# 等待健康检查通过，验证服务
+curl -sf http://127.0.0.1:18000/api/v1/healthz
+curl -sf -o /dev/null -w "%{http_code}\n" http://127.0.0.1:18088/
 ```
-### 访问地址  admin/123456
-### 单独重启某个服务
+
+**注意**：基础服务（postgres、valkey、prometheus、pushgateway）镜像从 registry 拉取，通常不需要更新。只有 `devops-api` 和 `devops-web` 通过本地 `build:` 构建，代码变更后需要重建。
+
+如果 `.env` 或 `api/config.yaml` 有改动，需要全量重启：
 
 ```bash
-docker-compose restart devops-api
+docker compose down && docker compose up -d --build
 ```
 
 ## 数据持久化
 
-以下目录数据已持久化到本地,停止容器后数据不会丢失:
+以下 Docker volume 已持久化，停止容器后数据不会丢失：
 
-- **MySQL数据**: `./mysql/data/`
-- **Redis数据**: `./redis/data/`
-- **Prometheus数据**: `./prometheus/data/`
-- **Pushgateway数据**: `./pushgateway/data/`
-- **API日志**: `./api/logs/`
-- **上传文件**: `./api/upload/`
-
-## 健康检查
-
-所有服务都配置了健康检查,启动时会自动等待依赖服务就绪:
-
-- MySQL: 检查数据库连接
-- Redis: 检查 Redis 连接
-- Prometheus: 检查 HTTP 健康端点
-- Pushgateway: 检查 HTTP 健康端点
-- API: 检查 HTTP 健康端点(启动后30秒开始检查)
-- Web: 检查 Nginx HTTP 服务
+| Volume | 说明 |
+|--------|------|
+| autoops-postgres-data | PostgreSQL 数据 |
+| autoops-valkey-data | Valkey 数据 |
+| autoops-prometheus-data | Prometheus 数据 |
+| autoops-pushgateway-data | Pushgateway 数据 |
+| autoops-api-log | API 日志 |
+| autoops-api-upload | 上传文件 |
+| autoops-api-inspection | 巡检报告 |
 
 ## 网络配置
 
-所有服务运行在独立的 Docker 网络 `devops-network` 中,使用子网 `172.20.0.0/16`。
+所有服务运行在独立的 Docker 网络 `devops-network` 中，使用子网 `172.20.0.0/16`。
 
-服务之间通过容器名通信:
-- API 连接 MySQL: `mysql:3306`
-- API 连接 Redis: `redis:6379`
+服务之间通过容器名通信：
+- API 连接 PostgreSQL: `postgres:5432`
+- API 连接 Valkey: `valkey:6379`
 - Prometheus 采集 Pushgateway: `pushgateway:9091`
 - Web 代理 API: `devops-api:8000`
-
-## 故障排查
-
-### 1. 容器启动失败
-
-```bash
-# 查看容器日志
-docker-compose logs <service-name>
-
-# 查看容器状态
-docker-compose ps
-```
-
-### 2. 数据库连接失败
-
-```bash
-# 进入 MySQL 容器检查
-docker-compose exec mysql mysql -uroot -pdevops@2025
-
-# 检查数据库是否初始化
-docker-compose exec mysql mysql -uroot -pdevops@2025 -e "SHOW DATABASES;"
-```
-
-### 3. API 无法连接数据库
-
-```bash
-# 检查网络连通性
-docker-compose exec devops-api ping mysql
-
-# 检查 MySQL 是否健康
-docker-compose exec mysql mysqladmin ping -h localhost -uroot -pdevops@2025
-```
-
-### 4. 重置数据库
-
-```bash
-# 停止服务
-docker-compose down
-
-# 删除 MySQL 数据
-rm -rf ./mysql/data/*
-
-# 重新启动(会自动初始化数据库)
-docker-compose up -d
-```
-
-## 端口冲突
-
-如果本机端口被占用,可以修改 `docker-compose.yml` 中的端口映射:
-
-```yaml
-ports:
-  - "8080:80"  # 修改为 "18080:80"
-```
-
-## 性能优化
-
-### MySQL 内存优化
-
-编辑 `mysql/conf.d/my.cnf`,根据服务器内存调整:
-
-```ini
-innodb_buffer_pool_size=512M  # 建议设置为物理内存的 50-80%
-```
-
-### Redis 内存优化
-
-编辑 `redis/redis.conf`:
-
-```
-maxmemory 1gb  # 根据实际情况调整
-```
 
 ## 备份与恢复
 
 ### 备份数据库
 
 ```bash
-docker-compose exec mysql mysqldump -uroot -pdevops@2025 devops > backup_$(date +%Y%m%d).sql
+docker compose exec -T postgres pg_dump -U devops autoops > backup_$(date +%Y%m%d).sql
 ```
 
 ### 恢复数据库
 
 ```bash
-docker-compose exec -T mysql mysql -uroot -pdevops@2025 devops < backup.sql
+docker compose exec -T postgres psql -U devops autoops < backup.sql
 ```
 
-## 升级说明
+## 故障排查
 
-### 升级镜像版本
+### 容器启动失败
 
-1. 修改 `docker-compose.yml` 中的镜像版本
-2. 拉取新镜像: `docker-compose pull`
-3. 重启服务: `docker-compose up -d`
+```bash
+docker compose logs <service-name>
+docker compose ps
+```
 
-## 安全建议
+### 数据库连接失败
 
-1. **修改默认密码**: 生产环境务必修改 MySQL 和 Redis 密码
-2. **配置防火墙**: 限制外网访问数据库端口(3306, 6379)
-3. **HTTPS配置**: 生产环境建议配置 HTTPS 证书
-4. **定期备份**: 建议定期备份数据库和上传文件
+```bash
+docker compose exec postgres pg_isready -U devops -d autoops
+docker compose exec postgres psql -U devops -d autoops -c "SELECT 1"
+```
 
-## 生产环境部署建议
+### API 无法连接数据库
 
-1. 使用外部 MySQL 和 Redis(提高可用性)
-2. 配置 Nginx 反向代理和 SSL 证书
-3. 配置日志轮转,避免日志文件过大
-4. 设置资源限制,避免单个容器占用过多资源
-5. 配置监控告警,及时发现问题
+```bash
+docker compose exec devops-api ping postgres
+```
 
-## 技术支持
+### 重置数据库
 
-- 项目地址: https://github.com/zhang1024fan/deviops.git
-- 微信技术交流: zf5391621
-- QQ技术交流: 545118130
-- 建议邮箱: zfwh1024@163.com
+```bash
+docker compose down
+docker volume rm autoops-postgres-data
+docker compose up -d --build   # 会自动初始化数据库
+./import-dev-data.sh --force   # 重新导入 seed 数据
+```
