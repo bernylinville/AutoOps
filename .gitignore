@@ -30,9 +30,9 @@ docker/api/config.yaml
 .claude/
 .codex
 .rtk/
-CLAUDE.md
 .impeccable.md
 skills-lock.json
+.antigravitycli/
 
 # Internal development docs
 DEVELOPMENT.md
