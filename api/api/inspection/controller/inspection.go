@@ -104,7 +104,35 @@ func (c *InspectionController) ListRuns(ctx *gin.Context) {
 		return
 	}
 
+	// 批量补充业务组名称
+	c.enrichRunTaskInfo(runs)
+
 	result.SuccessWithPage(ctx, runs, total, q.Page, q.PageSize)
+}
+
+// enrichRunTaskInfo 批量查询任务信息并补充到运行记录中
+func (c *InspectionController) enrichRunTaskInfo(runs []*model.InspectionRun) {
+	if len(runs) == 0 {
+		return
+	}
+	// 收集唯一 taskID
+	taskIDs := make(map[uint]bool)
+	for _, r := range runs {
+		taskIDs[r.TaskID] = true
+	}
+	// 批量查询
+	for tid := range taskIDs {
+		task, err := c.inspSvc.TaskService().GetTaskRaw(tid)
+		if err != nil {
+			continue
+		}
+		for _, r := range runs {
+			if r.TaskID == tid {
+				r.N9EGroupName = task.N9EGroupName
+				r.TaskName = task.Name
+			}
+		}
+	}
 }
 
 // GetRun GET /inspection/runs/:id — 查询单次运行详情
@@ -124,6 +152,7 @@ func (c *InspectionController) GetRun(ctx *gin.Context) {
 		result.Failed(ctx, int(result.ApiCode.FAILED), err.Error())
 		return
 	}
+	c.enrichRunTaskInfo([]*model.InspectionRun{run})
 
 	result.Success(ctx, run)
 }

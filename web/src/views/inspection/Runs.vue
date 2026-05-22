@@ -9,38 +9,50 @@
 
       <!-- 筛选栏 -->
       <div class="filter-bar">
-        <el-input-number
-          v-model="taskFilter"
-          placeholder="任务 ID"
-          :min="1"
-          :controls="false"
-          clearable
-          style="width: 160px"
-          @change="loadRuns"
-        />
-        <el-select v-model="statusFilter" placeholder="运行状态" clearable style="width: 140px; margin-left: 8px" @change="loadRuns">
-          <el-option value="pending" label="等待中" />
-          <el-option value="running" label="运行中" />
-          <el-option value="success" label="正常" />
-          <el-option value="partial" label="部分异常" />
-          <el-option value="failed" label="失败" />
-        </el-select>
-        <el-select v-model="triggerTypeFilter" placeholder="触发类型" clearable style="width: 140px; margin-left: 8px" @change="loadRuns">
-          <el-option value="cron" label="定时触发" />
-          <el-option value="manual" label="手动触发" />
-        </el-select>
-        <el-date-picker
-          v-model="dateRange"
-          type="daterange"
-          range-separator="至"
-          start-placeholder="开始日期"
-          end-placeholder="结束日期"
-          format="YYYY-MM-DD"
-          value-format="YYYY-MM-DD"
-          style="margin-left: 8px"
-          @change="loadRuns"
-        />
-        <el-button type="primary" @click="loadRuns" style="margin-left: 8px">查询</el-button>
+        <el-row :gutter="16" align="middle">
+          <el-col :span="4">
+            <el-input-number
+              v-model="taskFilter"
+              placeholder="任务 ID"
+              :min="1"
+              :controls="false"
+              clearable
+              style="width: 100%"
+              @change="loadRuns"
+            />
+          </el-col>
+          <el-col :span="4">
+            <el-select v-model="statusFilter" placeholder="运行状态" clearable style="width: 100%" @change="loadRuns">
+              <el-option value="pending" label="等待中" />
+              <el-option value="running" label="运行中" />
+              <el-option value="success" label="正常" />
+              <el-option value="partial" label="部分异常" />
+              <el-option value="failed" label="失败" />
+            </el-select>
+          </el-col>
+          <el-col :span="4">
+            <el-select v-model="triggerTypeFilter" placeholder="触发类型" clearable style="width: 100%" @change="loadRuns">
+              <el-option value="cron" label="定时触发" />
+              <el-option value="manual" label="手动触发" />
+            </el-select>
+          </el-col>
+          <el-col :span="8">
+            <el-date-picker
+              v-model="dateRange"
+              type="daterange"
+              range-separator="至"
+              start-placeholder="开始日期"
+              end-placeholder="结束日期"
+              format="YYYY-MM-DD"
+              value-format="YYYY-MM-DD"
+              style="width: 100%"
+              @change="loadRuns"
+            />
+          </el-col>
+          <el-col :span="4" style="text-align: right;">
+            <el-button type="primary" @click="loadRuns">查询</el-button>
+          </el-col>
+        </el-row>
       </div>
 
       <!-- 运行列表 -->
@@ -55,36 +67,40 @@
       >
         <el-table-column type="index" label="#" width="50" />
         <el-table-column prop="id" label="ID" width="70" />
-        <el-table-column prop="taskId" label="任务 ID" width="100" align="center" />
-        <el-table-column prop="triggerType" label="触发类型" width="100" align="center">
+        <el-table-column prop="n9eGroupName" label="业务组" width="190" show-overflow-tooltip>
+          <template #default="{ row }">
+            <span>{{ row.n9eGroupName || row.taskName || '-' }}</span>
+          </template>
+        </el-table-column>
+        <el-table-column prop="triggerType" label="触发类型" width="90" align="center">
           <template #default="{ row }">
             <el-tag size="small" :type="row.triggerType === 'cron' ? '' : 'primary'">
               {{ row.triggerType === 'cron' ? '定时' : '手动' }}
             </el-tag>
           </template>
         </el-table-column>
-        <el-table-column prop="status" label="状态" width="100" align="center">
+        <el-table-column prop="status" label="状态" width="92" align="center">
           <template #default="{ row }">
             <el-tag :type="statusTagType(row.status)" size="small">{{ statusText(row.status) }}</el-tag>
           </template>
         </el-table-column>
-        <el-table-column label="主机统计" width="240" align="center">
+        <el-table-column label="主机统计" width="200" align="center">
           <template #default="{ row }">
             <div class="host-stats">
               <el-tag size="small" type="info">总 {{ row.totalHosts || 0 }}</el-tag>
-              <el-tag size="small" type="success">正常 {{ row.normalHosts || 0 }}</el-tag>
-              <el-tag size="small" type="warning">警告 {{ row.warningHosts || 0 }}</el-tag>
-              <el-tag size="small" type="danger">严重 {{ row.criticalHosts || 0 }}</el-tag>
-              <el-tag size="small" type="info">失败 {{ row.failedHosts || 0 }}</el-tag>
+              <el-tag size="small" type="success">正 {{ row.normalHosts || 0 }}</el-tag>
+              <el-tag size="small" type="warning">警 {{ row.warningHosts || 0 }}</el-tag>
+              <el-tag size="small" type="danger">严 {{ row.criticalHosts || 0 }}</el-tag>
+              <el-tag size="small" type="info">失 {{ row.failedHosts || 0 }}</el-tag>
             </div>
           </template>
         </el-table-column>
-        <el-table-column prop="durationMs" label="耗时" width="100" align="center">
+        <el-table-column prop="durationMs" label="耗时" width="90" align="center">
           <template #default="{ row }">
             <span>{{ formatDuration(row.durationMs) }}</span>
           </template>
         </el-table-column>
-        <el-table-column prop="createdAt" label="时间" width="170" show-overflow-tooltip />
+        <el-table-column prop="createdAt" label="时间" min-width="170" show-overflow-tooltip />
       </el-table>
 
       <!-- 分页 -->
@@ -186,16 +202,16 @@ function formatDuration(ms) {
   font-weight: 600;
 }
 .filter-bar {
-  display: flex;
-  align-items: center;
-  flex-wrap: wrap;
-  gap: 8px;
+  padding: 0;
 }
 .host-stats {
   display: flex;
-  gap: 4px;
-  flex-wrap: wrap;
+  gap: 3px;
+  flex-wrap: nowrap;
   justify-content: center;
+}
+.host-stats :deep(.el-tag) {
+  padding: 0 5px;
 }
 .pagination-wrapper {
   margin-top: 16px;

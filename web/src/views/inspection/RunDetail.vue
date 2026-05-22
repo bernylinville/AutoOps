@@ -7,7 +7,7 @@
           <el-button text @click="$router.back()" style="margin-right: 12px">
             <el-icon><ArrowLeft /></el-icon>
           </el-button>
-          <span class="run-title">{{ run.taskId ? `任务 #${run.taskId}` : '运行详情' }}</span>
+          <span class="run-title">{{ runTitle }}</span>
           <el-tag size="small" :type="run.triggerType === 'cron' ? '' : 'primary'" style="margin-left: 8px">
             {{ run.triggerType === 'cron' ? '定时触发' : '手动触发' }}
           </el-tag>
@@ -108,7 +108,11 @@
           <el-table :data="alerts" v-loading="alertsLoading" stripe border>
             <el-table-column type="index" label="#" width="50" />
             <el-table-column prop="hostname" label="主机名" min-width="140" show-overflow-tooltip />
-            <el-table-column prop="metric" label="指标" min-width="120" show-overflow-tooltip />
+            <el-table-column label="指标" min-width="120" show-overflow-tooltip>
+              <template #default="{ row }">
+                {{ row.metricDisplayName || row.metricName || '-' }}
+              </template>
+            </el-table-column>
             <el-table-column prop="currentValue" label="当前值" width="100" align="center" />
             <el-table-column label="阈值" min-width="140" show-overflow-tooltip>
               <template #default="{ row }">
@@ -140,7 +144,7 @@
 </template>
 
 <script setup>
-import { ref, onMounted } from 'vue'
+import { computed, ref, onMounted } from 'vue'
 import { useRoute } from 'vue-router'
 import { ElMessage } from 'element-plus'
 import { ArrowLeft, Download } from '@element-plus/icons-vue'
@@ -156,6 +160,7 @@ if (isNaN(runId)) {
 const pageLoading = ref(false)
 const run = ref({})
 const stats = ref({ total: 0, normal: 0, warning: 0, critical: 0, failed: 0 })
+const runTitle = computed(() => run.value.n9eGroupName || run.value.taskName || (run.value.taskId ? `任务 #${run.value.taskId}` : '运行详情'))
 
 // Tabs
 const activeTab = ref('hosts')
