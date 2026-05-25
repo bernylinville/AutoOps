@@ -6,6 +6,7 @@ import (
 	cmdbmodel "dodevops-api/api/cmdb/model"
 	ccmodel "dodevops-api/api/configcenter/model"
 	deploymodel "dodevops-api/api/deploy/model"
+	inspectionmodel "dodevops-api/api/inspection/model"
 	k8smodel "dodevops-api/api/k8s/model"
 	monitormodel "dodevops-api/api/monitor/model"
 	n9emodel "dodevops-api/api/n9e/model"
@@ -86,9 +87,27 @@ var models = []interface{}{
 	&n9emodel.AlertRule{},
 	&n9emodel.AlertEvent{},
 	&n9emodel.NotifyChannel{},
+	// Inspection models
+	&inspectionmodel.InspectionTask{},
+	&inspectionmodel.InspectionRun{},
+	&inspectionmodel.InspectionTargetResult{},
+	&inspectionmodel.InspectionAlert{},
+	&inspectionmodel.InspectionReportArtifact{},
+	&inspectionmodel.InspectionNotification{},
 }
 
 // 自动迁移所有模型
 func AutoMigrate(db *gorm.DB) error {
-	return db.AutoMigrate(models...)
+	if err := db.AutoMigrate(models...); err != nil {
+		return err
+	}
+
+	// 执行 inspection 模块的自定义迁移（GORM 无法表达的部分索引）
+	for _, sql := range inspectionmodel.InspectionMigrationSQL() {
+		if err := db.Exec(sql).Error; err != nil {
+			return err
+		}
+	}
+
+	return nil
 }

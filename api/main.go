@@ -9,6 +9,7 @@ import (
 	cmdbdao "dodevops-api/api/cmdb/dao"
 	deploydao "dodevops-api/api/deploy/dao"
 	deployservice "dodevops-api/api/deploy/service"
+	inspectiondao "dodevops-api/api/inspection/dao"
 	"dodevops-api/api/task/service"
 	"dodevops-api/common"
 	"dodevops-api/common/config"
@@ -74,7 +75,7 @@ func main() {
 	}
 
 	// 启动调度器管理器
-	if err := scheduler.GetManager().Start(); err != nil {
+	if err := scheduler.GetManager(db.Db).Start(); err != nil {
 		log.Log().Errorf("Failed to start scheduler manager: %v", err)
 	}
 
@@ -115,7 +116,7 @@ func main() {
 	log.Info("Shutdown Server ...")
 
 	// 停止调度器管理器
-	scheduler.GetManager().Stop()
+	scheduler.GetManager(db.Db).Stop()
 
 	// 停止任务队列系统
 	stopTaskQueue()
@@ -152,6 +153,8 @@ func initServices() error {
 	_ = networkDao.SeedNetworkMenu()
 	deployMenuDao := deploydao.NewMenuSeedDao(common.GetDB())
 	_ = deployMenuDao.SeedDeployMenu()
+	inspectionMenuDao := inspectiondao.NewMenuSeedDAO(common.GetDB())
+	_ = inspectionMenuDao.SeedInspectionMenu()
 
 	// 初始化Redis
 	if err := common.InitRedis(); err != nil {

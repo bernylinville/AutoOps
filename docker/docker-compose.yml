@@ -136,8 +136,10 @@ services:
       - api-logs:/app/log
       # Upload files directory
       - api-upload:/app/upload
+      # Inspection reports directory
+      - api-inspection:/data/inspection
       # Excel template file
-      - ./api/templates/host.xlsx:/app/upload/xlsl/host.xlsx:ro
+      - ./api/templates/host.xlsx:/app/upload/xlsk/host.xlsx:ro
       # SSH keys (persistent across container restarts)
       - ./api/ssh_keys:/root/.ssh:ro
     networks:
@@ -203,3 +205,5 @@ volumes:
     name: autoops-api-log
   api-upload:
     name: autoops-api-upload
+  api-inspection:
+    name: autoops-api-inspection

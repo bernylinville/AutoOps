@@ -2,15 +2,18 @@ package controller
 
 import (
 	"context"
+	"log"
 	"net/http"
 	"strconv"
 	"strings"
 	"time"
 
+	inspectionService "dodevops-api/api/inspection/service"
 	"dodevops-api/api/n9e/dao"
 	"dodevops-api/api/n9e/model"
 	"dodevops-api/api/n9e/service"
 	"dodevops-api/common/result"
+	dbR "dodevops-api/pkg/db"
 	"dodevops-api/scheduler"
 
 	"github.com/gin-gonic/gin"
@@ -96,7 +99,7 @@ func (ctrl *N9EController) SaveConfig(c *gin.Context) {
 	}
 
 	// 重新加载 N9E 定时同步配置
-	if err := scheduler.GetManager().ReloadN9ECron(); err != nil {
+	if err := scheduler.GetManager(nil).ReloadN9ECron(); err != nil {
 		// 只记录警告，不影响保存结果
 		result.Success(c, gin.H{
 			"config":      config,
@@ -155,7 +158,7 @@ func (ctrl *N9EController) TestConnection(c *gin.Context) {
 }
 
 // TriggerSync 手动触发同步
-// @Summary 手动触发 N9E 数据同步
+// @Summary 手动触发 N9E 数据同步（含巡检任务自动创建）
 // @Tags N9E
 // @Accept json
 // @Produce json
@@ -168,7 +171,35 @@ func (ctrl *N9EController) TriggerSync(c *gin.Context) {
 		return
 	}
 
+	// 同步巡检任务：为 N9E 业务组自动创建/停用巡检任务
+	go ctrl.syncInspectionTasks()
+
 	result.Success(c, syncResult)
+}
+
+// syncInspectionTasks 触发巡检任务自动同步
+func (ctrl *N9EController) syncInspectionTasks() {
+	groups, err := dao.GetN9EBusiGroups()
+	if err != nil {
+		log.Printf("[N9E Manual Sync] 获取 N9E 业务组失败，跳过巡检任务同步: %v", err)
+		return
+	}
+	if len(groups) == 0 {
+		return
+	}
+
+	// 转换为 BusiGroupData 格式
+	busiGroupData := make([]model.BusiGroupData, 0, len(groups))
+	for _, g := range groups {
+		busiGroupData = append(busiGroupData, model.BusiGroupData{
+			ID:   g.N9EGroupID,
+			Name: g.Name,
+		})
+	}
+
+	taskSvc := inspectionService.NewTaskService(dbR.Db)
+	taskSvc.SyncTasksFromN9EGroups(context.Background(), busiGroupData)
+	log.Printf("[N9E Manual Sync] 巡检任务同步完成: %d 个业务组", len(busiGroupData))
 }
 
 // GetSyncStatus 获取同步状态

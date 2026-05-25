@@ -7,8 +7,11 @@ import (
 	"sync"
 	"time"
 
+	inspectionService "dodevops-api/api/inspection/service"
 	"dodevops-api/api/n9e/dao"
+	n9eModel "dodevops-api/api/n9e/model"
 	"dodevops-api/api/n9e/service"
+	dbR "dodevops-api/pkg/db"
 
 	"github.com/robfig/cron/v3"
 )
@@ -151,6 +154,35 @@ func (s *N9ESyncScheduler) executeSyncJob() {
 		result.Hosts.Created, result.Hosts.Updated, result.Hosts.Skipped,
 		result.Datasources.Created, result.Datasources.Updated,
 	)
+
+	// 同步巡检任务：为 N9E 业务组自动创建/停用巡检任务
+	s.syncInspectionTasks()
+}
+
+// syncInspectionTasks 为每个 N9E 业务组自动创建巡检任务（不存在则新建，已删除则停用）
+func (s *N9ESyncScheduler) syncInspectionTasks() {
+	groups, err := dao.GetN9EBusiGroups()
+	if err != nil {
+		log.Printf("[N9E Cron] 获取 N9E 业务组失败，跳过巡检任务同步: %v", err)
+		return
+	}
+
+	if len(groups) == 0 {
+		log.Printf("[N9E Cron] 无 N9E 业务组，跳过巡检任务同步")
+		return
+	}
+
+	// 转换为 BusiGroupData 格式
+	busiGroupData := make([]n9eModel.BusiGroupData, 0, len(groups))
+	for _, g := range groups {
+		busiGroupData = append(busiGroupData, n9eModel.BusiGroupData{
+			ID:   g.N9EGroupID,
+			Name: g.Name,
+		})
+	}
+
+	taskSvc := inspectionService.NewTaskService(dbR.Db)
+	taskSvc.SyncTasksFromN9EGroups(context.Background(), busiGroupData)
 }
 
 // GetStats 获取调度器状态信息
